@@ -3,17 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Sistema de Pesaje y Liquidación Avícola</title>
+  <title>Control de Pesaje en Galpón</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Tipografía Industrial -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
   
-  <!-- Tesseract.js para OCR -->
+  <!-- Tesseract.js v5 -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
   <style>
@@ -33,51 +31,50 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     input {
-      font-size: 16px !important; /* Evita zoom forzado en móviles */
+      font-size: 16px !important;
     }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-  <!-- BARRA SUPERIOR -->
+  <!-- CABECERA -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
       <div class="flex items-center gap-3">
         <span class="text-2xl sm:text-3xl">⚖️</span>
         <div>
           <h1 class="text-xs sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
-          <p class="text-[10px] sm:text-xs text-slate-400">Sistema de Pesaje, Taras y Liquidación</p>
+          <p class="text-[10px] sm:text-xs text-slate-400">Lectura Fiel de Balanza con Decimales</p>
         </div>
       </div>
-      <div class="flex items-center gap-2">
+      <div>
         <span class="text-[10px] sm:text-xs font-bold bg-emerald-950 text-emerald-300 border border-emerald-800 px-2.5 py-1 rounded-full flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Sheets Activo
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Sheets Activo
         </span>
       </div>
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL RESPONSIVO -->
   <main class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1">
     
-    <!-- DATOS DE LOTE (COMPACTO ARRIBA) -->
+    <!-- DATOS DE LOTE -->
     <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl mb-4 shadow-sm">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <div>
-          <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador / Cliente:</label>
-          <input id="txtCliente" type="text" placeholder="Ej. Distribuidor Lima" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
+          <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador:</label>
+          <input id="txtCliente" type="text" placeholder="Ej. Distribuidor" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
         </div>
         <div>
           <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Galpón / Lote:</label>
-          <input id="txtGalpon" type="text" placeholder="Ej. Galpón 3 - Lote A" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
+          <input id="txtGalpon" type="text" placeholder="Ej. Lote 2" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
         </div>
         <div>
           <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Precio x Kg:</label>
           <div class="flex gap-2">
             <div class="relative flex-1">
               <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-              <input id="txtPrecio" type="number" step="any" placeholder="6.80" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm font-bold text-amber-300 focus:border-amber-400 outline-none">
+              <input id="txtPrecio" type="text" inputmode="decimal" placeholder="6.80" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm font-bold text-amber-300 focus:border-amber-400 outline-none">
             </div>
             <button onclick="sincronizarLote()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold px-3 py-2 rounded-xl text-xs sm:text-sm transition">
               Fijar
@@ -87,38 +84,34 @@
       </div>
     </section>
 
-    <!-- GRID ADAPTABLE: 1 COLUMNA EN MÓVIL, 2 COLUMNAS EN MONITORES / TVS -->
+    <!-- GRID PRINCIPAL -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-      <!-- COLUMNA IZQUIERDA: EL GRAN DISPLAY INDUSTRIAL DE BALANZA -->
+      <!-- COLUMNA IZQUIERDA: DISPLAY Y CAPTURAS -->
       <div class="lg:col-span-7 bg-slate-900 border-2 border-slate-800 p-4 sm:p-6 rounded-3xl shadow-xl space-y-4">
         
-        <!-- Estados de la Balanza -->
         <div class="flex items-center justify-between text-xs sm:text-sm border-b border-slate-800 pb-2">
           <div class="flex items-center gap-3 font-mono">
             <span class="flex items-center gap-1.5 text-emerald-400 font-bold">
-              <span id="ledEstable" class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> ESTABLE
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> EN LÍNEA
             </span>
             <span id="badgeFaseActual" class="text-xs bg-amber-500/20 text-amber-300 border border-amber-500/30 px-2.5 py-0.5 rounded-lg font-sans font-bold">
               MODO: BRUTO (POLLOS)
             </span>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="alternarOCR()" class="bg-slate-800 border border-slate-700 text-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1">
-              📷 Cámara OCR
-            </button>
-            <button onclick="simularEstabilidadIoT()" class="bg-slate-800 border border-slate-700 text-sky-300 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1">
-              ⚡ Simular IoT
+            <button onclick="alternarCamaraOCR()" id="btnToggleCam" class="bg-amber-500/20 border border-amber-500/50 text-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1">
+              📷 Escanear con Cámara
             </button>
           </div>
         </div>
 
-        <!-- Pantalla LED Gigante (Escalable según la pantalla) -->
-        <div class="bg-black py-6 sm:py-10 px-4 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
+        <!-- VISOR DIGITAL LED -->
+        <div class="bg-black py-6 sm:py-8 px-4 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
           <span class="absolute top-2 left-3 sm:top-3 sm:left-4 text-[10px] sm:text-xs text-emerald-700 font-mono tracking-widest uppercase">
-            Visor Digital Yaohua / Excell / A12E
+            Visor Balanza Electrónica
           </span>
-          <div id="displayGrande" class="font-digital text-6xl sm:text-8xl xl:text-9xl text-emerald-400 led-glow font-black tracking-tight my-2 select-none">
+          <div id="displayGrande" class="font-digital text-6xl sm:text-8xl text-emerald-400 led-glow font-black tracking-tight my-2 select-none">
             0.00
           </div>
           <span class="absolute bottom-2 right-4 sm:bottom-3 sm:right-6 text-emerald-500 font-digital text-base sm:text-2xl font-bold">
@@ -126,30 +119,54 @@
           </span>
         </div>
 
-        <!-- Entrada directa y ajuste sin redondeos -->
-        <div class="flex items-center gap-2">
-          <input id="inputPeso" type="text" placeholder="0.00 (tal como sale en balanza)" class="w-full bg-slate-950 border border-slate-700 rounded-xl py-3 px-4 text-center text-xl sm:text-2xl font-digital text-emerald-300 font-bold focus:border-amber-400 outline-none">
+        <!-- CAJA DE INGRESO MANUAL O EDICIÓN DEL PESO (ACEPTA CUALQUIER DECIMAL) -->
+        <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800 space-y-2">
+          <div class="flex justify-between items-center text-xs">
+            <label class="text-slate-300 font-bold flex items-center gap-1">
+              ⌨️ Ingreso Manual / Ajuste Exacto:
+            </label>
+            <span class="text-slate-500 text-[11px]">Soporta coma (,) o punto (.)</span>
+          </div>
+          <div class="flex gap-2">
+            <input 
+              id="inputPesoExacto" 
+              type="text" 
+              inputmode="decimal" 
+              pattern="[0-9]*[.,]?[0-9]+" 
+              placeholder="Ej. 122.1 o 92.02" 
+              class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl px-4 py-2.5 rounded-xl text-center outline-none">
+            <button onclick="limpiarCajaPeso()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl text-xs font-bold">
+              Borrar
+            </button>
+          </div>
         </div>
 
-        <!-- Módulo Cámara OCR -->
-        <div id="moduloOCR" class="hidden p-3 bg-black border border-amber-500/40 rounded-2xl space-y-2">
+        <!-- MÓDULO OCR CON PROCESAMIENTO DE IMAGEN -->
+        <div id="panelOCR" class="hidden p-3 bg-black border-2 border-amber-500/50 rounded-2xl space-y-3">
           <div class="flex justify-between items-center text-xs text-amber-300 font-bold">
-            <span>Enfoque el display numérico de la balanza:</span>
-            <button onclick="alternarOCR()" class="text-slate-400 hover:text-white">✕ Cerrar</button>
+            <span>Enfoque el display numérico dentro del marco:</span>
+            <button onclick="alternarCamaraOCR()" class="text-slate-400 hover:text-white text-sm font-bold">✕ Cerrar</button>
           </div>
-          <div class="relative w-full h-44 sm:h-56 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
-            <video id="videoCam" class="w-full h-full object-cover" autoplay playsinline></video>
-            <div class="absolute border-2 border-dashed border-amber-400 w-3/4 h-20 rounded-lg pointer-events-none flex items-center justify-center">
-              <span class="text-[10px] bg-black/80 text-amber-300 px-2 py-0.5 rounded">Centrar Dígitos con Decimales</span>
+          
+          <div class="relative w-full h-52 sm:h-64 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
+            <video id="videoCamara" class="w-full h-full object-cover" autoplay playsinline></video>
+            <!-- Cuadro guía de enfoque -->
+            <div id="cuadroGuia" class="absolute border-2 border-dashed border-emerald-400 w-4/5 h-24 rounded-lg pointer-events-none flex items-center justify-center shadow-lg">
+              <span class="text-[10px] bg-black/80 text-emerald-300 px-2 py-0.5 rounded font-mono">Dígitos y punto aquí</span>
             </div>
           </div>
-          <button onclick="leerVisorOCR()" id="btnDispararOCR" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl active:scale-95 transition">
-            Capturar Números Exactos con Decimales
+
+          <!-- Canvas oculto donde se procesa la imagen para Tesseract -->
+          <canvas id="canvasFiltro" class="hidden"></canvas>
+
+          <button onclick="ejecutarCapturaOCR()" id="btnDispararOCR" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-sm rounded-xl active:scale-95 transition shadow-lg flex items-center justify-center gap-2">
+            <span>📸 CAPTURAR NÚMERO EXACTO CON DECIMALES</span>
           </button>
+          <div id="ocrDebug" class="text-center text-xs text-slate-400 font-mono"></div>
         </div>
 
-        <!-- Cambio de Fase TARA / BRUTO -->
-        <div class="grid grid-cols-2 gap-3 pt-2">
+        <!-- CAMBIO DE FASE: TARA VS BRUTO -->
+        <div class="grid grid-cols-2 gap-3 pt-1">
           <button onclick="cambiarFase('TARA')" id="btnFaseTara" class="py-3 px-2 rounded-2xl font-black text-xs sm:text-sm border border-slate-700 bg-slate-900 text-slate-400 active:scale-95 transition text-center">
             📦 1. TARA VACÍA
           </button>
@@ -159,7 +176,7 @@
         </div>
       </div>
 
-      <!-- COLUMNA DERECHA: CONTROLES DE PESADA, BOTONES Y LIQUIDACIÓN -->
+      <!-- COLUMNA DERECHA: SELECCIÓN Y GUARDADO -->
       <div class="lg:col-span-5 space-y-4">
 
         <!-- Selector de Jabas y Pollos -->
@@ -167,30 +184,30 @@
           <!-- Jabas -->
           <div>
             <div class="flex justify-between items-center mb-1.5 text-xs sm:text-sm">
-              <span class="text-slate-400 font-semibold">Jabas en esta columna:</span>
+              <span class="text-slate-400 font-semibold">Jabas en la plataforma:</span>
               <span id="txtJabasSel" class="text-amber-400 font-bold">10 jabas</span>
             </div>
-            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
-              <button onclick="setJabas(5)" class="btn-jaba py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">5</button>
-              <button onclick="setJabas(8)" class="btn-jaba py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">8</button>
-              <button onclick="setJabas(10)" class="btn-jaba py-2 sm:py-2.5 bg-amber-500 text-slate-950 font-black rounded-xl text-xs sm:text-sm">10</button>
-              <button onclick="setJabas(12)" class="btn-jaba py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">12</button>
-              <input id="customJabas" type="number" placeholder="Otro" oninput="setJabas(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl text-center text-xs sm:text-sm font-bold text-white outline-none focus:border-amber-400">
+            <div class="grid grid-cols-5 gap-1.5">
+              <button onclick="setJabas(5)" class="btn-jaba py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">5</button>
+              <button onclick="setJabas(8)" class="btn-jaba py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">8</button>
+              <button onclick="setJabas(10)" class="btn-jaba py-2 bg-amber-500 text-slate-950 font-black rounded-xl text-xs">10</button>
+              <button onclick="setJabas(12)" class="btn-jaba py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">12</button>
+              <input id="customJabas" type="number" placeholder="Otro" oninput="setJabas(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl text-center text-xs font-bold text-white outline-none focus:border-amber-400">
             </div>
           </div>
 
           <!-- Pollos -->
           <div id="bloquePollos">
             <div class="flex justify-between items-center mb-1.5 text-xs sm:text-sm">
-              <span class="text-slate-400 font-semibold">Pollos en esta pesada:</span>
+              <span class="text-slate-400 font-semibold">Aves en esta torre:</span>
               <span id="txtPollosSel" class="text-emerald-400 font-bold">50 aves</span>
             </div>
-            <div class="grid grid-cols-5 gap-1.5 sm:gap-2">
-              <button onclick="setPollos(40)" class="btn-pollo py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">40</button>
-              <button onclick="setPollos(48)" class="btn-pollo py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">48</button>
-              <button onclick="setPollos(50)" class="btn-pollo py-2 sm:py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs sm:text-sm">50</button>
-              <button onclick="setPollos(60)" class="btn-pollo py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200">60</button>
-              <input id="customPollos" type="number" placeholder="Otro" oninput="setPollos(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl text-center text-xs sm:text-sm font-bold text-white outline-none focus:border-amber-400">
+            <div class="grid grid-cols-5 gap-1.5">
+              <button onclick="setPollos(40)" class="btn-pollo py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">40</button>
+              <button onclick="setPollos(48)" class="btn-pollo py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">48</button>
+              <button onclick="setPollos(50)" class="btn-pollo py-2 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs">50</button>
+              <button onclick="setPollos(60)" class="btn-pollo py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200">60</button>
+              <input id="customPollos" type="number" placeholder="Otro" oninput="setPollos(this.value)" class="w-full bg-slate-950 border border-slate-700 rounded-xl text-center text-xs font-bold text-white outline-none focus:border-amber-400">
             </div>
           </div>
 
@@ -201,14 +218,13 @@
           <div id="notifStatus" class="h-4 text-center text-xs font-bold text-emerald-400"></div>
         </section>
 
-        <!-- PANEL DE LIQUIDACIÓN Y TOTALES -->
+        <!-- PANEL DE TOTALES -->
         <section class="bg-slate-900 border border-slate-800 p-4 rounded-3xl space-y-3.5 shadow-xl">
           <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs sm:text-sm">
-            <span class="font-bold text-slate-300 uppercase tracking-wider text-[11px] sm:text-xs">Resumen en Vivo</span>
+            <span class="font-bold text-slate-300 uppercase tracking-wider text-[11px] sm:text-xs">Totales Acumulados</span>
             <span id="cantTotalAves" class="font-bold text-amber-400">0 aves</span>
           </div>
 
-          <!-- Métricas -->
           <div class="grid grid-cols-2 gap-2.5 text-center font-mono">
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] sm:text-xs text-slate-400 block font-sans">Tara Total</span>
@@ -223,7 +239,7 @@
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] sm:text-xs text-slate-400 block font-sans">Neto Vivo</span>
               <span id="valNetoTotal" class="text-base sm:text-lg font-bold text-emerald-400">0 kg</span>
-              <span class="text-[10px] text-slate-500 block font-sans">Carne viva</span>
+              <span class="text-[10px] text-slate-500 block font-sans">Carne neta</span>
             </div>
             <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
               <span class="text-[10px] sm:text-xs text-slate-400 block font-sans">Promedio / Ave</span>
@@ -232,10 +248,9 @@
             </div>
           </div>
 
-          <!-- Total a Liquidar Soles -->
           <div class="bg-emerald-950/40 border border-emerald-500/50 p-3.5 rounded-2xl flex items-center justify-between">
             <div>
-              <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">Importe Total</span>
+              <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">Total a Pagar</span>
               <span class="text-[10px] text-slate-400">Neto Vivo × Precio</span>
             </div>
             <div id="valTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400">
@@ -243,7 +258,6 @@
             </div>
           </div>
 
-          <!-- Acciones -->
           <div class="grid grid-cols-2 gap-2 pt-1">
             <button onclick="verTicket()" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200 active:scale-95 transition">
               🧾 Ver Ticket
@@ -265,7 +279,7 @@
       
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
         <h3 class="font-black text-sm uppercase">Comprobante de Carguío</h3>
-        <p class="text-[10px] text-slate-600">Pesaje Fiel en Balanza Electrónica</p>
+        <p class="text-[10px] text-slate-600">Pesaje Fiel sin Redondeos</p>
         <p id="tktFechaHora" class="text-[9px] text-slate-500 mt-0.5"></p>
       </div>
 
@@ -303,35 +317,32 @@
   </div>
 
   <script>
-    // URL DE TU IMPLEMENTACIÓN EN GOOGLE APPS SCRIPT (/exec)
+    // URL DE TU SCRIPT DE GOOGLE
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    // Variables de Estado
     let fase = 'BRUTO';
     let numJabas = 10;
     let numPollos = 50;
 
-    // Totales exactos sin redondeos forzados
+    // Totales flotantes acumulados
     let acumTaraKg = 0;
     let acumBrutoKg = 0;
     let acumJabasVacias = 0;
     let acumJabasLlenas = 0;
     let acumPollos = 0;
 
-    // Sonido bip
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    function playBeep(freq = 900, duration = 0.12) {
-      try {
-        if (audioCtx.state === 'suspended') audioCtx.resume();
-        const osc = audioCtx.createOscillator();
-        const gain = audioCtx.createGain();
-        osc.frequency.value = freq;
-        osc.connect(gain);
-        gain.connect(audioCtx.destination);
-        osc.start();
-        gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
-        osc.stop(audioCtx.currentTime + duration);
-      } catch(e) {}
+    // Sincronizar input manual con el visor digital
+    const inputPesoExacto = document.getElementById('inputPesoExacto');
+    const displayGrande = document.getElementById('displayGrande');
+
+    inputPesoExacto.addEventListener('input', (e) => {
+      let v = e.target.value.replace(',', '.').trim();
+      displayGrande.innerText = v === '' ? '0.00' : v;
+    });
+
+    function limpiarCajaPeso() {
+      inputPesoExacto.value = '';
+      displayGrande.innerText = '0.00';
     }
 
     function cambiarFase(nuevaFase) {
@@ -359,8 +370,8 @@
       document.getElementById('txtJabasSel').innerText = `${numJabas} jabas`;
       document.querySelectorAll('.btn-jaba').forEach(btn => {
         btn.className = (btn.innerText == val)
-          ? "btn-jaba py-2 sm:py-2.5 bg-amber-500 text-slate-950 font-black rounded-xl text-xs sm:text-sm"
-          : "btn-jaba py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200";
+          ? "btn-jaba py-2 bg-amber-500 text-slate-950 font-black rounded-xl text-xs"
+          : "btn-jaba py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200";
       });
     }
 
@@ -369,42 +380,129 @@
       document.getElementById('txtPollosSel').innerText = `${numPollos} aves`;
       document.querySelectorAll('.btn-pollo').forEach(btn => {
         btn.className = (btn.innerText == val)
-          ? "btn-pollo py-2 sm:py-2.5 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs sm:text-sm"
-          : "btn-pollo py-2 sm:py-2.5 bg-slate-800 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200";
+          ? "btn-pollo py-2 bg-emerald-500 text-slate-950 font-black rounded-xl text-xs"
+          : "btn-pollo py-2 bg-slate-800 border border-slate-700 rounded-xl text-xs font-bold text-slate-200";
       });
     }
 
-    // Input manual actualiza el display tal como se escribe (con o sin decimales)
-    document.getElementById('inputPeso').addEventListener('input', (e) => {
-      const v = e.target.value.trim();
-      document.getElementById('displayGrande').innerText = v === '' ? '0.00' : v;
-    });
+    // ========================================================
+    // MOTOR OCR CORREGIDO CON PREPROCESAMIENTO Y FILTRO
+    // ========================================================
+    let streamVideo = null;
 
-    // Simulación de Balanza con decimales reales de celda de carga
-    function simularEstabilidadIoT() {
-      // Genera lecturas con precisión real de balanza (ej. 21.45, 132.8)
-      let sim = (fase === 'TARA')
-        ? (numJabas * 2.15 + (Math.random() * 0.4 - 0.2)).toFixed(2)
-        : (numJabas * 2.15 + numPollos * 2.63 + (Math.random() * 1.6 - 0.8)).toFixed(2);
-
-      document.getElementById('inputPeso').value = sim;
-      document.getElementById('displayGrande').innerText = sim;
-      playBeep(1100, 0.12);
+    async function alternarCamaraOCR() {
+      const panel = document.getElementById('panelOCR');
+      if (panel.classList.contains('hidden')) {
+        panel.classList.remove('hidden');
+        try {
+          streamVideo = await navigator.mediaDevices.getUserMedia({
+            video: {
+              facingMode: { ideal: "environment" },
+              width: { ideal: 1280 },
+              height: { ideal: 720 }
+            }
+          });
+          document.getElementById('videoCamara').srcObject = streamVideo;
+        } catch (e) {
+          alert("No se pudo iniciar la cámara: " + e.message);
+          panel.classList.add('hidden');
+        }
+      } else {
+        if (streamVideo) streamVideo.getTracks().forEach(t => t.stop());
+        panel.classList.add('hidden');
+      }
     }
 
-    // Guardar Pesada tal como está en la balanza
+    async function ejecutarCapturaOCR() {
+      const video = document.getElementById('videoCamara');
+      const btn = document.getElementById('btnDispararOCR');
+      const debug = document.getElementById('ocrDebug');
+      const canvas = document.getElementById('canvasFiltro');
+      const ctx = canvas.getContext('2d');
+
+      btn.innerText = "⏳ Binarizando imagen y leyendo...";
+      btn.disabled = true;
+
+      // 1. Recortar solo la zona del cuadro de enfoque
+      const vw = video.videoWidth || 640;
+      const vh = video.videoHeight || 480;
+      
+      // Zona central aproximada (80% ancho, 40% alto)
+      const cropW = Math.floor(vw * 0.8);
+      const cropH = Math.floor(vh * 0.4);
+      const cropX = Math.floor((vw - cropW) / 2);
+      const cropY = Math.floor((vh - cropH) / 2);
+
+      canvas.width = cropW;
+      canvas.height = cropH;
+      ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
+
+      // 2. Preprocesamiento: Escala de grises y Alto Contraste (Umbral adaptativo simple)
+      const imgData = ctx.getImageData(0, 0, cropW, cropH);
+      const data = imgData.data;
+      
+      // Calcular brillo promedio
+      let totalLuma = 0;
+      for (let i = 0; i < data.length; i += 4) {
+        totalLuma += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+      }
+      let avgLuma = totalLuma / (data.length / 4);
+      let threshold = avgLuma * 1.05; // Umbral de segmentación
+
+      for (let i = 0; i < data.length; i += 4) {
+        let luma = 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
+        // Los números de balanza suelen ser brillantes: los dejamos negros sobre fondo blanco para Tesseract
+        let val = luma > threshold ? 0 : 255;
+        data[i] = val;     // R
+        data[i+1] = val;   // G
+        data[i+2] = val;   // B
+      }
+      ctx.putImageData(imgData, 0, 0);
+
+      try {
+        // 3. Reconocimiento enfocado exclusivamente en números y punto/coma
+        const res = await Tesseract.recognize(canvas, 'eng', {
+          tessedit_char_whitelist: '0123456789.,'
+        });
+
+        // Limpiar el texto detectado
+        let raw = res.data.text.replace(/\s+/g, '').replace(',', '.');
+        debug.innerText = `Texto detectado: "${raw}"`;
+
+        // Extraer el número exacto con decimales (ej. 122.1, 92.02, 14.5)
+        let match = raw.match(/\d+(\.\d+)?/);
+        
+        if (match) {
+          let numeroExactoStr = match[0];
+          inputPesoExacto.value = numeroExactoStr;
+          displayGrande.innerText = numeroExactoStr;
+          alternarCamaraOCR();
+        } else {
+          alert(`No se detectó un número claro. Intentó leer: "${raw}". Use la caja manual si persiste el reflejo.`);
+        }
+      } catch (err) {
+        alert("Error OCR: " + err.message);
+      } finally {
+        btn.innerText = "📸 CAPTURAR NÚMERO EXACTO CON DECIMALES";
+        btn.disabled = false;
+      }
+    }
+
+    // ========================================================
+    // REGISTRO Y GUARDADO CON NÚMEROS EXACTOS
+    // ========================================================
     async function guardarPesada() {
-      const inputStr = document.getElementById('inputPeso').value.trim();
-      const pesoExacto = parseFloat(inputStr);
+      // Tomamos el valor de la caja manual o del OCR
+      let strVal = inputPesoExacto.value.replace(',', '.').trim();
+      let pesoExacto = parseFloat(strVal);
       const status = document.getElementById('notifStatus');
       const btn = document.getElementById('btnGuardar');
 
-      if (!inputStr || isNaN(pesoExacto) || pesoExacto <= 0) {
-        alert("Por favor ingrese o capture el peso que muestra la balanza.");
+      if (!strVal || isNaN(pesoExacto) || pesoExacto <= 0) {
+        alert("Por favor ingrese o capture el peso que muestra la balanza (ej. 122.1 o 92.02).");
         return;
       }
 
-      playBeep(850, 0.18);
       btn.disabled = true;
       btn.innerText = "⏳ ENVIANDO A SHEETS...";
 
@@ -412,7 +510,7 @@
         action: (fase === 'TARA') ? 'REGISTRAR_TARA' : 'REGISTRAR_BRUTO',
         jabas: numJabas,
         pollos: (fase === 'TARA') ? 0 : numPollos,
-        peso: pesoExacto // Se envía el valor numérico exacto con todos sus decimales
+        peso: pesoExacto // Se envía el valor numérico exacto sin truncar
       };
 
       if (fase === 'TARA') {
@@ -432,43 +530,41 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        status.innerText = `✅ ¡Pesada (${inputStr} kg) registrada!`;
+        status.innerText = `✅ ¡Pesada (${strVal} kg) registrada!`;
       } catch (err) {
         status.innerText = "⚠️ Guardado local (sin internet)";
       } finally {
-        document.getElementById('inputPeso').value = '';
+        limpiarCajaPeso();
         btn.disabled = false;
         btn.innerText = "💾 GUARDAR PESADA EN GOOGLE SHEETS";
         setTimeout(() => status.innerText = '', 3500);
       }
     }
 
-    // Cálculos sin truncamiento prematuro
     function calcularTotales() {
-      const precio = parseFloat(document.getElementById('txtPrecio').value) || 0;
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const neto = Math.max(0, acumBrutoKg - acumTaraKg);
       const prom = (acumPollos > 0) ? (neto / acumPollos) : 0;
       const soles = neto * precio;
 
-      // Se muestran con decimales tal como resultan
-      document.getElementById('valTaraTotal').innerText = `${formatearNumero(acumTaraKg)} kg`;
+      document.getElementById('valTaraTotal').innerText = `${limpiarDecimales(acumTaraKg)} kg`;
       document.getElementById('valJabasVacias').innerText = `${acumJabasVacias} vacías`;
 
-      document.getElementById('valBrutoTotal').innerText = `${formatearNumero(acumBrutoKg)} kg`;
+      document.getElementById('valBrutoTotal').innerText = `${limpiarDecimales(acumBrutoKg)} kg`;
       document.getElementById('valJabasLlenas').innerText = `${acumJabasLlenas} cargadas`;
 
-      document.getElementById('valNetoTotal').innerText = `${formatearNumero(neto)} kg`;
+      document.getElementById('valNetoTotal').innerText = `${limpiarDecimales(neto)} kg`;
       document.getElementById('cantTotalAves').innerText = `${acumPollos} aves`;
 
-      document.getElementById('valPromedioAve').innerText = `${formatearNumero(prom)} kg`;
-      document.getElementById('valTotalSoles').innerText = `S/ ${formatearNumero(soles)}`;
+      document.getElementById('valPromedioAve').innerText = `${limpiarDecimales(prom)} kg`;
+      document.getElementById('valTotalSoles').innerText = `S/ ${limpiarDecimales(soles)}`;
     }
 
-    // Permite mostrar decimales naturales sin cortar cifras
-    function formatearNumero(num) {
+    // Muestra decimales naturales sin forzar cortes
+    function limpiarDecimales(num) {
       if (Number.isInteger(num)) return num.toString();
-      // Muestra hasta 3 decimales significativos si existen, sin agregar ceros basura
-      return parseFloat(num.toFixed(3)).toString();
+      // Elimina ceros finales flotantes residuales de JS pero preserva los decimales reales
+      return parseFloat(num.toFixed(4)).toString();
     }
 
     async function sincronizarLote() {
@@ -476,7 +572,7 @@
         action: 'GUARDAR_LIQUIDACION',
         cliente: document.getElementById('txtCliente').value,
         galpon: document.getElementById('txtGalpon').value,
-        precioKg: document.getElementById('txtPrecio').value
+        precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
       };
       calcularTotales();
       try {
@@ -492,67 +588,9 @@
       }
     }
 
-    // OCR con cámara: Captura exactamente lo que hay en el visor (números y punto decimal)
-    let streamVideo = null;
-    async function alternarOCR() {
-      const panel = document.getElementById('moduloOCR');
-      if (panel.classList.contains('hidden')) {
-        panel.classList.remove('hidden');
-        try {
-          streamVideo = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" }
-          });
-          document.getElementById('videoCam').srcObject = streamVideo;
-        } catch (e) {
-          alert("Permiso de cámara no concedido o no disponible.");
-          panel.classList.add('hidden');
-        }
-      } else {
-        if (streamVideo) streamVideo.getTracks().forEach(t => t.stop());
-        panel.classList.add('hidden');
-      }
-    }
-
-    async function leerVisorOCR() {
-      const btn = document.getElementById('btnDispararOCR');
-      const video = document.getElementById('videoCam');
-      btn.innerText = "⏳ Extrayendo dígitos de la balanza...";
-      btn.disabled = true;
-
-      const canvas = document.createElement('canvas');
-      canvas.width = video.videoWidth || 640;
-      canvas.height = video.videoHeight || 480;
-      canvas.getContext('2d').drawImage(video, 0, 0);
-
-      try {
-        const res = await Tesseract.recognize(canvas, 'eng', {
-          tessedit_char_whitelist: '0123456789.,'
-        });
-        
-        // Reemplaza comas por puntos en caso de visores europeos/antiguos
-        let textoLimpio = res.data.text.replace(',', '.');
-        let coincidencia = textoLimpio.match(/\d+(\.\d+)?/);
-        
-        if (coincidencia) {
-          let lecturaExacta = coincidencia[0]; // Cadena exacta tal cual
-          document.getElementById('inputPeso').value = lecturaExacta;
-          document.getElementById('displayGrande').innerText = lecturaExacta;
-          playBeep(1200, 0.15);
-          alternarOCR();
-        } else {
-          alert("No se identificaron dígitos con claridad. Acerque más la cámara al visor.");
-        }
-      } catch(e) {
-        alert("Error en captura OCR: " + e.message);
-      } finally {
-        btn.innerText = "Capturar Números Exactos con Decimales";
-        btn.disabled = false;
-      }
-    }
-
-    // Ticket Térmico Fiel
+    // Ticket Térmico
     function verTicket() {
-      const precio = parseFloat(document.getElementById('txtPrecio').value) || 0;
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const neto = Math.max(0, acumBrutoKg - acumTaraKg);
       const prom = (acumPollos > 0) ? (neto / acumPollos) : 0;
       const soles = neto * precio;
@@ -560,15 +598,15 @@
       document.getElementById('tktFechaHora').innerText = new Date().toLocaleString('es-PE');
       document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
       document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
-      document.getElementById('tktPrecio').innerText = `S/ ${formatearNumero(precio)}`;
+      document.getElementById('tktPrecio').innerText = `S/ ${limpiarDecimales(precio)}`;
       document.getElementById('tktTotalPollos').innerText = `${acumPollos} aves`;
       document.getElementById('tktJabasV').innerText = acumJabasVacias;
       document.getElementById('tktJabasL').innerText = acumJabasLlenas;
-      document.getElementById('tktBruto').innerText = `${formatearNumero(acumBrutoKg)} kg`;
-      document.getElementById('tktTara').innerText = `-${formatearNumero(acumTaraKg)} kg`;
-      document.getElementById('tktNeto').innerText = `${formatearNumero(neto)} kg`;
-      document.getElementById('tktProm').innerText = `${formatearNumero(prom)} kg/ave`;
-      document.getElementById('tktMontoPagar').innerText = `S/ ${formatearNumero(soles)}`;
+      document.getElementById('tktBruto').innerText = `${limpiarDecimales(acumBrutoKg)} kg`;
+      document.getElementById('tktTara').innerText = `-${limpiarDecimales(acumTaraKg)} kg`;
+      document.getElementById('tktNeto').innerText = `${limpiarDecimales(neto)} kg`;
+      document.getElementById('tktProm').innerText = `${limpiarDecimales(prom)} kg/ave`;
+      document.getElementById('tktMontoPagar').innerText = `S/ ${limpiarDecimales(soles)}`;
 
       document.getElementById('modalTicket').classList.remove('hidden');
     }
@@ -578,7 +616,7 @@
     }
 
     function compartirPorWhatsApp() {
-      const precio = parseFloat(document.getElementById('txtPrecio').value) || 0;
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const neto = Math.max(0, acumBrutoKg - acumTaraKg);
       const soles = neto * precio;
       const prom = (acumPollos > 0) ? (neto / acumPollos) : 0;
@@ -588,12 +626,12 @@
         + `👤 *Comprador:* ${cliente}%0A`
         + `🍗 *Aves:* ${acumPollos}%0A`
         + `📦 *Jabas:* ${acumJabasLlenas} cargadas / ${acumJabasVacias} vacías%0A`
-        + `⚖️ *Bruto Total:* ${formatearNumero(acumBrutoKg)} kg%0A`
-        + `🗑️ *Tara Jabas:* ${formatearNumero(acumTaraKg)} kg%0A`
-        + `🐔 *NETO VIVO:* ${formatearNumero(neto)} kg%0A`
-        + `📊 *Promedio:* ${formatearNumero(prom)} kg/ave%0A`
-        + `💵 *Precio x Kg:* S/ ${formatearNumero(precio)}%0A`
-        + `💰 *TOTAL A COBRAR: S/ ${formatearNumero(soles)}*`;
+        + `⚖️ *Bruto Total:* ${limpiarDecimales(acumBrutoKg)} kg%0A`
+        + `🗑️ *Tara Jabas:* ${limpiarDecimales(acumTaraKg)} kg%0A`
+        + `🐔 *NETO VIVO:* ${limpiarDecimales(neto)} kg%0A`
+        + `📊 *Promedio:* ${limpiarDecimales(prom)} kg/ave%0A`
+        + `💵 *Precio x Kg:* S/ ${limpiarDecimales(precio)}%0A`
+        + `💰 *TOTAL A COBRAR: S/ ${limpiarDecimales(soles)}*`;
 
       window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     }
