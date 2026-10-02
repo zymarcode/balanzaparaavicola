@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Control de Pesaje en Galpón</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <style>
+    .font-digital { font-family: 'Share Tech Mono', monospace; }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen p-4 flex flex-col items-center">
+
+  <div class="w-full max-w-lg space-y-4">
+    <!-- Encabezado y configuración de lote -->
+    <header class="bg-slate-800 p-4 rounded-xl shadow border border-slate-700">
+      <h1 class="text-xl font-bold text-amber-400">🐔 Pesaje y Liquidación Avícola</h1>
+      <div class="grid grid-cols-2 gap-2 mt-3 text-xs">
+        <div>
+          <label class="text-slate-400">Comprador:</label>
+          <input id="cliente" type="text" placeholder="Ej. Juan Pérez" class="w-full p-2 bg-slate-700 rounded border border-slate-600 text-white mt-1">
+        </div>
+        <div>
+          <label class="text-slate-400">Precio x kg (S/.):</label>
+          <input id="precioKg" type="number" step="0.01" placeholder="Ej. 6.80" class="w-full p-2 bg-slate-700 rounded border border-slate-600 text-white mt-1">
+        </div>
+      </div>
+    </header>
+
+    <!-- Display de Balanza Digital -->
+    <div class="bg-black p-4 rounded-2xl border-4 border-slate-700 shadow-inner flex flex-col items-center">
+      <div class="flex justify-between w-full text-xs text-emerald-500 mb-1 px-2">
+        <span id="scaleStatus">● ESTABLE</span>
+        <span>MODO: <b id="modoActual" class="text-amber-400">BRUTO (POLLO)</b></span>
+      </div>
+      <div class="font-digital text-6xl text-emerald-400 tracking-wider my-2" id="displayPeso">000.00</div>
+      <div class="flex gap-2 w-full mt-2">
+        <input id="inputPeso" type="number" step="0.05" placeholder="Ingresar peso (kg)" class="w-full p-3 bg-slate-800 border border-slate-600 rounded text-center text-lg font-bold text-white focus:outline-none focus:border-amber-400">
+      </div>
+    </div>
+
+    <!-- Selector de Modo: Tara o Pollo -->
+    <div class="grid grid-cols-2 gap-2">
+      <button onclick="cambiarModo('TARA')" id="btnModoTara" class="py-3 font-bold rounded-lg border border-slate-600 bg-slate-800 text-slate-300">
+        📦 1. Registrar TARAS
+      </button>
+      <button onclick="cambiarModo('BRUTO')" id="btnModoBruto" class="py-3 font-bold rounded-lg bg-amber-500 text-slate-950">
+        🍗 2. Registrar POLLOS
+      </button>
+    </div>
+
+    <!-- Opciones de Jabas y Aves -->
+    <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 space-y-3">
+      <div>
+        <label class="text-xs text-slate-400 block mb-1">Cantidad de jabas en esta torre:</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="setJabas(5)" class="jaba-btn py-2 bg-slate-700 rounded font-bold hover:bg-slate-600">5</button>
+          <button onclick="setJabas(8)" class="jaba-btn py-2 bg-slate-700 rounded font-bold hover:bg-slate-600">8</button>
+          <button onclick="setJabas(10)" class="jaba-btn py-2 bg-amber-600 rounded font-bold">10</button>
+          <input id="customJabas" type="number" placeholder="Otro" oninput="setJabas(this.value)" class="p-2 bg-slate-900 border border-slate-600 rounded text-center text-sm">
+        </div>
+      </div>
+
+      <div id="seccionAves">
+        <label class="text-xs text-slate-400 block mb-1">Pollos totales en esta pesada:</label>
+        <div class="grid grid-cols-4 gap-2">
+          <button onclick="setPollos(40)" class="pollo-btn py-2 bg-slate-700 rounded font-bold hover:bg-slate-600">40</button>
+          <button onclick="setPollos(48)" class="pollo-btn py-2 bg-slate-700 rounded font-bold hover:bg-slate-600">48</button>
+          <button onclick="setPollos(50)" class="pollo-btn py-2 bg-slate-700 rounded font-bold hover:bg-slate-600">50</button>
+          <input id="customPollos" type="number" placeholder="Otro" oninput="setPollos(this.value)" class="p-2 bg-slate-900 border border-slate-600 rounded text-center text-sm">
+        </div>
+      </div>
+
+      <!-- Botón de Envío Directo a Google Sheets -->
+      <button onclick="enviarPesada()" id="btnGuardar" class="w-full py-4 mt-2 bg-emerald-500 hover:bg-emerald-400 active:scale-95 text-slate-950 text-lg font-black rounded-xl shadow-lg transition-transform flex justify-center items-center gap-2">
+        <span>💾 GUARDAR EN GOOGLE SHEETS</span>
+      </button>
+    </div>
+
+    <!-- Estado y Enlace -->
+    <div class="text-center text-xs text-slate-400">
+      <a href="https://docs.google.com/spreadsheets/d/1RBhJMOeUxc3SLvNtac9Mu4wbh_UJWB5036TEEtjrIaI/edit" target="_blank" class="text-amber-400 underline">
+        📊 Abrir Google Sheets en tiempo real
+      </a>
+      <div id="statusEnvio" class="mt-2 text-emerald-400 font-semibold h-4"></div>
+    </div>
+  </div>
+
+  <script>
+    // CONFIGURACIÓN DE TU BACKEND:
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
+
+    let modo = 'BRUTO'; // 'TARA' o 'BRUTO'
+    let jabasSeleccionadas = 10;
+    let pollosSeleccionados = 50;
+
+    function cambiarModo(nuevoModo) {
+      modo = nuevoModo;
+      document.getElementById('modoActual').innerText = modo === 'TARA' ? 'TARA (JABAS VACÍAS)' : 'BRUTO (JABAS CON POLLO)';
+      document.getElementById('seccionAves').style.display = modo === 'TARA' ? 'none' : 'block';
+
+      if (modo === 'TARA') {
+        document.getElementById('btnModoTara').className = "py-3 font-bold rounded-lg bg-amber-500 text-slate-950";
+        document.getElementById('btnModoBruto').className = "py-3 font-bold rounded-lg border border-slate-600 bg-slate-800 text-slate-300";
+      } else {
+        document.getElementById('btnModoBruto').className = "py-3 font-bold rounded-lg bg-amber-500 text-slate-950";
+        document.getElementById('btnModoTara').className = "py-3 font-bold rounded-lg border border-slate-600 bg-slate-800 text-slate-300";
+      }
+    }
+
+    function setJabas(val) {
+      jabasSeleccionadas = Number(val);
+      document.getElementById('customJabas').value = val;
+    }
+
+    function setPollos(val) {
+      pollosSeleccionados = Number(val);
+      document.getElementById('customPollos').value = val;
+    }
+
+    async function enviarPesada() {
+      const inputPeso = document.getElementById('inputPeso');
+      const peso = parseFloat(inputPeso.value);
+      const status = document.getElementById('statusEnvio');
+      const btn = document.getElementById('btnGuardar');
+
+      if (!peso || peso <= 0) {
+        alert("Por favor ingrese un peso válido.");
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "⏳ Guardando en Drive...";
+      status.innerText = "Transmitiendo datos a Google Sheets...";
+
+      const payload = {
+        action: modo === 'TARA' ? 'REGISTRAR_TARA' : 'REGISTRAR_BRUTO',
+        jabas: jabasSeleccionadas,
+        pollos: modo === 'TARA' ? 0 : pollosSeleccionados,
+        peso: peso
+      };
+
+      try {
+        await fetch(SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors', // Evita bloqueo CORS en Google Apps Script
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        status.innerText = `✅ ¡Pesada de ${peso} kg guardada con éxito!`;
+        inputPeso.value = '';
+        setTimeout(() => { status.innerText = ''; }, 3000);
+      } catch (err) {
+        status.innerText = "❌ Error al conectar con Google Sheets.";
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "💾 GUARDAR EN GOOGLE SHEETS";
+      }
+    }
+
+    // Escuchar el input para reflejar en el visor digital
+    document.getElementById('inputPeso').addEventListener('input', (e) => {
+      document.getElementById('displayPeso').innerText = (parseFloat(e.target.value) || 0).toFixed(2);
+    });
+  </script>
+</body>
+</html>
