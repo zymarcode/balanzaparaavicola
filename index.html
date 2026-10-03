@@ -5,18 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sistema de Pesaje y Dashboard Avícola</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Fuentes Digitales y UI -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-  
-  <!-- Motor OCR Tesseract.js -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-  <!-- Chart.js para Gráficos Estadísticos -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -35,15 +28,13 @@
       background: #faf8eb;
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
-    input, select {
-      font-size: 16px !important; /* Previene auto-zoom en iOS */
-    }
+    input, select, textarea { font-size: 16px !important; }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-  <!-- CABECERA PRINCIPAL -->
+  <!-- CABECERA -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 shadow-md">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -64,7 +55,7 @@
         </button>
       </div>
 
-      <!-- Selector de Campaña Activa -->
+      <!-- Campaña -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-300 font-bold hidden sm:inline">Campaña:</span>
         <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
@@ -110,10 +101,43 @@
         </div>
       </section>
 
+      <!-- SECCIÓN: FECHA / HORA (AUTO O MANUAL) Y NOTA GENERAL -->
+      <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        <!-- Control Fecha y Hora -->
+        <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+          <div class="flex items-center justify-between text-xs">
+            <span class="text-slate-400 font-semibold flex items-center gap-1">🕒 Fecha y Hora:</span>
+            <div class="flex items-center gap-1.5">
+              <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">
+                Automático
+              </button>
+              <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">
+                Manual
+              </button>
+            </div>
+          </div>
+          <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 py-1 px-1">
+            <span id="txtRelojEnVivo">Cargando fecha...</span>
+          </div>
+          <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-amber-400 font-mono">
+        </div>
+
+        <!-- Caja de Nota / Observación Opcional General -->
+        <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
+          <div class="flex-1">
+            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación General del Lote:</label>
+            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan, pesaje normal..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+          </div>
+          <button onclick="guardarNotaGeneral()" class="self-end px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg active:scale-95 transition">
+            Guardar Nota
+          </button>
+        </div>
+      </section>
+
       <!-- ÁREA DE OPERACIÓN -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-        <!-- COLUMNA IZQUIERDA: DISPLAY Y CAPTURADOR DE BALANZA -->
+        <!-- COLUMNA IZQUIERDA: DISPLAY Y ENTRADA DE BALANZA -->
         <div class="lg:col-span-6 bg-slate-900 border-2 border-slate-800 p-4 sm:p-6 rounded-3xl shadow-xl space-y-4">
           
           <div class="flex items-center justify-between text-xs sm:text-sm border-b border-slate-800 pb-2">
@@ -141,8 +165,8 @@
           <!-- ENTRADA MANUAL DEL PESO -->
           <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <div class="flex justify-between items-center text-xs">
-              <label class="text-slate-300 font-bold">⌨ Peso Balanza (con decimales exactos):</label>
-              <span class="text-slate-500 text-[11px]">Soporta punto (.) o coma (,)</span>
+              <label class="text-slate-300 font-bold">⌨ Peso de la Balanza (con decimales exactos):</label>
+              <span class="text-slate-500 text-[11px]">Soporta coma (,) o punto (.)</span>
             </div>
             <div class="flex gap-2">
               <input 
@@ -154,23 +178,6 @@
               <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl text-xs font-bold active:scale-95">
                 Borrar
               </button>
-            </div>
-          </div>
-
-          <!-- NOTA Y FECHA/HORA (OPCIONAL O AUTOMÁTICA) -->
-          <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-3">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <div>
-                <label class="text-[11px] text-slate-400 font-semibold block mb-1">📝 Nota / Descripción Opcional:</label>
-                <input id="inputNota" type="text" placeholder="Ej. Jabas rotas, Camión 1..." class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:border-amber-400 outline-none">
-              </div>
-              <div>
-                <div class="flex justify-between items-center mb-1">
-                  <label class="text-[11px] text-slate-400 font-semibold">🕒 Fecha / Hora:</label>
-                  <button onclick="actualizarHoraActual()" class="text-[10px] text-amber-400 hover:underline">Ahora</button>
-                </div>
-                <input id="inputFechaHora" type="datetime-local" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 text-xs text-white focus:border-amber-400 outline-none">
-              </div>
             </div>
           </div>
 
@@ -210,12 +217,12 @@
 
         </div>
 
-        <!-- TABLAS PARALELAS: PRIMERO TARA, LUEGO CON POLLOS -->
+        <!-- TABLAS LIMPIAS EN PARALELO (SIN FECHA NI HORA EN FILAS) -->
         <div class="lg:col-span-6 space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
-            <!-- TABLA 1: TARA -->
+            <!-- TABLA 1: TARA (LIMPIA) -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-amber-400">📦 1. TARA</span>
@@ -225,7 +232,7 @@
               <!-- Subir TXT Tara -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
-                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-1 rounded-lg text-[10px] font-bold">
+                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
                   📂 Subir .txt
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
                 </label>
@@ -235,10 +242,9 @@
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-amber-950/70 text-amber-300 sticky top-0 border-b border-slate-800">
                     <tr>
-                      <th class="p-1.5 w-8">N°</th>
-                      <th class="p-1.5">PESO (KG)</th>
-                      <th class="p-1.5">NOTA / FECHA</th>
-                      <th class="p-1.5 w-6">✕</th>
+                      <th class="p-2 w-12">N°</th>
+                      <th class="p-2">PESO TARA (KG)</th>
+                      <th class="p-2 w-10">✕</th>
                     </tr>
                   </thead>
                   <tbody id="tablaTaraBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
@@ -246,7 +252,7 @@
               </div>
             </div>
 
-            <!-- TABLA 2: CON POLLOS -->
+            <!-- TABLA 2: CON POLLOS (LIMPIA) -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-sky-400">🐔 2. CON POLLOS</span>
@@ -256,7 +262,7 @@
               <!-- Subir TXT Con Pollos -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
-                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2 py-1 rounded-lg text-[10px] font-bold">
+                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
                   📂 Subir .txt
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
                 </label>
@@ -266,10 +272,9 @@
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-sky-950/70 text-sky-300 sticky top-0 border-b border-slate-800">
                     <tr>
-                      <th class="p-1.5 w-8">N°</th>
-                      <th class="p-1.5">PESO (KG)</th>
-                      <th class="p-1.5">NOTA / FECHA</th>
-                      <th class="p-1.5 w-6">✕</th>
+                      <th class="p-2 w-12">N°</th>
+                      <th class="p-2">PESO BRUTO (KG)</th>
+                      <th class="p-2 w-10">✕</th>
                     </tr>
                   </thead>
                   <tbody id="tablaPollosBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
@@ -288,14 +293,14 @@
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center font-mono">
               <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Total con Pollos</span>
-                <span id="resumenBruto" class="text-sm sm:text-base font-bold text-sky-400">0.00</span>
-                <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
-              </div>
-              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 block font-sans">Total Tara</span>
                 <span id="resumenTara" class="text-sm sm:text-base font-bold text-amber-400">0.00</span>
                 <span id="cntPesadasTara" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
+              </div>
+              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 block font-sans">Total con Pollos</span>
+                <span id="resumenBruto" class="text-sm sm:text-base font-bold text-sky-400">0.00</span>
+                <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
               </div>
               <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo (Carne)</span>
@@ -386,9 +391,8 @@
         </div>
       </section>
 
-      <!-- SECCIÓN DE GRÁFICOS ESTADÍSTICOS -->
+      <!-- GRÁFICOS ESTADÍSTICOS -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Gráfico 1: Kilos Netos vs Tara -->
         <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
             📊 Kilos Netos vs Tara por Campaña
@@ -398,7 +402,6 @@
           </div>
         </div>
 
-        <!-- Gráfico 2: Facturación en Soles -->
         <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
             📈 Facturación Total a Cobrar (S/.)
@@ -451,6 +454,7 @@
         <div class="flex justify-between"><span>Cliente:</span><span id="tktCliente">-</span></div>
         <div class="flex justify-between"><span>Galpón:</span><span id="tktGalpon">-</span></div>
         <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
+        <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
       </div>
 
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
@@ -475,36 +479,69 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
     let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
+    let modoFechaActual = 'auto'; // 'auto' o 'manual'
 
-    // Instancias de Chart.js
     let chartKilosInstance = null;
     let chartSolesInstance = null;
 
-    // Estructura de Base de Datos con Objeto Completo (peso, nota, fecha)
-    let database = JSON.parse(localStorage.getItem('avicola_db_v2')) || {
-      'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10' },
-      'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10' }
+    // Base de Datos Local Limpia (Solo números directos en tara y pollos)
+    let database = JSON.parse(localStorage.getItem('avicola_db_v3')) || {
+      'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
+      'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v2', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v3', JSON.stringify(database));
     }
 
-    // Inicializar Fecha/Hora actual
-    function actualizarHoraActual() {
-      const now = new Date();
-      // Formato YYYY-MM-DDTHH:MM
-      const offset = now.getTimezoneOffset() * 60000;
-      const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
-      document.getElementById('inputFechaHora').value = localISOTime;
+    // Reloj en Vivo para Modo Automático
+    setInterval(() => {
+      if (modoFechaActual === 'auto') {
+        const d = new Date();
+        document.getElementById('txtRelojEnVivo').innerText = d.toLocaleString('es-PE');
+      }
+    }, 1000);
+
+    function toggleModoFecha(modo) {
+      modoFechaActual = modo;
+      const btnAuto = document.getElementById('btnFechaAuto');
+      const btnManual = document.getElementById('btnFechaManual');
+      const contAuto = document.getElementById('lblFechaAutoCont');
+      const inputMan = document.getElementById('inputFechaManual');
+
+      if (modo === 'auto') {
+        btnAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
+        btnManual.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
+        contAuto.classList.remove('hidden');
+        inputMan.classList.add('hidden');
+      } else {
+        btnManual.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
+        btnAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
+        contAuto.classList.add('hidden');
+        inputMan.classList.remove('hidden');
+
+        // Prellenar con fecha actual en formato input datetime-local
+        const now = new Date();
+        const offset = now.getTimezoneOffset() * 60000;
+        inputMan.value = (new Date(now - offset)).toISOString().slice(0, 16);
+      }
+    }
+
+    function obtenerFechaHoraSeleccionada() {
+      if (modoFechaActual === 'auto') {
+        return new Date().toLocaleString('es-PE');
+      } else {
+        const val = document.getElementById('inputFechaManual').value;
+        return val ? val.replace('T', ' ') : new Date().toLocaleString('es-PE');
+      }
     }
 
     window.onload = () => {
-      actualizarHoraActual();
+      document.getElementById('txtRelojEnVivo').innerText = new Date().toLocaleString('es-PE');
       cargarSelectorCampanas();
       seleccionarCampana();
     };
@@ -544,13 +581,14 @@
     function seleccionarCampana() {
       campanaActiva = document.getElementById('selCampana').value;
       if (!database[campanaActiva]) {
-        database[campanaActiva] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10' };
+        database[campanaActiva] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
       }
       
       const cData = database[campanaActiva];
       document.getElementById('txtCliente').value = cData.cliente || '';
       document.getElementById('txtGalpon').value = cData.galpon || '';
       document.getElementById('txtPrecio').value = cData.precio || '4.10';
+      document.getElementById('txtNotaGeneral').value = cData.nota || '';
       document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace('_', ' ');
 
       renderizarTablas();
@@ -561,7 +599,7 @@
       const nombre = prompt(`Nombre de la campaña:`, `Campaña ${num}`);
       if (nombre && nombre.trim() !== '') {
         const id = nombre.trim().replace(/\s+/g, '_');
-        database[id] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10' };
+        database[id] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
         guardarEnLocalStorage();
         campanaActiva = id;
         cargarSelectorCampanas();
@@ -577,6 +615,14 @@
       guardarEnLocalStorage();
       recalcularTotales();
       alert(`Datos de ${campanaActiva.replace('_', ' ')} actualizados.`);
+    }
+
+    function guardarNotaGeneral() {
+      const cData = database[campanaActiva];
+      cData.nota = document.getElementById('txtNotaGeneral').value;
+      cData.fechaHora = obtenerFechaHoraSeleccionada();
+      guardarEnLocalStorage();
+      alert("Nota general guardada para " + campanaActiva.replace('_', ' '));
     }
 
     function seleccionarTipo(tipo) {
@@ -603,16 +649,12 @@
 
     function limpiarCaja() {
       inputPesoManual.value = '';
-      document.getElementById('inputNota').value = '';
       visorDisplay.innerText = '0.00';
-      actualizarHoraActual();
     }
 
     async function guardarPesadaActual() {
       let strVal = inputPesoManual.value.replace(',', '.').trim();
       let peso = parseFloat(strVal);
-      let nota = document.getElementById('inputNota').value.trim();
-      let fechaHora = document.getElementById('inputFechaHora').value || new Date().toISOString();
       const feedback = document.getElementById('feedbackMsg');
       const btn = document.getElementById('btnGuardar');
 
@@ -624,17 +666,12 @@
       btn.disabled = true;
       btn.innerText = "⏳ ENVIANDO A SHEETS...";
 
-      const registro = {
-        peso: peso,
-        nota: nota,
-        fecha: fechaHora.replace('T', ' ')
-      };
-
       const cData = database[campanaActiva];
+      // Guardado como valor numérico directo y limpio
       if (tipoActual === 'TARA') {
-        cData.tara.push(registro);
+        cData.tara.push(peso);
       } else {
-        cData.pollos.push(registro);
+        cData.pollos.push(peso);
       }
 
       guardarEnLocalStorage();
@@ -645,9 +682,9 @@
         campana: campanaActiva,
         tipo: tipoActual,
         peso: peso,
-        nota: nota,
-        fecha: registro.fecha,
-        precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+        precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+        fecha: obtenerFechaHoraSeleccionada(),
+        nota: document.getElementById('txtNotaGeneral').value
       };
 
       try {
@@ -669,7 +706,7 @@
     }
 
     // ========================================================
-    // IMPORTADOR ROBUSTO TXT CON COMPATIBILIDAD DE FORMATOS
+    // IMPORTADOR TXT LÍNEA POR LÍNEA SIN ROMPER DECIMALES
     // ========================================================
     function importarArchivoTXTRobusto(event, destino) {
       const file = event.target.files[0];
@@ -681,7 +718,6 @@
         const lineas = contenido.split(/\r?\n/);
         let importados = 0;
         const cData = database[campanaActiva];
-        const nowStr = new Date().toLocaleString('es-PE');
 
         lineas.forEach(lin => {
           let textoLimpio = lin.trim();
@@ -691,15 +727,10 @@
           let num = parseFloat(valorNormalizado);
 
           if (!isNaN(num) && num > 0) {
-            const item = {
-              peso: num,
-              nota: 'Importado TXT',
-              fecha: nowStr
-            };
             if (destino === 'TARA') {
-              cData.tara.push(item);
+              cData.tara.push(num);
             } else {
-              cData.pollos.push(item);
+              cData.pollos.push(num);
             }
             importados++;
           }
@@ -724,23 +755,20 @@
       renderizarTablas();
     }
 
+    // Renderizar Tablas Limpias
     function renderizarTablas() {
       const cData = database[campanaActiva];
 
       // 1. Tabla TARA
       const tTara = document.getElementById('tablaTaraBody');
       tTara.innerHTML = '';
-      cData.tara.forEach((item, i) => {
-        const pesoVal = typeof item === 'object' ? item.peso : item;
-        const notaVal = typeof item === 'object' && item.nota ? item.nota : '-';
-        const fechaVal = typeof item === 'object' && item.fecha ? item.fecha.slice(5, 16) : '';
-
+      cData.tara.forEach((val, i) => {
+        const numVal = typeof val === 'object' ? val.peso : val;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="p-1.5 text-slate-500 font-bold">${i + 1}</td>
-          <td class="p-1.5 text-amber-300 font-semibold">${pesoVal.toFixed(2)}</td>
-          <td class="p-1.5 text-[10px] text-slate-400 truncate max-w-[90px]" title="${notaVal} (${fechaVal})">${notaVal}</td>
-          <td class="p-1.5"><button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
+          <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
+          <td class="p-2 text-amber-300 font-semibold">${numVal.toFixed(2)}</td>
+          <td class="p-2"><button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
         `;
         tTara.appendChild(tr);
       });
@@ -748,17 +776,13 @@
       // 2. Tabla CON POLLOS
       const tPollos = document.getElementById('tablaPollosBody');
       tPollos.innerHTML = '';
-      cData.pollos.forEach((item, i) => {
-        const pesoVal = typeof item === 'object' ? item.peso : item;
-        const notaVal = typeof item === 'object' && item.nota ? item.nota : '-';
-        const fechaVal = typeof item === 'object' && item.fecha ? item.fecha.slice(5, 16) : '';
-
+      cData.pollos.forEach((val, i) => {
+        const numVal = typeof val === 'object' ? val.peso : val;
         const tr = document.createElement('tr');
         tr.innerHTML = `
-          <td class="p-1.5 text-slate-500 font-bold">${i + 1}</td>
-          <td class="p-1.5 text-sky-300 font-semibold">${pesoVal.toFixed(2)}</td>
-          <td class="p-1.5 text-[10px] text-slate-400 truncate max-w-[90px]" title="${notaVal} (${fechaVal})">${notaVal}</td>
-          <td class="p-1.5"><button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
+          <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
+          <td class="p-2 text-sky-300 font-semibold">${numVal.toFixed(2)}</td>
+          <td class="p-2"><button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
         `;
         tPollos.appendChild(tr);
       });
@@ -828,7 +852,6 @@
         totalTaraGlobal += sTara;
         totalBrutoGlobal += sBruto;
 
-        // Datos para Gráficos
         const nombreCampana = cId.replace('_', ' ');
         labels.push(nombreCampana);
         dataNetos.push(parseFloat(sNeto.toFixed(2)));
@@ -855,7 +878,6 @@
       document.getElementById('dashPorcentajeTara').innerText = `${porcentajeTara} %`;
       document.getElementById('dashTotalCampanas').innerText = campanasConDatos;
 
-      // Actualizar Gráficos Chart.js
       actualizarGraficos(labels, dataNetos, dataTaras, dataSoles);
     }
 
@@ -1020,11 +1042,12 @@
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
 
-      document.getElementById('tktFecha').innerText = new Date().toLocaleString('es-PE');
+      document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
       document.getElementById('tktCampana').innerText = campanaActiva.replace('_', ' ');
       document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
       document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
+      document.getElementById('tktNota').innerText = cData.nota || '-';
       
       document.getElementById('tktBruto').innerText = `${sumBruto.toFixed(2)} kg`;
       document.getElementById('tktTara').innerText = `-${sumTara.toFixed(2)} kg`;
@@ -1046,10 +1069,12 @@
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
       const cliente = document.getElementById('txtCliente').value || 'Cliente';
+      const fecha = obtenerFechaHoraSeleccionada();
 
       const msg = `*LIQUIDACIÓN DE PESAJE EN GALPÓN*%0A`
-        + `📅 *${campanaActiva.replace('_', ' ')}*%0A`
+        + `📅 *${campanaActiva.replace('_', ' ')}* (${fecha})%0A`
         + `👤 *Comprador:* ${cliente}%0A`
+        + (cData.nota ? `📝 *Nota:* ${cData.nota}%0A` : '')
         + `🗑️ *Total Tara (${cData.tara.length} pesadas):* ${sumTara.toFixed(2)} kg%0A`
         + `⚖️ *Total con Pollos (${cData.pollos.length} pesadas):* ${sumBruto.toFixed(2)} kg%0A`
         + `🐔 *PESO NETO VIVO:* ${neto.toFixed(2)} kg%0A`
