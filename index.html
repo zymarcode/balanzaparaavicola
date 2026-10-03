@@ -5,11 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sistema de Pesaje y Dashboard Avícola</title>
   
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Tipografía Industrial -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  
+  <!-- Motor OCR Tesseract.js -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+
+  <!-- Gráficos Estadísticos Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -34,7 +41,7 @@
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-  <!-- CABECERA -->
+  <!-- CABECERA PRINCIPAL -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 shadow-md">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
@@ -45,7 +52,7 @@
         </div>
       </div>
       
-      <!-- Pestañas de Navegación -->
+      <!-- Navegación de Vistas -->
       <div class="flex items-center gap-2">
         <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow">
           ⚖️ Registro Pesaje
@@ -55,7 +62,7 @@
         </button>
       </div>
 
-      <!-- Campaña -->
+      <!-- Campañas -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-300 font-bold hidden sm:inline">Campaña:</span>
         <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
@@ -77,7 +84,7 @@
     <!-- ======================================================== -->
     <div id="vistaPesaje" class="space-y-4">
       
-      <!-- DATOS DE LOTE Y PRECIO -->
+      <!-- CONFIGURACIÓN DE LOTE Y PRECIO -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         <div class="sm:col-span-4">
           <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador / Cliente:</label>
@@ -101,7 +108,7 @@
         </div>
       </section>
 
-      <!-- SECCIÓN: FECHA / HORA (AUTO O MANUAL) Y NOTA GENERAL -->
+      <!-- FECHA / HORA (AUTO O MANUAL) Y NOTA GENERAL -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
         <!-- Control Fecha y Hora -->
         <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
@@ -122,11 +129,11 @@
           <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-amber-400 font-mono">
         </div>
 
-        <!-- Caja de Nota / Observación Opcional General -->
+        <!-- Nota / Observación General -->
         <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1">
-            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación General del Lote:</label>
-            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan, pesaje normal..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación Opcional del Lote:</label>
+            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
           </div>
           <button onclick="guardarNotaGeneral()" class="self-end px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg active:scale-95 transition">
             Guardar Nota
@@ -137,7 +144,7 @@
       <!-- ÁREA DE OPERACIÓN -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-        <!-- COLUMNA IZQUIERDA: DISPLAY Y ENTRADA DE BALANZA -->
+        <!-- DISPLAY BALANZA -->
         <div class="lg:col-span-6 bg-slate-900 border-2 border-slate-800 p-4 sm:p-6 rounded-3xl shadow-xl space-y-4">
           
           <div class="flex items-center justify-between text-xs sm:text-sm border-b border-slate-800 pb-2">
@@ -217,7 +224,7 @@
 
         </div>
 
-        <!-- TABLAS LIMPIAS EN PARALELO (SIN FECHA NI HORA EN FILAS) -->
+        <!-- TABLAS LIMPIAS EN PARALELO (SIN FECHA NI HORA EN CADA FILA) -->
         <div class="lg:col-span-6 space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -479,7 +486,10 @@
   </div>
 
   <script>
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
+    // ========================================================
+    // COLOCA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE (/exec)
+    // ========================================================
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
     let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
@@ -488,7 +498,7 @@
     let chartKilosInstance = null;
     let chartSolesInstance = null;
 
-    // Base de Datos Local Limpia (Solo números directos en tara y pollos)
+    // Base de Datos Local Limpia
     let database = JSON.parse(localStorage.getItem('avicola_db_v3')) || {
       'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
       'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
@@ -524,7 +534,6 @@
         contAuto.classList.add('hidden');
         inputMan.classList.remove('hidden');
 
-        // Prellenar con fecha actual en formato input datetime-local
         const now = new Date();
         const offset = now.getTimezoneOffset() * 60000;
         inputMan.value = (new Date(now - offset)).toISOString().slice(0, 16);
@@ -667,7 +676,6 @@
       btn.innerText = "⏳ ENVIANDO A SHEETS...";
 
       const cData = database[campanaActiva];
-      // Guardado como valor numérico directo y limpio
       if (tipoActual === 'TARA') {
         cData.tara.push(peso);
       } else {
@@ -705,9 +713,7 @@
       }
     }
 
-    // ========================================================
-    // IMPORTADOR TXT LÍNEA POR LÍNEA SIN ROMPER DECIMALES
-    // ========================================================
+    // Importar TXT línea por línea sin romper comas decimales
     function importarArchivoTXTRobusto(event, destino) {
       const file = event.target.files[0];
       if (!file) return;
@@ -755,11 +761,10 @@
       renderizarTablas();
     }
 
-    // Renderizar Tablas Limpias
     function renderizarTablas() {
       const cData = database[campanaActiva];
 
-      // 1. Tabla TARA
+      // Tabla TARA
       const tTara = document.getElementById('tablaTaraBody');
       tTara.innerHTML = '';
       cData.tara.forEach((val, i) => {
@@ -773,7 +778,7 @@
         tTara.appendChild(tr);
       });
 
-      // 2. Tabla CON POLLOS
+      // Tabla CON POLLOS
       const tPollos = document.getElementById('tablaPollosBody');
       tPollos.innerHTML = '';
       cData.pollos.forEach((val, i) => {
@@ -790,9 +795,6 @@
       recalcularTotales();
     }
 
-    // ========================================================
-    // CÁLCULO ESTRICTO: BRUTO - TARA = NETO (POSITIVO)
-    // ========================================================
     function recalcularTotales() {
       const cData = database[campanaActiva];
       
@@ -817,9 +819,6 @@
       document.getElementById('resumenTotalSoles').innerText = `S/. ${totalSoles.toFixed(2)}`;
     }
 
-    // ========================================================
-    // RENDERIZADO DEL DASHBOARD Y GRÁFICOS CHART.JS
-    // ========================================================
     function renderizarDashboard() {
       let facturacionTotal = 0;
       let kilosNetosGlobal = 0;
@@ -882,7 +881,6 @@
     }
 
     function actualizarGraficos(labels, netos, taras, soles) {
-      // 1. Gráfico de Barras: Netos vs Taras
       const ctxKilos = document.getElementById('chartKilos').getContext('2d');
       if (chartKilosInstance) chartKilosInstance.destroy();
       chartKilosInstance = new Chart(ctxKilos, {
@@ -911,9 +909,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } }
-          },
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
@@ -921,7 +917,6 @@
         }
       });
 
-      // 2. Gráfico de Línea: Facturación en Soles
       const ctxSoles = document.getElementById('chartSoles').getContext('2d');
       if (chartSolesInstance) chartSolesInstance.destroy();
       chartSolesInstance = new Chart(ctxSoles, {
@@ -942,9 +937,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } }
-          },
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
@@ -953,7 +946,7 @@
       });
     }
 
-    // OCR
+    // Cámara y OCR
     let streamVideo = null;
     async function alternarCamaraOCR() {
       const panel = document.getElementById('panelOCR');
