@@ -18,17 +18,9 @@
       -webkit-tap-highlight-color: transparent; 
       overflow-x: hidden;
     }
-    .font-digital { 
-      font-family: 'Chakra Petch', monospace; 
-      font-variant-numeric: tabular-nums; 
-    }
-    .led-glow { 
-      text-shadow: 0 0 16px rgba(52, 211, 153, 0.7); 
-    }
-    .ticket-paper { 
-      background: #faf8eb; 
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
-    }
+    .font-digital { font-family: 'Chakra Petch', monospace; font-variant-numeric: tabular-nums; }
+    .led-glow { text-shadow: 0 0 16px rgba(52, 211, 153, 0.7); }
+    .ticket-paper { background: #faf8eb; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     input, select, textarea { font-size: 16px !important; }
     .modal-backdrop { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(6px); }
     @keyframes slideDown { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -45,7 +37,7 @@
 
   <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
-  <!-- MODAL DE DIÁLOGO -->
+  <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
@@ -85,15 +77,15 @@
           </div>
           <div class="min-w-0">
             <h1 id="txtTituloApp" class="text-xs sm:text-base font-black uppercase tracking-wider text-amber-400 truncate">Control Galpón IoT</h1>
-            <p id="txtSubtituloApp" class="text-[9px] sm:text-xs text-slate-400 truncate">Multicomprador & Control de Tara Sobrante</p>
+            <p id="txtSubtituloApp" class="text-[9px] sm:text-xs text-slate-400 truncate">Comprador Único con Múltiples Días</p>
           </div>
         </div>
 
         <div class="flex md:hidden items-center gap-1.5 shrink-0">
           <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
-          <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Recargar de Sheets">🔄</button>
-          <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
+          <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Cargar de Sheets">🔄</button>
+          <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️️</button>
         </div>
       </div>
       
@@ -105,7 +97,7 @@
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition">
             📊 Dashboard & Gráficos
           </button>
-          <button onclick="sincronizarDesdeGoogleSheets()" title="Cargar y recuperar campañas guardadas en Google Sheets" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600 transition flex items-center gap-1">
+          <button onclick="sincronizarDesdeGoogleSheets()" title="Cargar de Sheets" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600 transition flex items-center gap-1">
             🔄 Cargar de Sheets
           </button>
           <button onclick="abrirAjustesMarca()" title="Personalizar Marca" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
@@ -113,6 +105,7 @@
           </button>
         </div>
 
+        <!-- Selector de Campaña -->
         <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
           <span class="text-[10px] sm:text-xs text-slate-400 font-bold pl-1.5 shrink-0">Campaña:</span>
           <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-lg px-2 py-1 outline-none min-w-0 flex-1 sm:flex-initial">
@@ -129,9 +122,11 @@
 
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA MULTICOMPRADOR -->
-    <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+    <!-- BARRA DUAL: COMPRADOR ÚNICO + SELECTOR DE DÍA / JORNADA -->
+    <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+      
+      <!-- LADO 1: COMPRADOR ÚNICO -->
+      <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
         <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
           <option value="Cliente_A">Comprador A</option>
@@ -143,18 +138,26 @@
           ✏️
         </button>
       </div>
-      
-      <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
+
+      <!-- LADO 2: SELECTOR DE JORNADA / DÍA DE ENTREGA DEL MISMO COMPRADOR -->
+      <div class="flex flex-wrap items-center justify-between md:justify-end gap-2">
+        <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+          <span class="text-[11px] font-bold text-sky-400 shrink-0">📅 Día / Jornada:</span>
+          <select id="selJornadaDia" onchange="cambiarJornadaDia()" class="bg-slate-900 border border-sky-500/60 text-sky-300 font-bold text-xs rounded-lg px-2 py-1 outline-none">
+            <option value="Dia_1">Día 1</option>
+          </select>
+          <button onclick="abrirModalNuevoDia()" class="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-lg active:scale-95 transition shrink-0" title="Agregar nuevo día de compra para esta persona">
+            + Nuevo Día
+          </button>
+        </div>
+
         <div class="flex items-center gap-1.5">
           <label class="text-[11px] text-slate-400 font-semibold shrink-0">Precio x Kg:</label>
-          <div class="relative w-24">
-            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-6 pr-2 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
+          <div class="relative w-20">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-5 pr-1.5 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
           </div>
         </div>
-        <button onclick="guardarDatosClienteEnSheets()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-amber-300 font-bold rounded-xl text-xs active:scale-95 transition shrink-0">
-          Fijar Lote
-        </button>
       </div>
     </section>
 
@@ -165,7 +168,7 @@
       <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
         <div class="sm:col-span-5 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora:</span>
+            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora del Ticket:</span>
             <div class="flex items-center gap-1">
               <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Auto</button>
               <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
@@ -179,8 +182,8 @@
 
         <div class="sm:col-span-7 bg-slate-950 p-2 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1 min-w-0">
-            <label class="text-[10px] sm:text-[11px] text-slate-400 font-semibold block mb-0.5 truncate">📝 Nota del Comprador:</label>
-            <input id="txtNotaGeneral" type="text" placeholder="Ej. Trajo 50 jabas, camioneta blanca..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
+            <label class="text-[10px] sm:text-[11px] text-slate-400 font-semibold block mb-0.5 truncate">📝 Nota del Día:</label>
+            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC, viaje 1..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
           </div>
           <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition shrink-0">
             Guardar
@@ -191,14 +194,14 @@
       <!-- BARRA DE ACCIONES -->
       <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
         <span class="text-slate-400 text-[11px] font-semibold pl-1 truncate">
-          Lote Activo: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
+          Atendiendo a: <b id="lblCompradorActivoBarra" class="text-emerald-400">Comprador A</b> (<span id="lblDiaActivoBarra" class="text-sky-300">Día 1</span>)
         </span>
         <div class="flex items-center gap-2">
           <button onclick="sincronizarDesdeGoogleSheets()" class="px-2.5 py-1 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold rounded-lg text-xs active:scale-95 transition">
             🔄 Traer de Sheets
           </button>
           <button onclick="confirmarLimpiezaTotal()" class="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition">
-            ⚠️ Limpiar Tablas
+            ⚠️ Limpiar Tablas Día
           </button>
         </div>
       </section>
@@ -226,7 +229,7 @@
 
           <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1">
             <div class="flex justify-between items-center text-xs">
-              <label class="text-slate-300 font-bold text-[11px]">⌨ Peso Exacto de Balanza:</label>
+              <label class="text-slate-300 font-bold text-[11px]">⌨ Peso de Balanza:</label>
               <span class="text-slate-500 text-[10px]">Punto (.) o coma (,)</span>
             </div>
             <div class="flex gap-2">
@@ -247,6 +250,7 @@
             </button>
           </div>
 
+          <!-- SELECTOR DE FASE -->
           <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
             <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
               📦 1. TARA INI
@@ -264,7 +268,7 @@
           </button>
         </div>
 
-        <!-- 3 TABLAS PARALELAS CON IMPORTACIÓN TXT -->
+        <!-- 3 TABLAS PARALELAS CON BOTONES TXT -->
         <div class="lg:col-span-7 space-y-3 sm:space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -340,11 +344,11 @@
 
           </div>
 
-          <!-- PANEL DE LIQUIDACIÓN -->
+          <!-- PANEL DE LIQUIDACIÓN DEL DÍA -->
           <section class="bg-slate-900 border-2 border-emerald-500/50 p-3 sm:p-4 rounded-3xl space-y-3 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300 uppercase tracking-wider truncate">
-                Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b>
+                Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b> (<span id="lblLiquidacionDiaNombre" class="text-sky-300">Día 1</span>)
               </span>
               <span class="text-slate-400 text-[10px] sm:text-[11px] font-mono shrink-0" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
@@ -372,9 +376,10 @@
               </div>
             </div>
 
+            <!-- TOTAL A COBRAR -->
             <div class="bg-emerald-950/40 border border-emerald-500/60 p-2.5 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
               <div>
-                <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR A ESTE CLIENTE</span>
+                <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR ESTE DÍA</span>
                 <span class="text-[9px] text-slate-400">Neto Vivo × Precio por Kg</span>
               </div>
               <div id="resumenTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 self-end sm:self-auto">
@@ -384,10 +389,10 @@
 
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition text-center truncate">
-                🧾 Ver Ticket
+                🧾 Ver Ticket del Día
               </button>
               <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs font-bold text-white transition text-center truncate">
-                ☁️️ Guardar en Drive
+                ☁ Guardar en Drive
               </button>
             </div>
             <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3 truncate"></div>
@@ -397,7 +402,7 @@
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD Y GRÁFICOS -->
+    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL -->
     <div id="vistaDashboard" class="hidden space-y-4">
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
@@ -405,28 +410,28 @@
             <span class="truncate">Facturación Global</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
           </div>
           <div id="dashTotalFacturado" class="text-lg sm:text-2xl font-black font-digital text-emerald-400 my-0.5 truncate">S/. 0.00</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Suma todos compradores</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Suma todos los compradores</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
             <span class="truncate">Carne Neta Total</span><span class="text-sky-400 font-bold shrink-0">VIVO</span>
           </div>
           <div id="dashTotalNetoKg" class="text-lg sm:text-2xl font-black font-digital text-sky-400 my-0.5 truncate">0.00 kg</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Despacho vivo neto</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Kilos totales despachados</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Compradores</span><span class="text-purple-400 font-bold shrink-0">CLIENTES</span>
+            <span class="truncate">Compradores Únicos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
           </div>
           <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Lotes en la campaña</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Sin repetir clientes</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
             <span class="truncate">Tara Neta Global</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
           </div>
           <div id="dashTotalTaraKg" class="text-lg sm:text-2xl font-black font-digital text-amber-400 my-0.5 truncate">0.00 kg</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando devoluciones</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando sobrantes</p>
         </div>
       </section>
 
@@ -435,7 +440,7 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
-              📊 Kilos Netos vs Tara por Comprador
+              📊 Kilos Netos vs Tara por Comprador (Consolidado)
             </h3>
             <span class="text-[10px] font-mono text-emerald-400 font-semibold">EN VIVO</span>
           </div>
@@ -447,7 +452,7 @@
         <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
-              📈 Facturación por Comprador (S/.)
+              📈 Facturación Acumulada por Comprador (S/.)
             </h3>
             <span class="text-[10px] font-mono text-emerald-400 font-semibold">SOLES</span>
           </div>
@@ -460,19 +465,20 @@
       <!-- TABLA RESUMEN -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-6 shadow-xl space-y-3">
         <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-2.5">
-          👥 Resumen por Comprador en la Campaña Activa
+          👥 Resumen Consolidado por Comprador (Todos sus Días Sumados)
         </h2>
         <div class="overflow-x-auto w-full">
           <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
               <tr>
                 <th class="p-2 sm:p-3">COMPRADOR</th>
+                <th class="p-2 sm:p-3 text-center">DÍAS DE COMPRA</th>
                 <th class="p-2 sm:p-3 text-center">TARA INI</th>
                 <th class="p-2 sm:p-3 text-center">SOBRANTE (-)</th>
                 <th class="p-2 sm:p-3 text-center">TARA USADA</th>
                 <th class="p-2 sm:p-3 text-center">BRUTO</th>
                 <th class="p-2 sm:p-3 text-center">NETO VIVO</th>
-                <th class="p-2 sm:p-3 text-right">TOTAL (S/.)</th>
+                <th class="p-2 sm:p-3 text-right">TOTAL ACUMULADO (S/.)</th>
               </tr>
             </thead>
             <tbody id="cuerpoTablaDashboard" class="divide-y divide-slate-800 text-slate-200"></tbody>
@@ -495,6 +501,7 @@
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
         <div class="flex justify-between"><span>Campaña:</span><b id="tktCampana">-</b></div>
         <div class="flex justify-between"><span>Comprador:</span><b id="tktCliente">-</b></div>
+        <div class="flex justify-between"><span>Jornada / Día:</span><b id="tktJornadaDia">-</b></div>
         <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
         <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
       </div>
@@ -527,6 +534,7 @@
     let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
     let clienteActivo = 'Cliente_A';
+    let jornadaActiva = 'Dia_1';
     let modoFechaActual = 'auto';
 
     let chartKilosInstance = null;
@@ -534,41 +542,74 @@
 
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
-      subtitulo: 'Multicomprador & Control de Tara Sobrante',
+      subtitulo: 'Comprador Único con Múltiples Días',
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    // Función para rescatar datos locales de versiones previas si existen
-    function recuperarDatosPrevios() {
-      const posiblesClaves = ['avicola_db_v13', 'avicola_db_v12', 'avicola_db_v11', 'avicola_db_v10', 'avicola_db_v9', 'avicola_db_v8', 'avicola_db_v7', 'avicola_db_v6', 'avicola_db_v5', 'avicola_db_v4', 'avicola_db_v3'];
-      for (let k of posiblesClaves) {
-        let guardado = localStorage.getItem(k);
-        if (guardado) {
+    // Estructura Jerárquica: Campaña -> Comprador Único -> Múltiples Días/Jornadas
+    function migrarBaseDatos() {
+      const claves = ['avicola_db_v14', 'avicola_db_v13', 'avicola_db_v12', 'avicola_db_v11', 'avicola_db_v10', 'avicola_db_v9', 'avicola_db_v8', 'avicola_db_v7', 'avicola_db_v6', 'avicola_db_v5', 'avicola_db_v4', 'avicola_db_v3'];
+      let baseVieja = null;
+      for (let k of claves) {
+        let raw = localStorage.getItem(k);
+        if (raw) {
           try {
-            let parsed = JSON.parse(guardado);
-            if (Object.keys(parsed).length > 0) return parsed;
+            let p = JSON.parse(raw);
+            if (Object.keys(p).length > 0) { baseVieja = p; break; }
           } catch(e){}
         }
       }
-      return {
-        'Campana_1': {
-          'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
-        }
-      };
+
+      const nueva = {};
+      if (baseVieja) {
+        Object.keys(baseVieja).forEach(cId => {
+          nueva[cId] = {};
+          const obj = baseVieja[cId];
+          Object.keys(obj).forEach(cliKey => {
+            const dataCli = obj[cliKey];
+            // Si ya tiene estructura de días
+            if (dataCli.dias) {
+              nueva[cId][cliKey] = dataCli;
+            } else {
+              // Convertir formato plano a estructura de días
+              nueva[cId][cliKey] = {
+                nombre: dataCli.nombre || cliKey,
+                dias: {
+                  'Dia_1': {
+                    tara: dataCli.tara || [],
+                    sobrante: dataCli.sobrante || [],
+                    pollos: dataCli.pollos || [],
+                    precio: dataCli.precio || '4.10',
+                    nota: dataCli.nota || ''
+                  }
+                }
+              };
+            }
+          });
+        });
+      } else {
+        nueva['Campana_1'] = {
+          'Cliente_A': {
+            nombre: 'Comprador A',
+            dias: {
+              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+            }
+          }
+        };
+      }
+      return nueva;
     }
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v14')) || recuperarDatosPrevios();
+    let database = JSON.parse(localStorage.getItem('avicola_db_v15')) || migrarBaseDatos();
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v14', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v15', JSON.stringify(database));
     }
 
-    // ========================================================
-    // SINCRONIZACIÓN AUTOMÁTICA DESDE GOOGLE SHEETS
-    // ========================================================
+    // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
-        mostrarToast("Pegue su URL de Apps Script para sincronizar", "aviso");
+        mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
         return;
       }
 
@@ -578,21 +619,30 @@
         const data = await resp.json();
 
         if (data && data.success && data.data && Object.keys(data.data).length > 0) {
-          // Fusionar datos de Google Sheets en la base de datos local
           Object.keys(data.data).forEach(cId => {
             if (!database[cId]) database[cId] = {};
             const clientesDeSheet = data.data[cId];
             Object.keys(clientesDeSheet).forEach(cliKey => {
-              database[cId][cliKey] = clientesDeSheet[cliKey];
+              const cliSheet = clientesDeSheet[cliKey];
+              if (!database[cId][cliKey]) {
+                database[cId][cliKey] = cliSheet;
+              } else {
+                database[cId][cliKey].nombre = cliSheet.nombre || database[cId][cliKey].nombre;
+                if (!database[cId][cliKey].dias) database[cId][cliKey].dias = {};
+                // Fusionar días
+                Object.keys(cliSheet.dias || {}).forEach(dKey => {
+                  database[cId][cliKey].dias[dKey] = cliSheet.dias[dKey];
+                });
+              }
             });
           });
 
           guardarEnLocalStorage();
           cargarSelectorCampanas();
           seleccionarCampana();
-          mostrarToast("✅ ¡Campañas y pesadas recuperadas de Google Sheets!", "exito");
+          mostrarToast("✅ ¡Datos sincronizados desde Google Sheets!", "exito");
         } else {
-          mostrarToast("Sincronizado (sin datos nuevos en Sheets)", "info");
+          mostrarToast("Sincronizado (sin datos nuevos)", "info");
         }
       } catch (err) {
         mostrarToast("No se pudo conectar a Sheets. Mostrando datos locales", "aviso");
@@ -660,7 +710,6 @@
         bMan.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
         cAuto.classList.remove('hidden');
         iMan.classList.add('hidden');
-        mostrarToast("Modo fecha: Automático", "info");
       } else {
         bMan.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
         bAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
@@ -670,7 +719,6 @@
           const now = new Date();
           iMan.value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         }
-        mostrarToast("Modo fecha: Manual", "info");
       }
     }
 
@@ -688,44 +736,6 @@
     function actualizarFechaManualEnTicket() {
       const tktF = document.getElementById('tktFecha');
       if (tktF) tktF.innerText = obtenerFechaHoraSeleccionada();
-    }
-
-    // ELIMINAR CAMPAÑA
-    function confirmarEliminarCampana() {
-      const nombreC = campanaActiva.replace(/_/g, ' ');
-      abrirCustomModal({
-        titulo: '⚠️ ¿Borrar Campaña Completa?',
-        subtitulo: `Eliminación de ${nombreC}`,
-        htmlBody: `Se eliminarán <b>todas las pesadas y clientes</b> de la <b>${nombreC}</b>.<br><br><span class="text-rose-400 font-bold">* Se borrarán también las pestañas en Google Sheets.</span>`,
-        textoBtn: 'Sí, Borrar Todo',
-        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
-        onConfirm: async () => {
-          const campanaABorrarId = campanaActiva;
-          delete database[campanaABorrarId];
-
-          const llaves = Object.keys(database);
-          if (llaves.length === 0) {
-            database['Campana_1'] = { 'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
-            campanaActiva = 'Campana_1';
-          } else {
-            campanaActiva = llaves[0];
-          }
-
-          guardarEnLocalStorage();
-          cargarSelectorCampanas();
-          seleccionarCampana();
-          mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
-
-          try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'ELIMINAR_CAMPANA_COMPLETA', campanaABorrar: campanaABorrarId })
-            });
-          } catch(e){}
-        }
-      });
     }
 
     // TOASTS Y MODAL
@@ -785,7 +795,9 @@
       cerrarCustomModal();
     });
 
-    // CLIENTES
+    // ========================================================
+    // GESTIÓN JERÁRQUICA: CLIENTES Y DÍAS
+    // ========================================================
     function cargarSelectorClientes() {
       const sel = document.getElementById('selClienteActivo');
       sel.innerHTML = '';
@@ -800,30 +812,84 @@
         clienteActivo = Object.keys(clientes)[0] || 'Cliente_A';
       }
       sel.value = clienteActivo;
+      cargarSelectorDias();
     }
 
     function cambiarClienteActivo() {
       clienteActivo = document.getElementById('selClienteActivo').value;
-      cargarDatosClienteActivo();
+      cargarSelectorDias();
     }
 
-    function cargarDatosClienteActivo() {
-      if (!database[campanaActiva][clienteActivo]) {
-        database[campanaActiva][clienteActivo] = { nombre: clienteActivo, tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
-      }
+    function cargarSelectorDias() {
+      const selD = document.getElementById('selJornadaDia');
+      selD.innerHTML = '';
       const c = database[campanaActiva][clienteActivo];
-      document.getElementById('txtPrecio').value = c.precio || '4.10';
-      document.getElementById('txtNotaGeneral').value = c.nota || '';
+      if (!c.dias) {
+        c.dias = { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
+      }
+      Object.keys(c.dias).forEach(dKey => {
+        const opt = document.createElement('option');
+        opt.value = dKey;
+        opt.innerText = dKey.replace(/_/g, ' ');
+        selD.appendChild(opt);
+      });
+      if (!c.dias[jornadaActiva]) {
+        jornadaActiva = Object.keys(c.dias)[0] || 'Dia_1';
+      }
+      selD.value = jornadaActiva;
+      cargarDatosJornadaActiva();
+    }
+
+    function cambiarJornadaDia() {
+      jornadaActiva = document.getElementById('selJornadaDia').value;
+      cargarDatosJornadaActiva();
+    }
+
+    function cargarDatosJornadaActiva() {
+      const c = database[campanaActiva][clienteActivo];
+      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
+      
+      document.getElementById('txtPrecio').value = diaData.precio || '4.10';
+      document.getElementById('txtNotaGeneral').value = diaData.nota || '';
       document.getElementById('lblLiquidacionClienteNombre').innerText = c.nombre || clienteActivo;
+      document.getElementById('lblLiquidacionDiaNombre').innerText = jornadaActiva.replace(/_/g, ' ');
+      document.getElementById('lblCompradorActivoBarra').innerText = c.nombre || clienteActivo;
+      document.getElementById('lblDiaActivoBarra').innerText = jornadaActiva.replace(/_/g, ' ');
+
       renderizarTablas();
+    }
+
+    function abrirModalNuevoDia() {
+      const c = database[campanaActiva][clienteActivo];
+      const numDia = Object.keys(c.dias).length + 1;
+      const fechaHoy = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
+      
+      abrirCustomModal({
+        titulo: 'Agregar Día de Compra',
+        subtitulo: `Para ${c.nombre}`,
+        htmlBody: `Identifique la nueva jornada para este cliente (ej. Día ${numDia} o fecha):`,
+        esInput: true,
+        valorInput: `Día ${numDia} - ${fechaHoy}`,
+        textoBtn: 'Crear Día',
+        colorBtn: 'bg-sky-500 hover:bg-sky-400 text-slate-950',
+        onConfirm: (nombreDia) => {
+          if (!nombreDia || nombreDia.trim() === '') return;
+          const keyDia = nombreDia.trim().replace(/\s+/g, '_');
+          c.dias[keyDia] = { tara: [], sobrante: [], pollos: [], precio: document.getElementById('txtPrecio').value, nota: '' };
+          guardarEnLocalStorage();
+          jornadaActiva = keyDia;
+          cargarSelectorDias();
+          mostrarToast(`Jornada "${nombreDia.trim()}" agregada para ${c.nombre}`, 'exito');
+        }
+      });
     }
 
     function abrirModalNuevoCliente() {
       const num = Object.keys(database[campanaActiva] || {}).length + 1;
       abrirCustomModal({
         titulo: 'Nuevo Comprador',
-        subtitulo: 'Agregar a la campaña',
-        htmlBody: 'Ingrese el nombre del comprador:',
+        subtitulo: 'Agregar cliente único a la campaña',
+        htmlBody: 'Nombre o identificación del comprador:',
         esInput: true,
         valorInput: `Comprador ${String.fromCharCode(64 + num)}`,
         textoBtn: 'Crear',
@@ -831,11 +897,16 @@
         onConfirm: (nombre) => {
           if (!nombre || nombre.trim() === '') return;
           const key = 'Cli_' + Date.now();
-          database[campanaActiva][key] = { nombre: nombre.trim(), tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
+          database[campanaActiva][key] = {
+            nombre: nombre.trim(),
+            dias: {
+              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+            }
+          };
           guardarEnLocalStorage();
           clienteActivo = key;
+          jornadaActiva = 'Dia_1';
           cargarSelectorClientes();
-          cargarDatosClienteActivo();
           mostrarToast(`Comprador "${nombre.trim()}" agregado`, 'exito');
         }
       });
@@ -845,7 +916,7 @@
       const c = database[campanaActiva][clienteActivo];
       abrirCustomModal({
         titulo: 'Renombrar Comprador',
-        subtitulo: 'Editar nombre',
+        subtitulo: 'Editar nombre del cliente',
         htmlBody: 'Nuevo nombre para este comprador:',
         esInput: true,
         valorInput: c.nombre || '',
@@ -855,7 +926,6 @@
           c.nombre = nombre.trim();
           guardarEnLocalStorage();
           cargarSelectorClientes();
-          cargarDatosClienteActivo();
           mostrarToast('Nombre actualizado', 'exito');
         }
       });
@@ -907,9 +977,11 @@
       btn.innerText = "⏳...";
 
       const c = database[campanaActiva][clienteActivo];
-      if (tipoActual === 'TARA') c.tara.push(peso);
-      else if (tipoActual === 'CON_POLLOS') c.pollos.push(peso);
-      else if (tipoActual === 'TARA_SOBRANTE') c.sobrante.push(peso);
+      const diaData = c.dias[jornadaActiva];
+
+      if (tipoActual === 'TARA') diaData.tara.push(peso);
+      else if (tipoActual === 'CON_POLLOS') diaData.pollos.push(peso);
+      else if (tipoActual === 'TARA_SOBRANTE') diaData.sobrante.push(peso);
 
       guardarEnLocalStorage();
       renderizarTablas();
@@ -923,13 +995,14 @@
             action: 'REGISTRAR_PESADA',
             campana: campanaActiva,
             cliente: c.nombre || clienteActivo,
+            jornada: jornadaActiva,
             tipo: tipoActual,
             peso: peso,
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
             fecha: obtenerFechaHoraSeleccionada()
           })
         });
-        mostrarToast(`Pesada de ${strVal} kg guardada`, 'exito');
+        mostrarToast(`Pesada de ${strVal} kg guardada en ${jornadaActiva.replace(/_/g, ' ')}`, 'exito');
       } catch (e) {
         mostrarToast("Guardado localmente", "aviso");
       } finally {
@@ -948,6 +1021,7 @@
       reader.onload = async function(e) {
         const lineas = e.target.result.split(/\r?\n/);
         const c = database[campanaActiva][clienteActivo];
+        const diaData = c.dias[jornadaActiva];
         let nums = [];
 
         lineas.forEach(lin => {
@@ -955,9 +1029,9 @@
           let n = parseFloat(t);
           if (!isNaN(n) && n > 0) {
             nums.push(n);
-            if (destino === 'TARA') c.tara.push(n);
-            else if (destino === 'CON_POLLOS') c.pollos.push(n);
-            else if (destino === 'TARA_SOBRANTE') c.sobrante.push(n);
+            if (destino === 'TARA') diaData.tara.push(n);
+            else if (destino === 'CON_POLLOS') diaData.pollos.push(n);
+            else if (destino === 'TARA_SOBRANTE') diaData.sobrante.push(n);
           }
         });
 
@@ -979,13 +1053,14 @@
               action: 'REGISTRAR_LOTE_TXT',
               campana: campanaActiva,
               cliente: c.nombre || clienteActivo,
+              jornada: jornadaActiva,
               tipo: destino,
               pesos: nums,
               precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
               fecha: obtenerFechaHoraSeleccionada()
             })
           });
-          mostrarToast(`¡Éxito! ${nums.length} pesadas importadas en Sheets`, "exito");
+          mostrarToast(`¡Éxito! ${nums.length} pesadas importadas`, "exito");
         } catch (err) {
           mostrarToast("Guardado en la app", "aviso");
         }
@@ -996,15 +1071,16 @@
 
     function editarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
-      let lista = c.tara;
+      const diaData = c.dias[jornadaActiva];
+      let lista = diaData.tara;
       let label = 'Tara Inicial';
-      if (tipo === 'CON_POLLOS') { lista = c.pollos; label = 'Con Pollos'; }
-      else if (tipo === 'TARA_SOBRANTE') { lista = c.sobrante; label = 'Tara Sobrante'; }
+      if (tipo === 'CON_POLLOS') { lista = diaData.pollos; label = 'Con Pollos'; }
+      else if (tipo === 'TARA_SOBRANTE') { lista = diaData.sobrante; label = 'Tara Sobrante'; }
 
       const valorActual = lista[index];
       abrirCustomModal({
         titulo: `Editar #${index + 1}`,
-        subtitulo: `Modificar valor de ${label}`,
+        subtitulo: `Modificar en ${jornadaActiva.replace(/_/g, ' ')}`,
         htmlBody: `Ingrese el nuevo peso en kilogramos:`,
         esInput: true,
         valorInput: valorActual.toString(),
@@ -1026,9 +1102,10 @@
 
     function eliminarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
-      if (tipo === 'TARA') c.tara.splice(index, 1);
-      else if (tipo === 'CON_POLLOS') c.pollos.splice(index, 1);
-      else if (tipo === 'TARA_SOBRANTE') c.sobrante.splice(index, 1);
+      const diaData = c.dias[jornadaActiva];
+      if (tipo === 'TARA') diaData.tara.splice(index, 1);
+      else if (tipo === 'CON_POLLOS') diaData.pollos.splice(index, 1);
+      else if (tipo === 'TARA_SOBRANTE') diaData.sobrante.splice(index, 1);
       guardarEnLocalStorage();
       renderizarTablas();
       mostrarToast("Registro eliminado", "info");
@@ -1036,12 +1113,13 @@
 
     function renderizarTablas() {
       const c = database[campanaActiva][clienteActivo];
-      if (!c.sobrante) c.sobrante = [];
+      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [] };
+      if (!diaData.sobrante) diaData.sobrante = [];
 
       // 1. TARA INICIAL
       const tT = document.getElementById('tablaTaraBody');
       tT.innerHTML = '';
-      c.tara.forEach((val, i) => {
+      diaData.tara.forEach((val, i) => {
         tT.innerHTML += `<tr>
           <td class="p-1 text-slate-500">${i+1}</td>
           <td class="p-1 text-amber-300">${val.toFixed(2)}</td>
@@ -1055,7 +1133,7 @@
       // 2. CON POLLOS
       const tP = document.getElementById('tablaPollosBody');
       tP.innerHTML = '';
-      c.pollos.forEach((val, i) => {
+      diaData.pollos.forEach((val, i) => {
         tP.innerHTML += `<tr>
           <td class="p-1 text-slate-500">${i+1}</td>
           <td class="p-1 text-sky-300">${val.toFixed(2)}</td>
@@ -1069,7 +1147,7 @@
       // 3. TARA SOBRANTE
       const tS = document.getElementById('tablaSobranteBody');
       tS.innerHTML = '';
-      c.sobrante.forEach((val, i) => {
+      diaData.sobrante.forEach((val, i) => {
         tS.innerHTML += `<tr>
           <td class="p-1 text-slate-500">${i+1}</td>
           <td class="p-1 text-rose-300 font-semibold">${val.toFixed(2)}</td>
@@ -1083,13 +1161,16 @@
       recalcularTotales();
     }
 
+    // CÁLCULO DE LIQUIDACIÓN DEL DÍA ACTIVO
     function recalcularTotales() {
       const c = database[campanaActiva][clienteActivo];
-      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
-      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [] };
+      
+      const sumTaraIni = diaData.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (diaData.sobrante || []).reduce((a, b) => a + b, 0);
       const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
 
-      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const sumBruto = diaData.pollos.reduce((a, b) => a + b, 0);
       const pesoNeto = Math.max(0, sumBruto - taraNetaUsada);
       const precioKg = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const totalSoles = pesoNeto * precioKg;
@@ -1100,7 +1181,7 @@
 
       document.getElementById('resumenTaraNeta').innerText = `${taraNetaUsada.toFixed(2)} kg`;
       document.getElementById('resumenBruto').innerText = `${sumBruto.toFixed(2)} kg`;
-      document.getElementById('cntPesadasPollos').innerText = `${c.pollos.length} pesadas`;
+      document.getElementById('cntPesadasPollos').innerText = `${diaData.pollos.length} pesadas`;
       document.getElementById('resumenNeto').innerText = `${pesoNeto.toFixed(2)} kg`;
       document.getElementById('resumenPrecio').innerText = `S/. ${precioKg.toFixed(2)}`;
       document.getElementById('resumenTotalSoles').innerText = `S/. ${totalSoles.toFixed(2)}`;
@@ -1108,16 +1189,10 @@
       document.getElementById('lblFormulaTaraUsada').innerText = `Tara: ${sumTaraIni.toFixed(2)} - ${sumTaraSob.toFixed(2)} = ${taraNetaUsada.toFixed(2)} kg`;
     }
 
-    async function guardarDatosClienteEnSheets() {
-      const c = database[campanaActiva][clienteActivo];
-      c.precio = document.getElementById('txtPrecio').value.replace(',', '.');
-      guardarEnLocalStorage();
-      mostrarToast("Precio fijado", "exito");
-    }
-
     async function guardarNotaGeneralEnSheets() {
       const c = database[campanaActiva][clienteActivo];
-      c.nota = document.getElementById('txtNotaGeneral').value;
+      const diaData = c.dias[jornadaActiva];
+      diaData.nota = document.getElementById('txtNotaGeneral').value;
       guardarEnLocalStorage();
 
       try {
@@ -1129,7 +1204,8 @@
             action: 'GUARDAR_NOTA',
             campana: campanaActiva,
             cliente: c.nombre || clienteActivo,
-            nota: c.nota,
+            jornada: jornadaActiva,
+            nota: diaData.nota,
             fecha: obtenerFechaHoraSeleccionada(),
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
           })
@@ -1142,17 +1218,17 @@
 
     async function guardarTicketEnGoogleDrive() {
       const c = database[campanaActiva][clienteActivo];
-      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
-      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const diaData = c.dias[jornadaActiva];
+      const sumTaraIni = diaData.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (diaData.sobrante || []).reduce((a, b) => a + b, 0);
       const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
-      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const sumBruto = diaData.pollos.reduce((a, b) => a + b, 0);
       const neto = Math.max(0, sumBruto - taraNetaUsada);
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
       const fechaExactaTicket = obtenerFechaHoraSeleccionada();
 
       const btn = document.getElementById('btnGuardarDriveTicket');
-      const feedback = document.getElementById('driveTicketFeedback');
       btn.innerText = "⏳ Creando PDF...";
       btn.disabled = true;
 
@@ -1165,6 +1241,7 @@
             action: 'GUARDAR_TICKET_DRIVE',
             campana: campanaActiva,
             cliente: c.nombre || clienteActivo,
+            jornada: jornadaActiva,
             fecha: fechaExactaTicket,
             taraInicial: sumTaraIni.toFixed(2),
             taraSobrante: sumTaraSob.toFixed(2),
@@ -1173,26 +1250,25 @@
             netoTotal: neto.toFixed(2),
             precioKg: precio.toFixed(2),
             totalPagar: soles.toFixed(2),
-            nota: c.nota || '-'
+            nota: diaData.nota || '-'
           })
         });
-        feedback.innerText = "✅ ¡PDF guardado en Drive con fecha exacta!";
-        mostrarToast("Ticket en PDF guardado en Drive", "exito");
+        mostrarToast("✅ Ticket PDF guardado en Drive con fecha exacta", "exito");
       } catch (err) {
-        mostrarToast("Error de conexión", "error");
+        mostrarToast("Error al conectar con Drive", "error");
       } finally {
         btn.innerText = "☁️ Guardar en Drive";
         btn.disabled = false;
-        setTimeout(() => feedback.innerText = '', 5000);
       }
     }
 
     function abrirTicketTermico() {
       const c = database[campanaActiva][clienteActivo];
-      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
-      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const diaData = c.dias[jornadaActiva];
+      const sumTaraIni = diaData.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (diaData.sobrante || []).reduce((a, b) => a + b, 0);
       const taraNeta = Math.max(0, sumTaraIni - sumTaraSob);
-      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const sumBruto = diaData.pollos.reduce((a, b) => a + b, 0);
       const neto = Math.max(0, sumBruto - taraNeta);
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
@@ -1200,8 +1276,9 @@
       document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
       document.getElementById('tktCampana').innerText = campanaActiva.replace(/_/g, ' ');
       document.getElementById('tktCliente').innerText = c.nombre || clienteActivo;
+      document.getElementById('tktJornadaDia').innerText = jornadaActiva.replace(/_/g, ' ');
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
-      document.getElementById('tktNota').innerText = c.nota || '-';
+      document.getElementById('tktNota').innerText = diaData.nota || '-';
 
       document.getElementById('tktTaraIni').innerText = `${sumTaraIni.toFixed(2)} kg`;
       document.getElementById('tktTaraSob').innerText = `-${sumTaraSob.toFixed(2)} kg`;
@@ -1217,6 +1294,9 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
+    // ========================================================
+    // DASHBOARD: CONSOLIDA TODOS LOS DÍAS DEL MISMO COMPRADOR
+    // ========================================================
     function renderizarDashboard() {
       let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraUsadaGlobal = 0;
       const clientes = database[campanaActiva] || {};
@@ -1228,42 +1308,58 @@
       const dataTaras = [];
       const dataSoles = [];
 
-      Object.keys(clientes).forEach(k => {
-        const c = clientes[k];
-        const sIni = c.tara.reduce((a, b) => a + b, 0);
-        const sSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
-        const sTaraUsada = Math.max(0, sIni - sSob);
-        const sBruto = c.pollos.reduce((a, b) => a + b, 0);
-        const sNeto = Math.max(0, sBruto - sTaraUsada);
-        const pKg = parseFloat(c.precio) || 0;
-        const total = sNeto * pKg;
+      Object.keys(clientes).forEach(cliKey => {
+        const c = clientes[cliKey];
+        let totIni = 0, totSob = 0, totBruto = 0, totNeto = 0, totSoles = 0;
+        const diasObj = c.dias || {};
+        const cantDias = Object.keys(diasObj).length;
 
-        facturacionTotal += total;
-        kilosNetosGlobal += sNeto;
-        totalTaraUsadaGlobal += sTaraUsada;
+        // Sumar todas las jornadas del cliente
+        Object.keys(diasObj).forEach(dKey => {
+          const d = diasObj[dKey];
+          const sIni = d.tara.reduce((a, b) => a + b, 0);
+          const sSob = (d.sobrante || []).reduce((a, b) => a + b, 0);
+          const sTaraUsada = Math.max(0, sIni - sSob);
+          const sBruto = d.pollos.reduce((a, b) => a + b, 0);
+          const sNeto = Math.max(0, sBruto - sTaraUsada);
+          const pKg = parseFloat(d.precio) || 0;
+          const sTotal = sNeto * pKg;
 
-        const nombreCliente = c.nombre || k;
+          totIni += sIni;
+          totSob += sSob;
+          totBruto += sBruto;
+          totNeto += sNeto;
+          totSoles += sTotal;
+        });
+
+        const totTaraUsada = Math.max(0, totIni - totSob);
+        facturacionTotal += totSoles;
+        kilosNetosGlobal += totNeto;
+        totalTaraUsadaGlobal += totTaraUsada;
+
+        const nombreCliente = c.nombre || cliKey;
         labels.push(nombreCliente);
-        dataNetos.push(parseFloat(sNeto.toFixed(2)));
-        dataTaras.push(parseFloat(sTaraUsada.toFixed(2)));
-        dataSoles.push(parseFloat(total.toFixed(2)));
+        dataNetos.push(parseFloat(totNeto.toFixed(2)));
+        dataTaras.push(parseFloat(totTaraUsada.toFixed(2)));
+        dataSoles.push(parseFloat(totSoles.toFixed(2)));
 
         tbody.innerHTML += `
           <tr>
             <td class="p-2 sm:p-3 font-bold text-amber-400">${nombreCliente}</td>
-            <td class="p-2 sm:p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center font-bold text-amber-300">${sTaraUsada.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center text-sky-300">${sBruto.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-right font-black text-emerald-400">S/. ${total.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center text-sky-400 font-bold">${cantDias} día(s)</td>
+            <td class="p-2 sm:p-3 text-center text-slate-300">${totIni.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center text-rose-400">-${totSob.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center font-bold text-amber-300">${totTaraUsada.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center text-sky-300">${totBruto.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center font-bold text-emerald-400">${totNeto.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-right font-black text-emerald-400">S/. ${totSoles.toFixed(2)}</td>
           </tr>
         `;
       });
 
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
-      document.getElementById('dashTotalClientes').innerText = Object.keys(clientes).length;
+      document.getElementById('dashTotalClientes').innerText = Object.keys(clientes).length; // Clientes reales únicos
       document.getElementById('dashTotalTaraKg').innerText = `${totalTaraUsadaGlobal.toFixed(2)} kg`;
 
       actualizarGraficos(labels, dataNetos, dataTaras, dataSoles);
@@ -1278,7 +1374,7 @@
           labels: labels,
           datasets: [
             {
-              label: 'Carne Neta (kg)',
+              label: 'Carne Neta Acumulada (kg)',
               data: netos,
               backgroundColor: 'rgba(52, 211, 153, 0.85)',
               borderColor: 'rgb(52, 211, 153)',
@@ -1286,7 +1382,7 @@
               borderRadius: 6
             },
             {
-              label: 'Tara Usada (kg)',
+              label: 'Tara Usada Total (kg)',
               data: taras,
               backgroundColor: 'rgba(251, 191, 36, 0.85)',
               borderColor: 'rgb(251, 191, 36)',
@@ -1298,9 +1394,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } }
-          },
+          plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
@@ -1315,7 +1409,7 @@
         data: {
           labels: labels,
           datasets: [{
-            label: 'Total a Cobrar (S/.)',
+            label: 'Total Facturado Acumulado (S/.)',
             data: soles,
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.2)',
@@ -1328,9 +1422,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } }
-          },
+          plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
@@ -1356,13 +1448,14 @@
       campanaActiva = document.getElementById('selCampana').value;
       if (!database[campanaActiva]) {
         database[campanaActiva] = {
-          'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+          'Cliente_A': {
+            nombre: 'Comprador A',
+            dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+          }
         };
       }
       clienteActivo = Object.keys(database[campanaActiva])[0];
       cargarSelectorClientes();
-      cargarDatosClienteActivo();
-      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
     }
 
     function abrirModalNuevaCampana() {
@@ -1374,7 +1467,12 @@
         onConfirm: (n) => {
           if (!n || n.trim() === '') return;
           const id = n.trim().replace(/\s+/g, '_');
-          database[id] = { 'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
+          database[id] = {
+            'Cliente_A': {
+              nombre: 'Comprador A',
+              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+            }
+          };
           guardarEnLocalStorage();
           campanaActiva = id;
           cargarSelectorCampanas();
@@ -1397,6 +1495,48 @@
           campanaActiva = nuevoId;
           cargarSelectorCampanas();
           seleccionarCampana();
+        }
+      });
+    }
+
+    function confirmarEliminarCampana() {
+      const nombreC = campanaActiva.replace(/_/g, ' ');
+      abrirCustomModal({
+        titulo: '⚠️ ¿Borrar Campaña Completa?',
+        subtitulo: `Eliminación de ${nombreC}`,
+        htmlBody: `Se eliminarán todos los compradores y días de la <b>${nombreC}</b>.<br><br><span class="text-rose-400 font-bold">* Se eliminarán también las pestañas en Google Sheets.</span>`,
+        textoBtn: 'Sí, Borrar Todo',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: async () => {
+          const campanaABorrarId = campanaActiva;
+          delete database[campanaABorrarId];
+
+          const llaves = Object.keys(database);
+          if (llaves.length === 0) {
+            database['Campana_1'] = {
+              'Cliente_A': {
+                nombre: 'Comprador A',
+                dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+              }
+            };
+            campanaActiva = 'Campana_1';
+          } else {
+            campanaActiva = llaves[0];
+          }
+
+          guardarEnLocalStorage();
+          cargarSelectorCampanas();
+          seleccionarCampana();
+          mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'ELIMINAR_CAMPANA_COMPLETA', campanaABorrar: campanaABorrarId })
+            });
+          } catch(e){}
         }
       });
     }
@@ -1490,19 +1630,19 @@
 
     function confirmarLimpiezaTotal() {
       abrirCustomModal({
-        titulo: '⚠️ Limpiar Tablas',
-        subtitulo: 'Reinicio de Lote del Cliente',
-        htmlBody: `Se vaciarán las pesadas de <b>${database[campanaActiva][clienteActivo].nombre}</b>.<br><br>¿Desea continuar?`,
+        titulo: '⚠️ Limpiar Tablas del Día',
+        subtitulo: `${jornadaActiva.replace(/_/g, ' ')} de ${database[campanaActiva][clienteActivo].nombre}`,
+        htmlBody: `Se vaciarán las pesadas de este día puntual.<br><br>¿Desea continuar?`,
         textoBtn: 'Sí, Limpiar',
         colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
         onConfirm: () => {
-          const c = database[campanaActiva][clienteActivo];
-          c.tara = [];
-          c.sobrante = [];
-          c.pollos = [];
+          const diaData = database[campanaActiva][clienteActivo].dias[jornadaActiva];
+          diaData.tara = [];
+          diaData.sobrante = [];
+          diaData.pollos = [];
           guardarEnLocalStorage();
           renderizarTablas();
-          mostrarToast('Tablas limpiadas', 'aviso');
+          mostrarToast('Tablas del día limpiadas', 'aviso');
         }
       });
     }
@@ -1511,7 +1651,6 @@
       aplicarConfiguracionMarca();
       cargarSelectorCampanas();
       seleccionarCampana();
-      // Conectar automáticamente a Google Sheets al abrir la página
       sincronizarDesdeGoogleSheets();
     };
   </script>
