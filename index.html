@@ -81,7 +81,7 @@
           📊 Dashboard
         </button>
         <button onclick="abrirAjustesMarca()" title="Personalizar Título y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700">
-          ⚙️
+          ⚙️ Marca
         </button>
       </div>
 
@@ -205,7 +205,7 @@
             </button>
           </div>
 
-          <!-- SELECTOR DE FASE DE 3 VÍAS (TARA INICIAL, CON POLLOS Y TARA SOBRANTE) -->
+          <!-- SELECTOR DE FASE DE 3 VÍAS -->
           <div class="grid grid-cols-3 gap-1.5">
             <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
               📦 1. TARA INICIAL
@@ -223,7 +223,7 @@
           </button>
         </div>
 
-        <!-- 3 TABLAS PARALELAS: TARA INICIAL, CON POLLOS Y SOBRANTE -->
+        <!-- 3 TABLAS PARALELAS CON BOTONES TXT Y CRUD -->
         <div class="lg:col-span-7 space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -234,10 +234,20 @@
                 <span class="text-[11px] font-black uppercase text-amber-400">📦 TARA INICIAL</span>
                 <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0 kg</span>
               </div>
+
+              <!-- BOTÓN IMPORTAR TXT TARA INICIAL -->
+              <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
+                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                  📂 Subir .txt
+                  <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
+                </label>
+              </div>
+
               <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-amber-950/70 text-amber-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
                   </thead>
                   <tbody id="tablaTaraBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -250,10 +260,20 @@
                 <span class="text-[11px] font-black uppercase text-sky-400">🍗 CON POLLOS</span>
                 <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0 kg</span>
               </div>
+
+              <!-- BOTÓN IMPORTAR TXT CON POLLOS -->
+              <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
+                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                  📂 Subir .txt
+                  <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
+                </label>
+              </div>
+
               <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-sky-950/70 text-sky-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
                   </thead>
                   <tbody id="tablaPollosBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -266,10 +286,20 @@
                 <span class="text-[11px] font-black uppercase text-rose-400">🔄 SOBRANTE (-)</span>
                 <span id="badgeSubtotalSobrante" class="text-xs font-mono font-bold text-rose-300">0 kg</span>
               </div>
+
+              <!-- BOTÓN IMPORTAR TXT SOBRANTE -->
+              <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
+                <label class="cursor-pointer bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
+                  📂 Subir .txt
+                  <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA_SOBRANTE')">
+                </label>
+              </div>
+
               <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-rose-950/70 text-rose-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
                   </thead>
                   <tbody id="tablaSobranteBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -278,10 +308,10 @@
 
           </div>
 
-          <!-- PANEL DE LIQUIDACIÓN EXACTA CON TARA SOBRANTE -->
+          <!-- PANEL DE LIQUIDACIÓN EXACTA -->
           <section class="bg-slate-900 border-2 border-emerald-500/50 p-4 rounded-3xl space-y-3 shadow-xl">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
-              <span class="font-bold text-slate-300 uppercase tracking-wider">Liquidación del Comprador: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b></span>
+              <span class="font-bold text-slate-300 uppercase tracking-wider">Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b></span>
               <span class="text-slate-400 text-[11px] font-mono" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
 
@@ -428,9 +458,12 @@
   </div>
 
   <script>
+    // ========================================================
+    // PEGA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
+    // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    let tipoActual = 'TARA'; // 'TARA', 'CON_POLLOS', 'TARA_SOBRANTE'
+    let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
     let clienteActivo = 'Cliente_A';
     let modoFechaActual = 'auto';
@@ -441,8 +474,7 @@
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    // Estructura Multicomprador dentro de cada Campaña
-    let database = JSON.parse(localStorage.getItem('avicola_db_v9')) || {
+    let database = JSON.parse(localStorage.getItem('avicola_db_v10')) || {
       'Campana_1': {
         'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' },
         'Cliente_B': { nombre: 'Comprador B', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
@@ -450,7 +482,7 @@
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v9', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v10', JSON.stringify(database));
     }
 
     function aplicarConfiguracionMarca() {
@@ -712,6 +744,96 @@
       }
     }
 
+    // ========================================================
+    // IMPORTADOR TXT CON DECIMALES EXACTOS RESTAURADO
+    // ========================================================
+    function importarArchivoTXTRobusto(event, destino) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = async function(e) {
+        const lineas = e.target.result.split(/\r?\n/);
+        const c = database[campanaActiva][clienteActivo];
+        let nums = [];
+
+        lineas.forEach(lin => {
+          let t = lin.trim().replace(',', '.');
+          let n = parseFloat(t);
+          if (!isNaN(n) && n > 0) {
+            nums.push(n);
+            if (destino === 'TARA') c.tara.push(n);
+            else if (destino === 'CON_POLLOS') c.pollos.push(n);
+            else if (destino === 'TARA_SOBRANTE') c.sobrante.push(n);
+          }
+        });
+
+        guardarEnLocalStorage();
+        renderizarTablas();
+
+        if (nums.length === 0) {
+          mostrarToast("No hay números válidos en el archivo TXT", "error");
+          return;
+        }
+
+        try {
+          mostrarToast(`Enviando ${nums.length} pesadas a Google Sheets...`, "info");
+          await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'REGISTRAR_LOTE_TXT',
+              campana: campanaActiva,
+              cliente: c.nombre || clienteActivo,
+              tipo: destino,
+              pesos: nums,
+              precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+              fecha: obtenerFechaHoraSeleccionada()
+            })
+          });
+          mostrarToast(`¡Éxito! ${nums.length} pesadas importadas en Sheets`, "exito");
+        } catch (err) {
+          mostrarToast("Guardado en la app", "aviso");
+        }
+        event.target.value = '';
+      };
+      reader.readAsText(file);
+    }
+
+    // ========================================================
+    // CRUD: EDITAR Y ELIMINAR PESADA
+    // ========================================================
+    function editarItem(tipo, index) {
+      const c = database[campanaActiva][clienteActivo];
+      let lista = c.tara;
+      let label = 'Tara Inicial';
+      if (tipo === 'CON_POLLOS') { lista = c.pollos; label = 'Con Pollos'; }
+      else if (tipo === 'TARA_SOBRANTE') { lista = c.sobrante; label = 'Tara Sobrante'; }
+
+      const valorActual = lista[index];
+      abrirCustomModal({
+        titulo: `Editar Pesada #${index + 1}`,
+        subtitulo: `Modificar valor de ${label}`,
+        htmlBody: `Ingrese el nuevo peso en kilogramos:`,
+        esInput: true,
+        valorInput: valorActual.toString(),
+        textoBtn: 'Guardar',
+        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        onConfirm: (val) => {
+          const num = parseFloat(val.replace(',', '.'));
+          if (isNaN(num) || num <= 0) {
+            mostrarToast("El peso ingresado no es válido", "error");
+            return;
+          }
+          lista[index] = num;
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast(`Pesada #${index + 1} actualizada a ${num} kg`, "exito");
+        }
+      });
+    }
+
     function eliminarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
       if (tipo === 'TARA') c.tara.splice(index, 1);
@@ -730,21 +852,42 @@
       const tT = document.getElementById('tablaTaraBody');
       tT.innerHTML = '';
       c.tara.forEach((val, i) => {
-        tT.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-amber-300">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
+        tT.innerHTML += `<tr>
+          <td class="p-1 text-slate-500">${i+1}</td>
+          <td class="p-1 text-amber-300">${val.toFixed(2)}</td>
+          <td class="p-1 flex items-center justify-center gap-1">
+            <button onclick="editarItem('TARA', ${i})" class="text-amber-400 font-bold hover:text-amber-300">✏️</button>
+            <button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
+          </td>
+        </tr>`;
       });
 
       // 2. CON POLLOS
       const tP = document.getElementById('tablaPollosBody');
       tP.innerHTML = '';
       c.pollos.forEach((val, i) => {
-        tP.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-sky-300">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
+        tP.innerHTML += `<tr>
+          <td class="p-1 text-slate-500">${i+1}</td>
+          <td class="p-1 text-sky-300">${val.toFixed(2)}</td>
+          <td class="p-1 flex items-center justify-center gap-1">
+            <button onclick="editarItem('CON_POLLOS', ${i})" class="text-sky-400 font-bold hover:text-sky-300">✏️</button>
+            <button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
+          </td>
+        </tr>`;
       });
 
       // 3. TARA SOBRANTE
       const tS = document.getElementById('tablaSobranteBody');
       tS.innerHTML = '';
       c.sobrante.forEach((val, i) => {
-        tS.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-rose-300 font-semibold">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
+        tS.innerHTML += `<tr>
+          <td class="p-1 text-slate-500">${i+1}</td>
+          <td class="p-1 text-rose-300 font-semibold">${val.toFixed(2)}</td>
+          <td class="p-1 flex items-center justify-center gap-1">
+            <button onclick="editarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✏️</button>
+            <button onclick="eliminarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
+          </td>
+        </tr>`;
       });
 
       recalcularTotales();
