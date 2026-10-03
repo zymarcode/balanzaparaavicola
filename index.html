@@ -31,7 +31,7 @@
   <!-- TOASTS -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- MODAL INTERACTIVO -->
+  <!-- MODAL DINÁMICO (PARA EDITAR, CREAR O CONFIRMAR) -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
@@ -85,13 +85,21 @@
         </button>
       </div>
 
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-slate-300 font-bold hidden sm:inline">Campaña:</span>
-        <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
+      <!-- GESTIÓN COMPLETA DE CAMPAÑA (SELECTOR, EDITAR Y CREAR NUEVA) -->
+      <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+        <span class="text-xs text-slate-400 font-bold hidden sm:inline pl-1">Campaña:</span>
+        <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none">
           <option value="Campana_1">Campaña 1</option>
           <option value="Campana_2">Campaña 2</option>
         </select>
-        <button onclick="abrirModalNuevaCampana()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2.5 py-1.5 rounded-xl text-xs font-black shadow transition">
+        
+        <!-- BOTÓN PARA EDITAR / RENOMBRAR LA CAMPAÑA ACTIVA -->
+        <button onclick="abrirModalEditarCampana()" title="Renombrar la campaña actual" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-xl text-xs transition border border-slate-700">
+          ✏️
+        </button>
+
+        <!-- BOTÓN PARA CREAR NUEVA CAMPAÑA -->
+        <button onclick="abrirModalNuevaCampana()" title="Crear nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2.5 py-1.5 rounded-xl text-xs font-black shadow transition">
           + Nueva
         </button>
       </div>
@@ -130,7 +138,6 @@
 
       <!-- FECHA/HORA Y NOTA GENERAL INDEPENDIENTE -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-        <!-- Control Fecha y Hora -->
         <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="text-slate-400 font-semibold flex items-center gap-1">🕒 Fecha y Hora de Registro:</span>
@@ -145,7 +152,6 @@
           <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-amber-400 font-mono">
         </div>
 
-        <!-- Nota / Observación General -->
         <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1">
             <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación Independiente:</label>
@@ -481,13 +487,13 @@
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v7')) || {
+    let database = JSON.parse(localStorage.getItem('avicola_db_v8')) || {
       'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
       'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v7', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v8', JSON.stringify(database));
     }
 
     function aplicarConfiguracionMarca() {
@@ -531,6 +537,66 @@
           localStorage.setItem('avicola_brand', JSON.stringify(brandConfig));
           aplicarConfiguracionMarca();
           mostrarToast('Marca actualizada con éxito', 'exito');
+        }
+      });
+    }
+
+    // ========================================================
+    // MODAL EDITAR / RENOMBRAR CAMPAÑA
+    // ========================================================
+    function abrirModalEditarCampana() {
+      const nombreActual = campanaActiva.replace(/_/g, ' ');
+      abrirCustomModal({
+        titulo: 'Editar Nombre de Campaña',
+        subtitulo: `Modificar identificador de ${nombreActual}`,
+        htmlBody: `Ingrese el nuevo nombre para la campaña activa:`,
+        esInput: true,
+        valorInput: nombreActual,
+        textoBtn: 'Guardar y Renombrar',
+        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        onConfirm: async (nuevoNombre) => {
+          if (!nuevoNombre || nuevoNombre.trim() === '') {
+            mostrarToast("El nombre de la campaña no puede estar vacío", "error");
+            return;
+          }
+
+          const nuevoId = nuevoNombre.trim().replace(/\s+/g, '_');
+          if (nuevoId === campanaActiva) {
+            mostrarToast("El nombre es el mismo", "info");
+            return;
+          }
+
+          if (database[nuevoId]) {
+            mostrarToast("Ya existe una campaña con ese nombre", "aviso");
+            return;
+          }
+
+          const nombreAntiguoId = campanaActiva;
+          database[nuevoId] = database[nombreAntiguoId];
+          delete database[nombreAntiguoId];
+
+          guardarEnLocalStorage();
+          campanaActiva = nuevoId;
+          cargarSelectorCampanas();
+          seleccionarCampana();
+          mostrarToast(`Campaña renombrada a "${nuevoNombre.trim()}"`, "exito");
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'RENOMBRAR_CAMPANA',
+                nombreAntiguo: nombreAntiguoId,
+                nombreNuevo: nuevoId,
+                precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+              })
+            });
+            mostrarToast("Pestaña renombrada en Google Sheets", "exito");
+          } catch(e) {
+            mostrarToast("Renombrada en la app local", "aviso");
+          }
         }
       });
     }
@@ -600,7 +666,7 @@
       abrirCustomModal({
         titulo: `Editar Pesada #${index + 1}`,
         subtitulo: `Modificar valor de ${tipo === 'TARA' ? 'Tara' : 'Con Pollos'}`,
-        htmlBody: `Ingrese el nuevo peso corregido en kilogramos:`,
+        htmlBody: `Ingrese el nuevo peso en kilogramos:`,
         esInput: true,
         valorInput: valorActual.toString(),
         textoBtn: 'Guardar Corrección',
@@ -656,12 +722,12 @@
       });
     }
 
-    // LIMPIEZA DE TABLAS DE LA CAMPAÑA
+    // LIMPIAR TABLAS
     function confirmarLimpiezaTotal() {
       abrirCustomModal({
         titulo: '⚠️ Limpiar Tablas de Campaña',
         subtitulo: 'Reinicio de Filas en Pantalla y Sheets',
-        htmlBody: `Esta acción vaciará las pesadas de <b>${campanaActiva.replace('_', ' ')}</b>.<br><br><span class="text-rose-400 font-bold">¿Desea proceder?</span>`,
+        htmlBody: `Esta acción vaciará las pesadas de <b>${campanaActiva.replace(/_/g, ' ')}</b>.<br><br><span class="text-rose-400 font-bold">¿Desea proceder?</span>`,
         textoBtn: 'Sí, Limpiar',
         colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
         onConfirm: async () => {
@@ -683,6 +749,7 @@
       });
     }
 
+    // CREAR NUEVA CAMPAÑA
     function abrirModalNuevaCampana() {
       const num = Object.keys(database).length + 1;
       abrirCustomModal({
@@ -711,7 +778,7 @@
       mostrarToast('Sincronizando y recalculando datos...', 'info');
       recalcularTotales();
       renderizarTablas();
-      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
+      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
       try {
         const cData = database[campanaActiva];
         await fetch(APPS_SCRIPT_URL, {
@@ -755,17 +822,12 @@
       }
     }
 
-    // CAPTURA ESTRICTA DE FECHA/HORA (AUTOMÁTICA O MANUAL)
     function obtenerFechaHoraSeleccionada() {
-      if (modoFechaActual === 'auto') {
-        return new Date().toLocaleString('es-PE');
-      } else {
-        const val = document.getElementById('inputFechaManual').value;
-        if (!val) return new Date().toLocaleString('es-PE');
-        // Convertir formato input datetime-local a string legible
-        const d = new Date(val);
-        return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE');
-      }
+      if (modoFechaActual === 'auto') return new Date().toLocaleString('es-PE');
+      const val = document.getElementById('inputFechaManual').value;
+      if (!val) return new Date().toLocaleString('es-PE');
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE');
     }
 
     window.onload = () => {
@@ -801,7 +863,7 @@
       Object.keys(database).forEach(cId => {
         const opt = document.createElement('option');
         opt.value = cId;
-        opt.innerText = cId.replace('_', ' ');
+        opt.innerText = cId.replace(/_/g, ' ');
         sel.appendChild(opt);
       });
       sel.value = campanaActiva;
@@ -817,8 +879,8 @@
       document.getElementById('txtGalpon').value = cData.galpon || '';
       document.getElementById('txtPrecio').value = cData.precio || '4.10';
       document.getElementById('txtNotaGeneral').value = cData.nota || '';
-      document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace('_', ' ');
-      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
+      document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace(/_/g, ' ');
+      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
       renderizarTablas();
     }
 
@@ -832,7 +894,6 @@
       guardarNotaGeneralEnSheets();
     }
 
-    // GUARDAR NOTA CON FECHA Y HORA EN COLUMNAS INDEPENDIENTES (L Y M)
     async function guardarNotaGeneralEnSheets() {
       const cData = database[campanaActiva];
       cData.nota = document.getElementById('txtNotaGeneral').value;
@@ -857,7 +918,7 @@
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
           })
         });
-        mostrarToast('Nota guardada en columna independiente de Sheets', 'exito');
+        mostrarToast('Nota guardada en columnas L y M de Sheets', 'exito');
       } catch (e) {
         mostrarToast('Nota guardada localmente', 'aviso');
       } finally {
@@ -991,7 +1052,6 @@
     function renderizarTablas() {
       const cData = database[campanaActiva];
 
-      // Tabla TARA
       const tTara = document.getElementById('tablaTaraBody');
       tTara.innerHTML = '';
       cData.tara.forEach((val, i) => {
@@ -1008,7 +1068,6 @@
         tTara.appendChild(tr);
       });
 
-      // Tabla CON POLLOS
       const tPollos = document.getElementById('tablaPollosBody');
       tPollos.innerHTML = '';
       cData.pollos.forEach((val, i) => {
@@ -1085,7 +1144,7 @@
         feedback.innerText = "✅ ¡Ticket PDF guardado en 'PDFs_Tickets' de Drive!";
         mostrarToast("PDF guardado en Google Drive", "exito");
       } catch (err) {
-        feedback.innerText = "⚠️ Error al conectar con Drive";
+        feedback.innerText = "⚠️️ Error al conectar con Drive";
         mostrarToast("Error al conectar con Drive", "error");
       } finally {
         btn.innerText = "☁️ Guardar PDF en Drive";
@@ -1103,7 +1162,7 @@
       const soles = neto * precio;
 
       document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
-      document.getElementById('tktCampana').innerText = campanaActiva.replace('_', ' ');
+      document.getElementById('tktCampana').innerText = campanaActiva.replace(/_/g, ' ');
       document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
       document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
@@ -1137,7 +1196,7 @@
 
         facturacionTotal += total; kilosNetosGlobal += sNeto; totalTaraGlobal += sTara; totalBrutoGlobal += sBruto;
 
-        const nombreCampana = cId.replace('_', ' ');
+        const nombreCampana = cId.replace(/_/g, ' ');
         labels.push(nombreCampana);
         dataNetos.push(parseFloat(sNeto.toFixed(2)));
         dataTaras.push(parseFloat(sTara.toFixed(2)));
@@ -1207,9 +1266,7 @@
       if (panel.classList.contains('hidden')) {
         panel.classList.remove('hidden');
         try {
-          streamVideo = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } }
-          });
+          streamVideo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } });
           document.getElementById('videoCamara').srcObject = streamVideo;
         } catch (e) {
           mostrarToast("No se pudo acceder a la cámara", "error");
