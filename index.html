@@ -29,50 +29,23 @@
       background: #faf8eb; 
       box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
     }
-    input, select, textarea { 
-      font-size: 16px !important; 
-    }
-    .modal-backdrop { 
-      background-color: rgba(0, 0, 0, 0.8); 
-      backdrop-filter: blur(6px); 
-    }
-    @keyframes slideDown { 
-      from { transform: translateY(-16px); opacity: 0; } 
-      to { transform: translateY(0); opacity: 1; } 
-    }
-    .animate-slide-down { 
-      animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-    }
-    @keyframes toastIn { 
-      from { transform: translateY(20px); opacity: 0; } 
-      to { transform: translateY(0); opacity: 1; } 
-    }
-    .animate-toast { 
-      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
-    }
-    ::-webkit-scrollbar {
-      width: 5px;
-      height: 5px;
-    }
-    ::-webkit-scrollbar-track {
-      background: #090d16;
-    }
-    ::-webkit-scrollbar-thumb {
-      background: #1e293b;
-      border-radius: 4px;
-    }
-    ::-webkit-scrollbar-thumb:hover {
-      background: #334155;
-    }
+    input, select, textarea { font-size: 16px !important; }
+    .modal-backdrop { background-color: rgba(0, 0, 0, 0.8); backdrop-filter: blur(6px); }
+    @keyframes slideDown { from { transform: translateY(-16px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-slide-down { animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-toast { animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
 
-  <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
   <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
-  <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
+  <!-- MODAL DE DIÁLOGO -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
@@ -101,11 +74,10 @@
     </div>
   </div>
 
-  <!-- CABECERA PRINCIPAL -->
+  <!-- CABECERA -->
   <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-40 shadow-lg">
     <div class="w-full max-w-[1920px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
       
-      <!-- Logo e Identidad -->
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2.5 min-w-0">
           <div id="headerLogoContainer" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 shrink-0">
@@ -117,15 +89,14 @@
           </div>
         </div>
 
-        <!-- Botones Mobile -->
         <div class="flex md:hidden items-center gap-1.5 shrink-0">
           <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
+          <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Recargar de Sheets">🔄</button>
           <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
         </div>
       </div>
       
-      <!-- Controles Desktop & Selector Campaña -->
       <div class="flex flex-wrap items-center justify-between md:justify-end gap-2 w-full md:w-auto">
         <div class="hidden md:flex items-center gap-2 shrink-0">
           <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow transition">
@@ -134,37 +105,36 @@
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition">
             📊 Dashboard & Gráficos
           </button>
-          <button onclick="abrirAjustesMarca()" title="Personalizar Título y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
-            ⚙️ Marca
+          <button onclick="sincronizarDesdeGoogleSheets()" title="Cargar y recuperar campañas guardadas en Google Sheets" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600 transition flex items-center gap-1">
+            🔄 Cargar de Sheets
+          </button>
+          <button onclick="abrirAjustesMarca()" title="Personalizar Marca" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
+            ⚙️
           </button>
         </div>
 
-        <!-- Selector de Campaña -->
         <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
           <span class="text-[10px] sm:text-xs text-slate-400 font-bold pl-1.5 shrink-0">Campaña:</span>
           <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-lg px-2 py-1 outline-none min-w-0 flex-1 sm:flex-initial">
             <option value="Campana_1">Campaña 1</option>
-            <option value="Campana_2">Campaña 2</option>
           </select>
           <button onclick="abrirModalEditarCampana()" title="Renombrar campaña" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-lg text-xs border border-slate-700 shrink-0">✏️</button>
           <button onclick="abrirModalNuevaCampana()" title="Nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2 py-1 rounded-lg text-xs font-black transition shrink-0">+ Nueva</button>
-          <button onclick="confirmarEliminarCampana()" title="Eliminar campaña completa" class="p-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition shrink-0">🗑️</button>
+          <button onclick="confirmarEliminarCampana()" title="Eliminar campaña" class="p-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition shrink-0">🗑️</button>
         </div>
       </div>
 
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL FLUIDO -->
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA MULTICOMPRADOR DENTRO DE LA CAMPAÑA -->
+    <!-- BARRA MULTICOMPRADOR -->
     <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
       <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
         <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
           <option value="Cliente_A">Comprador A</option>
-          <option value="Cliente_B">Comprador B</option>
         </select>
         <button onclick="abrirModalNuevoCliente()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0">
           + Cliente
@@ -191,22 +161,19 @@
     <!-- VISTA 1: REGISTRO DE PESAJE -->
     <div id="vistaPesaje" class="space-y-3 sm:space-y-4">
 
-      <!-- FECHA/HORA Y NOTA GENERAL -->
+      <!-- FECHA/HORA Y NOTA -->
       <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
-        <!-- Control Fecha y Hora (Modo Auto vs Manual) -->
         <div class="sm:col-span-5 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora del Lote y Ticket:</span>
+            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora:</span>
             <div class="flex items-center gap-1">
               <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Auto</button>
               <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
             </div>
           </div>
-          <!-- Visualización en vivo para modo automático -->
           <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 truncate">
             <span id="txtRelojEnVivo">Cargando...</span>
           </div>
-          <!-- Input datetime-local para modo manual -->
           <input id="inputFechaManual" type="datetime-local" onchange="actualizarFechaManualEnTicket()" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white outline-none font-mono">
         </div>
 
@@ -224,11 +191,11 @@
       <!-- BARRA DE ACCIONES -->
       <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
         <span class="text-slate-400 text-[11px] font-semibold pl-1 truncate">
-          Lote: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
+          Lote Activo: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
         </span>
         <div class="flex items-center gap-2">
-          <button onclick="actualizarSistema()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold rounded-lg text-xs active:scale-95 transition">
-            🔄 Recalcular
+          <button onclick="sincronizarDesdeGoogleSheets()" class="px-2.5 py-1 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold rounded-lg text-xs active:scale-95 transition">
+            🔄 Traer de Sheets
           </button>
           <button onclick="confirmarLimpiezaTotal()" class="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition">
             ⚠️ Limpiar Tablas
@@ -241,7 +208,6 @@
 
         <!-- DISPLAY BALANZA -->
         <div class="lg:col-span-5 bg-slate-900 border-2 border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-3">
-          
           <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
             <span class="flex items-center gap-1.5 text-emerald-400 font-mono font-bold text-[11px] sm:text-xs">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> BALANZA ACTIVA
@@ -281,7 +247,6 @@
             </button>
           </div>
 
-          <!-- SELECTOR DE FASE -->
           <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
             <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
               📦 1. TARA INI
@@ -299,7 +264,7 @@
           </button>
         </div>
 
-        <!-- 3 TABLAS PARALELAS + LIQUIDACIÓN -->
+        <!-- 3 TABLAS PARALELAS CON IMPORTACIÓN TXT -->
         <div class="lg:col-span-7 space-y-3 sm:space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -310,8 +275,6 @@
                 <span class="text-[10px] sm:text-[11px] font-black uppercase text-amber-400 truncate">📦 TARA INICIAL</span>
                 <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white shrink-0">0 kg</span>
               </div>
-
-              <!-- BOTÓN TXT TARA -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                 <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
                 <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
@@ -319,7 +282,6 @@
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
                 </label>
               </div>
-
               <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-amber-950/70 text-amber-300 sticky top-0 text-[10px]">
@@ -330,14 +292,12 @@
               </div>
             </div>
 
-            <!-- 2. CON POLLOS (BRUTO) -->
+            <!-- 2. CON POLLOS -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5 min-w-0">
               <div class="flex justify-between items-center pb-1 border-b border-slate-800">
                 <span class="text-[10px] sm:text-[11px] font-black uppercase text-sky-400 truncate">🍗 CON POLLOS</span>
                 <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white shrink-0">0 kg</span>
               </div>
-
-              <!-- BOTÓN TXT POLLOS -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                 <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
                 <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
@@ -345,7 +305,6 @@
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
                 </label>
               </div>
-
               <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-sky-950/70 text-sky-300 sticky top-0 text-[10px]">
@@ -356,14 +315,12 @@
               </div>
             </div>
 
-            <!-- 3. TARA SOBRANTE (RESTANTE / DEVOLUCIÓN) -->
+            <!-- 3. TARA SOBRANTE -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5 min-w-0">
               <div class="flex justify-between items-center pb-1 border-b border-slate-800">
                 <span class="text-[10px] sm:text-[11px] font-black uppercase text-rose-400 truncate">🔄 SOBRANTE (-)</span>
                 <span id="badgeSubtotalSobrante" class="text-xs font-mono font-bold text-rose-300 shrink-0">0 kg</span>
               </div>
-
-              <!-- BOTÓN TXT SOBRANTE -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
                 <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
                 <label class="cursor-pointer bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
@@ -371,7 +328,6 @@
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA_SOBRANTE')">
                 </label>
               </div>
-
               <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-rose-950/70 text-rose-300 sticky top-0 text-[10px]">
@@ -384,7 +340,7 @@
 
           </div>
 
-          <!-- PANEL DE LIQUIDACIÓN EXACTA -->
+          <!-- PANEL DE LIQUIDACIÓN -->
           <section class="bg-slate-900 border-2 border-emerald-500/50 p-3 sm:p-4 rounded-3xl space-y-3 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300 uppercase tracking-wider truncate">
@@ -393,7 +349,6 @@
               <span class="text-slate-400 text-[10px] sm:text-[11px] font-mono shrink-0" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
 
-            <!-- TARJETAS DE TOTALES -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
               <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800 min-w-0">
                 <span class="text-[9px] sm:text-[10px] text-slate-400 block font-sans truncate">Tara Neta Usada</span>
@@ -417,7 +372,6 @@
               </div>
             </div>
 
-            <!-- TOTAL A COBRAR DESTACADO -->
             <div class="bg-emerald-950/40 border border-emerald-500/60 p-2.5 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
               <div>
                 <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR A ESTE CLIENTE</span>
@@ -428,13 +382,12 @@
               </div>
             </div>
 
-            <!-- BOTONES DE SALIDA -->
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition text-center truncate">
                 🧾 Ver Ticket
               </button>
               <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs font-bold text-white transition text-center truncate">
-                ☁️ Guardar en Drive
+                ☁️️ Guardar en Drive
               </button>
             </div>
             <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3 truncate"></div>
@@ -444,7 +397,7 @@
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y GRÁFICOS ESTADÍSTICOS -->
+    <!-- VISTA 2: DASHBOARD Y GRÁFICOS -->
     <div id="vistaDashboard" class="hidden space-y-4">
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
@@ -477,9 +430,8 @@
         </div>
       </section>
 
-      <!-- GRÁFICOS ESTADÍSTICOS CHART.JS -->
+      <!-- GRÁFICOS CHART.JS -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-        <!-- Gráfico 1: Kilos Netos vs Tara por Comprador -->
         <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
@@ -492,7 +444,6 @@
           </div>
         </div>
 
-        <!-- Gráfico 2: Facturación en Soles por Comprador -->
         <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
@@ -506,7 +457,7 @@
         </div>
       </section>
 
-      <!-- TABLA RESUMEN POR COMPRADOR -->
+      <!-- TABLA RESUMEN -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-6 shadow-xl space-y-3">
         <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-2.5">
           👥 Resumen por Comprador en la Campaña Activa
@@ -532,14 +483,13 @@
 
   </main>
 
-  <!-- MODAL TICKET TÉRMICO CON FECHA Y HORA SINCRONIZADA -->
+  <!-- MODAL TICKET TÉRMICO -->
   <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5 animate-slide-down">
       <button onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
         <h3 id="tktTituloMarca" class="font-black text-sm uppercase">Granja Avícola</h3>
         <p class="text-[10px] text-slate-600">Comprobante de Carguío Individual</p>
-        <!-- FECHA Y HORA SINCRONIZADA ESTRICTA -->
         <p id="tktFecha" class="text-[10px] text-slate-800 font-bold mt-0.5 tracking-tight"></p>
       </div>
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
@@ -574,10 +524,10 @@
     // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    let tipoActual = 'TARA'; // 'TARA', 'CON_POLLOS', 'TARA_SOBRANTE'
+    let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
     let clienteActivo = 'Cliente_A';
-    let modoFechaActual = 'auto'; // 'auto' o 'manual'
+    let modoFechaActual = 'auto';
 
     let chartKilosInstance = null;
     let chartSolesInstance = null;
@@ -588,15 +538,65 @@
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v13')) || {
-      'Campana_1': {
-        'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' },
-        'Cliente_B': { nombre: 'Comprador B', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+    // Función para rescatar datos locales de versiones previas si existen
+    function recuperarDatosPrevios() {
+      const posiblesClaves = ['avicola_db_v13', 'avicola_db_v12', 'avicola_db_v11', 'avicola_db_v10', 'avicola_db_v9', 'avicola_db_v8', 'avicola_db_v7', 'avicola_db_v6', 'avicola_db_v5', 'avicola_db_v4', 'avicola_db_v3'];
+      for (let k of posiblesClaves) {
+        let guardado = localStorage.getItem(k);
+        if (guardado) {
+          try {
+            let parsed = JSON.parse(guardado);
+            if (Object.keys(parsed).length > 0) return parsed;
+          } catch(e){}
+        }
       }
-    };
+      return {
+        'Campana_1': {
+          'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+        }
+      };
+    }
+
+    let database = JSON.parse(localStorage.getItem('avicola_db_v14')) || recuperarDatosPrevios();
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v13', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v14', JSON.stringify(database));
+    }
+
+    // ========================================================
+    // SINCRONIZACIÓN AUTOMÁTICA DESDE GOOGLE SHEETS
+    // ========================================================
+    async function sincronizarDesdeGoogleSheets() {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
+        mostrarToast("Pegue su URL de Apps Script para sincronizar", "aviso");
+        return;
+      }
+
+      mostrarToast("Conectando con Google Sheets...", "info");
+      try {
+        const resp = await fetch(APPS_SCRIPT_URL);
+        const data = await resp.json();
+
+        if (data && data.success && data.data && Object.keys(data.data).length > 0) {
+          // Fusionar datos de Google Sheets en la base de datos local
+          Object.keys(data.data).forEach(cId => {
+            if (!database[cId]) database[cId] = {};
+            const clientesDeSheet = data.data[cId];
+            Object.keys(clientesDeSheet).forEach(cliKey => {
+              database[cId][cliKey] = clientesDeSheet[cliKey];
+            });
+          });
+
+          guardarEnLocalStorage();
+          cargarSelectorCampanas();
+          seleccionarCampana();
+          mostrarToast("✅ ¡Campañas y pesadas recuperadas de Google Sheets!", "exito");
+        } else {
+          mostrarToast("Sincronizado (sin datos nuevos en Sheets)", "info");
+        }
+      } catch (err) {
+        mostrarToast("No se pudo conectar a Sheets. Mostrando datos locales", "aviso");
+      }
     }
 
     function aplicarConfiguracionMarca() {
@@ -638,9 +638,7 @@
       });
     }
 
-    // ========================================================
-    // GESTIÓN DE FECHA / HORA ESTRICTA (AUTO O MANUAL)
-    // ========================================================
+    // FECHA Y HORA
     setInterval(() => {
       if (modoFechaActual === 'auto') {
         const d = new Date();
@@ -662,36 +660,28 @@
         bMan.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
         cAuto.classList.remove('hidden');
         iMan.classList.add('hidden');
-        mostrarToast("Modo fecha/hora: Automático en vivo", "info");
+        mostrarToast("Modo fecha: Automático", "info");
       } else {
         bMan.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
         bAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
         cAuto.classList.add('hidden');
         iMan.classList.remove('hidden');
-
-        // Precargar fecha actual en selector manual si está vacío
         if (!iMan.value) {
           const now = new Date();
-          const offset = now.getTimezoneOffset() * 60000;
-          iMan.value = (new Date(now - offset)).toISOString().slice(0, 16);
+          iMan.value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
         }
-        mostrarToast("Modo fecha/hora: Manual activado", "info");
+        mostrarToast("Modo fecha: Manual", "info");
       }
     }
 
-    // RETORNA EXACTAMENTE LA FECHA/HORA SELECCIONADA
     function obtenerFechaHoraSeleccionada() {
       if (modoFechaActual === 'auto') {
         return new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
       } else {
         const val = document.getElementById('inputFechaManual').value;
-        if (!val) {
-          return new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
-        }
-        // Formatear valor del input datetime-local a string legible
+        if (!val) return new Date().toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
         const d = new Date(val);
-        if (isNaN(d.getTime())) return val.replace('T', ' ');
-        return d.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
+        return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'medium' });
       }
     }
 
@@ -700,27 +690,25 @@
       if (tktF) tktF.innerText = obtenerFechaHoraSeleccionada();
     }
 
-    // ELIMINAR CAMPAÑA COMPLETA
+    // ELIMINAR CAMPAÑA
     function confirmarEliminarCampana() {
       const nombreC = campanaActiva.replace(/_/g, ' ');
       abrirCustomModal({
         titulo: '⚠️ ¿Borrar Campaña Completa?',
         subtitulo: `Eliminación de ${nombreC}`,
-        htmlBody: `Se eliminarán <b>todos los compradores, pesadas, taras y notas</b> de la <b>${nombreC}</b>.<br><br><span class="text-rose-400 font-bold">* Se borrarán también las pestañas en Google Sheets.</span>`,
+        htmlBody: `Se eliminarán <b>todas las pesadas y clientes</b> de la <b>${nombreC}</b>.<br><br><span class="text-rose-400 font-bold">* Se borrarán también las pestañas en Google Sheets.</span>`,
         textoBtn: 'Sí, Borrar Todo',
         colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
         onConfirm: async () => {
           const campanaABorrarId = campanaActiva;
           delete database[campanaABorrarId];
 
-          const llavesRestantes = Object.keys(database);
-          if (llavesRestantes.length === 0) {
-            database['Campana_1'] = {
-              'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
-            };
+          const llaves = Object.keys(database);
+          if (llaves.length === 0) {
+            database['Campana_1'] = { 'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
             campanaActiva = 'Campana_1';
           } else {
-            campanaActiva = llavesRestantes[0];
+            campanaActiva = llaves[0];
           }
 
           guardarEnLocalStorage();
@@ -733,20 +721,14 @@
               method: 'POST',
               mode: 'no-cors',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'ELIMINAR_CAMPANA_COMPLETA',
-                campanaABorrar: campanaABorrarId
-              })
+              body: JSON.stringify({ action: 'ELIMINAR_CAMPANA_COMPLETA', campanaABorrar: campanaABorrarId })
             });
-            mostrarToast("Pestañas eliminadas en Sheets", "exito");
-          } catch(e) {
-            mostrarToast("Eliminado localmente", "info");
-          }
+          } catch(e){}
         }
       });
     }
 
-    // TOASTS
+    // TOASTS Y MODAL
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -841,7 +823,7 @@
       abrirCustomModal({
         titulo: 'Nuevo Comprador',
         subtitulo: 'Agregar a la campaña',
-        htmlBody: 'Ingrese el nombre o identificación del comprador:',
+        htmlBody: 'Ingrese el nombre del comprador:',
         esInput: true,
         valorInput: `Comprador ${String.fromCharCode(64 + num)}`,
         textoBtn: 'Crear',
@@ -1205,7 +1187,6 @@
       }
     }
 
-    // ABRIR TICKET CON FECHA Y HORA SINCRONIZADA
     function abrirTicketTermico() {
       const c = database[campanaActiva][clienteActivo];
       const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
@@ -1216,10 +1197,7 @@
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
 
-      // SINCRONIZACIÓN EXACTA DE FECHA Y HORA (MANUAL O AUTOMÁTICA)
-      const fechaParaTicket = obtenerFechaHoraSeleccionada();
-      document.getElementById('tktFecha').innerText = fechaParaTicket;
-
+      document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
       document.getElementById('tktCampana').innerText = campanaActiva.replace(/_/g, ' ');
       document.getElementById('tktCliente').innerText = c.nombre || clienteActivo;
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
@@ -1239,9 +1217,6 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
-    // ========================================================
-    // DASHBOARD & GRÁFICOS CHART.JS
-    // ========================================================
     function renderizarDashboard() {
       let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraUsadaGlobal = 0;
       const clientes = database[campanaActiva] || {};
@@ -1295,7 +1270,6 @@
     }
 
     function actualizarGraficos(labels, netos, taras, soles) {
-      // 1. Gráfico de Kilos Netos vs Tara Usada
       const ctxKilos = document.getElementById('chartKilos').getContext('2d');
       if (chartKilosInstance) chartKilosInstance.destroy();
       chartKilosInstance = new Chart(ctxKilos, {
@@ -1334,7 +1308,6 @@
         }
       });
 
-      // 2. Gráfico de Facturación Total en Soles
       const ctxSoles = document.getElementById('chartSoles').getContext('2d');
       if (chartSolesInstance) chartSolesInstance.destroy();
       chartSolesInstance = new Chart(ctxSoles, {
@@ -1534,16 +1507,12 @@
       });
     }
 
-    function actualizarSistema() {
-      recalcularTotales();
-      renderizarTablas();
-      mostrarToast('Datos recalculados', 'exito');
-    }
-
     window.onload = () => {
       aplicarConfiguracionMarca();
       cargarSelectorCampanas();
       seleccionarCampana();
+      // Conectar automáticamente a Google Sheets al abrir la página
+      sincronizarDesdeGoogleSheets();
     };
   </script>
 </body>
