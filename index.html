@@ -220,7 +220,7 @@
               <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-emerald-500/40">
                 <div class="relative flex-1">
                   <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-                  <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-transparent text-emerald-400 font-bold text-xs sm:text-sm pl-6 pr-1 py-1 outline-none text-right">
+                  <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="autoGuardarPrecioEnCaliente(); recalcularTotales()" class="w-full bg-transparent text-emerald-400 font-bold text-xs sm:text-sm pl-6 pr-1 py-1 outline-none text-right">
                 </div>
                 <button type="button" onclick="guardarPrecioExclusivoEnSheets()" id="btnGuardarPrecioExclusivo" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-lg transition shadow shrink-0">
                   💾 Fijar
@@ -521,7 +521,7 @@
             ☁️ Guardar en Drive
           </button>
         </div>
-        <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3 truncate"></div>
+        <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 min-h-[1rem] truncate"></div>
 
       </div>
 
@@ -626,6 +626,22 @@
     </section>
 
   </main>
+
+  <!-- FOOTER: REDES SOCIALES -->
+  <footer class="w-full max-w-[1920px] mx-auto px-3 sm:px-6 py-4 border-t border-slate-800 no-imprimir">
+    <div class="flex flex-col sm:flex-row items-center justify-between gap-3">
+      <p class="text-[11px] text-slate-500 text-center sm:text-left">
+        © <span id="footerAnio"></span> <span id="footerMarca">Control Galpón IoT</span> · Síguenos en nuestras redes
+      </p>
+      <div class="flex flex-wrap items-center justify-center gap-2">
+        <a data-red="whatsapp" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-emerald-500 text-xs font-bold text-slate-300 hover:text-emerald-300 transition flex items-center gap-1.5">💬 WhatsApp</a>
+        <a data-red="youtube" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-red-500 text-xs font-bold text-slate-300 hover:text-red-300 transition flex items-center gap-1.5">▶️ YouTube</a>
+        <a data-red="tiktok" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-pink-500 text-xs font-bold text-slate-300 hover:text-pink-300 transition flex items-center gap-1.5">🎵 TikTok</a>
+        <a data-red="instagram" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-fuchsia-500 text-xs font-bold text-slate-300 hover:text-fuchsia-300 transition flex items-center gap-1.5">📸 Instagram</a>
+        <a data-red="telegram" href="#" target="_blank" rel="noopener noreferrer" class="px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 hover:border-sky-500 text-xs font-bold text-slate-300 hover:text-sky-300 transition flex items-center gap-1.5">✈️ Telegram</a>
+      </div>
+    </div>
+  </footer>
 
   <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES (BOTTOM NAV) -->
   <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-2 py-1.5 flex items-center justify-around z-40 no-imprimir shadow-2xl">
@@ -821,7 +837,28 @@
     // ========================================================
     // PEGA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
     // ========================================================
-    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
+    const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwoh-zxh5YKP3RWwFBwXDfg-RtNiyEOQl0PZT9GE-fUUa2dvybZ17FPH86G3OxHkfMB/exec";
+
+    // ========================================================
+    // REDES SOCIALES DEL FOOTER: cambia aquí tus enlaces reales
+    // ========================================================
+    const REDES_SOCIALES = {
+      whatsapp: "https://wa.me/51999999999",
+      youtube: "https://www.youtube.com/@tucanal",
+      tiktok: "https://www.tiktok.com/@tuusuario",
+      instagram: "https://www.instagram.com/tuusuario",
+      telegram: "https://t.me/tuusuario"
+    };
+
+    function aplicarRedesSociales() {
+      document.querySelectorAll('[data-red]').forEach(a => {
+        const url = REDES_SOCIALES[a.dataset.red];
+        if (url) a.href = url;
+        else a.classList.add('hidden');
+      });
+      const fa = document.getElementById('footerAnio');
+      if (fa) fa.innerText = new Date().getFullYear();
+    }
 
     let moduloActual = 'lotes';
     let tipoActual = 'TARA';
@@ -912,6 +949,18 @@
       const diaData = database[campanaActiva][clienteActivo].dias[jornadaActiva];
       if (diaData) {
         diaData.nota = txt.value;
+        guardarEnLocalStorage();
+      }
+    }
+
+    function autoGuardarPrecioEnCaliente() {
+      const txt = document.getElementById('txtPrecio');
+      if (!txt) return;
+      if (!database[campanaActiva] || !database[campanaActiva][clienteActivo]) return;
+      const diaData = database[campanaActiva][clienteActivo].dias[jornadaActiva];
+      const p = parseFloat(txt.value.replace(',', '.'));
+      if (diaData && !isNaN(p) && p > 0) {
+        diaData.precio = String(p);
         guardarEnLocalStorage();
       }
     }
@@ -1009,6 +1058,30 @@
       }
     }
 
+    // ENVÍO A GOOGLE SHEETS (lee la respuesta: solo confirma "guardado" si el servidor respondió success)
+    async function enviarASheets(payload) {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify(payload)
+      });
+      const json = await resp.json();
+      if (!json || !json.success) throw new Error((json && json.error) || 'Respuesta inválida');
+      return json;
+    }
+
+    // Fecha en formato yyyy-MM-dd HH:mm:ss (el que usa el backend) a partir del input manual
+    function obtenerFechaSheets() {
+      const val = document.getElementById('inputFechaManual').value || obtenerFechaIsoLocalActual();
+      return val.replace('T', ' ') + ':00';
+    }
+
+    // Convierte la fecha de Sheets a formato del input datetime-local (o null si no es reconocible)
+    function fechaSheetAIso(txt) {
+      const m = String(txt || '').match(/^(\d{4}-\d{2}-\d{2})[ T](\d{2}:\d{2})/);
+      return m ? `${m[1]}T${m[2]}` : null;
+    }
+
     // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
@@ -1032,17 +1105,24 @@
               const keyUnica = nombreNormalizado.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
 
               if (!database[cId][keyUnica]) {
-                database[cId][keyUnica] = {
-                  nombre: nombreNormalizado,
-                  dias: cliSheet.dias || {}
-                };
+                database[cId][keyUnica] = { nombre: nombreNormalizado, dias: {} };
               } else {
                 database[cId][keyUnica].nombre = nombreNormalizado;
                 if (!database[cId][keyUnica].dias) database[cId][keyUnica].dias = {};
-                Object.keys(cliSheet.dias || {}).forEach(dKey => {
-                  database[cId][keyUnica].dias[dKey] = cliSheet.dias[dKey];
-                });
               }
+              Object.keys(cliSheet.dias || {}).forEach(dKey => {
+                const diaSheet = cliSheet.dias[dKey];
+                const diaLocal = database[cId][keyUnica].dias[dKey];
+                if (diaLocal) {
+                  // Las pesadas siempre vienen de Sheets; precio, nota y fecha de cada entrega se conservan
+                  diaLocal.tara = diaSheet.tara;
+                  diaLocal.sobrante = diaSheet.sobrante;
+                  diaLocal.pollos = diaSheet.pollos;
+                } else {
+                  diaSheet.fechaHora = fechaSheetAIso(diaSheet.fechaHora) || obtenerFechaIsoLocalActual();
+                  database[cId][keyUnica].dias[dKey] = diaSheet;
+                }
+              });
             });
           });
 
@@ -1069,6 +1149,8 @@
       if (tktTit) tktTit.innerText = brandConfig.titulo;
       const repTit = document.getElementById('repMarcaTitulo');
       if (repTit) repTit.innerText = brandConfig.titulo;
+      const footMarca = document.getElementById('footerMarca');
+      if (footMarca) footMarca.innerText = brandConfig.titulo;
     }
 
     function abrirAjustesMarca() {
@@ -1136,18 +1218,13 @@
       btn.disabled = true;
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await enviarASheets({
             action: 'FIJAR_FECHA',
             campana: campanaActiva,
             cliente: c.nombre,
             jornada: jornadaActiva,
-            fecha: fechaExacta
-          })
-        });
+            fecha: obtenerFechaSheets()
+          });
         mostrarToast(`✅ Fecha "${fechaExacta}" guardada en Google Sheets`, "exito");
       } catch (e) {
         mostrarToast("Fecha guardada localmente", "info");
@@ -1262,6 +1339,9 @@
           
           cargarSelectorClientes();
           mostrarToast(`✅ Comprador "${nombreLimpio}" creado y seleccionado`, 'exito');
+          enviarASheets({ action: 'FIJAR_PRECIO', campana: campanaActiva, cliente: nombreLimpio, precioKg: (document.getElementById('txtPrecio').value || '4.10').replace(',', '.') })
+            .then(() => mostrarToast('Pestaña del comprador creada en Google Sheets', 'exito'))
+            .catch(() => mostrarToast('Comprador guardado solo en la app', 'aviso'));
         }
       });
     }
@@ -1297,16 +1377,11 @@
           mostrarToast(`Comprador "${nombreCliente}" eliminado`, 'aviso');
 
           try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            await enviarASheets({
                 action: 'ELIMINAR_COMPRADOR',
                 campana: campanaActiva,
                 cliente: nombreCliente
-              })
-            });
+              });
             mostrarToast("Pestaña eliminada de Google Sheets", "exito");
           } catch (e) {
             mostrarToast("Eliminado localmente", "info");
@@ -1342,6 +1417,10 @@
           const nuevaKey = nuevoNombre.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
 
           if (nuevaKey === keyAnterior && nuevoNombre === nombreAnterior) return;
+          if (nuevaKey !== keyAnterior && database[campanaActiva][nuevaKey]) {
+            mostrarToast(`Ya existe un comprador "${nuevoNombre}"`, 'aviso');
+            return;
+          }
 
           c.nombre = nuevoNombre;
           if (nuevaKey !== keyAnterior) {
@@ -1355,18 +1434,13 @@
           mostrarToast(`Comprador actualizado a "${nuevoNombre}"`, 'exito');
 
           try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            await enviarASheets({
                 action: 'RENOMBRAR_COMPRADOR',
                 campana: campanaActiva,
                 keyAntigua: keyAnterior,
                 cliente: nuevoNombre,
                 precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-              })
-            });
+              });
             mostrarToast("Pestaña renombrada en Google Sheets", "exito");
           } catch (e) {
             mostrarToast("Guardado localmente", "info");
@@ -1519,7 +1593,12 @@
         colorBtn: 'bg-sky-500 hover:bg-sky-400 text-slate-950',
         onConfirm: (nombreDia) => {
           if (!nombreDia || nombreDia.trim() === '') return;
-          const keyDia = nombreDia.trim().replace(/\s+/g, '_');
+          const keyDia = nombreDia.trim().replace(/[\[\]]/g, '').replace(/\s+/g, '_');
+          if (!keyDia) return;
+          if (c.dias[keyDia]) {
+            mostrarToast(`La entrega "${nombreDia.trim()}" ya existe`, 'aviso');
+            return;
+          }
           c.dias[keyDia] = { 
             tara: [], 
             sobrante: [], 
@@ -1597,11 +1676,7 @@
       renderizarTablas();
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await enviarASheets({
             action: 'REGISTRAR_PESADA',
             campana: campanaActiva,
             cliente: c.nombre,
@@ -1609,9 +1684,8 @@
             tipo: tipoActual,
             peso: peso,
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-            fecha: obtenerFechaHoraSeleccionada()
-          })
-        });
+            fecha: obtenerFechaSheets()
+          });
         mostrarToast(`Pesada de ${strVal} kg guardada`, 'exito');
       } catch (e) {
         mostrarToast("Guardado localmente", "aviso");
@@ -1648,17 +1722,12 @@
       btn.disabled = true;
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await enviarASheets({
             action: 'FIJAR_PRECIO',
             campana: campanaActiva,
             cliente: c.nombre,
             precioKg: numPrecio.toFixed(2)
-          })
-        });
+          });
         mostrarToast(`✅ Precio de S/. ${numPrecio.toFixed(2)} fijado en Google Sheets`, "exito");
       } catch (e) {
         mostrarToast("Precio fijado localmente", "info");
@@ -1706,11 +1775,7 @@
 
         try {
           mostrarToast(`Enviando ${nums.length} pesadas a Google Sheets...`, "info");
-          await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
+          await enviarASheets({
               action: 'REGISTRAR_LOTE_TXT',
               campana: campanaActiva,
               cliente: c.nombre,
@@ -1718,9 +1783,8 @@
               tipo: destino,
               pesos: nums,
               precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-              fecha: obtenerFechaHoraSeleccionada()
-            })
-          });
+              fecha: obtenerFechaSheets()
+            });
           mostrarToast(`¡Éxito! ${nums.length} pesadas importadas`, "exito");
         } catch (err) {
           mostrarToast("Guardado en la app", "aviso");
@@ -1756,7 +1820,9 @@
           lista[index] = num;
           guardarEnLocalStorage();
           renderizarTablas();
-          mostrarToast(`Pesada #${index + 1} actualizada a ${num} kg`, "exito");
+          enviarASheets({ action: 'ACTUALIZAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva, tipo: tipo, index: index, nuevoPeso: num })
+            .then(() => mostrarToast(`Pesada #${index + 1} actualizada a ${num} kg en Google Sheets`, "exito"))
+            .catch(() => mostrarToast(`Pesada #${index + 1} actualizada solo en la app`, "aviso"));
         }
       });
     }
@@ -1769,7 +1835,9 @@
       else if (tipo === 'TARA_SOBRANTE') diaData.sobrante.splice(index, 1);
       guardarEnLocalStorage();
       renderizarTablas();
-      mostrarToast("Registro eliminado", "info");
+      enviarASheets({ action: 'ELIMINAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva, tipo: tipo, index: index })
+        .then(() => mostrarToast("Registro eliminado de Google Sheets", "exito"))
+        .catch(() => mostrarToast("Registro eliminado solo en la app", "aviso"));
     }
 
     function renderizarTablas() {
@@ -1880,20 +1948,15 @@
       btn.disabled = true;
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        await enviarASheets({
             action: 'GUARDAR_NOTA',
             campana: campanaActiva,
             cliente: c.nombre,
             jornada: jornadaActiva,
             nota: diaData.nota,
-            fecha: obtenerFechaHoraSeleccionada(),
+            fecha: obtenerFechaSheets(),
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-          })
-        });
+          });
         mostrarToast("✅ Nota guardada en Google Sheets", "exito");
       } catch (e) {
         mostrarToast("Nota guardada localmente", "info");
@@ -1925,16 +1988,12 @@
       btn.disabled = true;
 
       try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
+        const resp = await enviarASheets({
             action: 'GUARDAR_TICKET_DRIVE',
             campana: campanaActiva,
             cliente: c.nombre,
             jornada: jornadaActiva,
-            fecha: fechaExactaTicket,
+            fecha: obtenerFechaSheets(),
             taraInicial: sumTaraIni.toFixed(2),
             taraSobrante: sumTaraSob.toFixed(2),
             taraNeta: taraNetaUsada.toFixed(2),
@@ -1943,11 +2002,12 @@
             precioKg: precio.toFixed(2),
             totalPagar: soles.toFixed(2),
             nota: diaData.nota || '-'
-          })
-        });
+          });
+        const fb = document.getElementById('driveTicketFeedback');
+        if (fb && resp && resp.url) fb.innerHTML = `<a href="${resp.url}" target="_blank" rel="noopener noreferrer" class="underline">📄 Abrir PDF en Drive</a>`;
         mostrarToast("✅ Ticket PDF guardado en Drive", "exito");
       } catch (err) {
-        mostrarToast("Error al conectar con Drive", "error");
+        mostrarToast("No se pudo guardar el PDF en Drive", "error");
       } finally {
         btn.innerText = "☁️ Guardar en Drive";
         btn.disabled = false;
@@ -2400,6 +2460,10 @@
         onConfirm: (n) => {
           if (!n || n.trim() === '') return;
           const id = n.trim().replace(/\s+/g, '_');
+          if (database[id]) {
+            mostrarToast(`La campaña "${n.trim()}" ya existe`, 'aviso');
+            return;
+          }
           database[id] = {};
           campanaActiva = id;
           clienteActivo = '';
@@ -2417,16 +2481,28 @@
         titulo: 'Renombrar Campaña',
         esInput: true,
         valorInput: campanaActiva.replace(/_/g, ' '),
-        onConfirm: (n) => {
+        onConfirm: async (n) => {
           if (!n || n.trim() === '') return;
           const nuevoId = n.trim().replace(/\s+/g, '_');
-          database[nuevoId] = database[campanaActiva];
-          delete database[campanaActiva];
+          const idAnterior = campanaActiva;
+          if (nuevoId === idAnterior) return;
+          if (database[nuevoId]) {
+            mostrarToast(`La campaña "${n.trim()}" ya existe`, 'aviso');
+            return;
+          }
+          database[nuevoId] = database[idAnterior];
+          delete database[idAnterior];
           campanaActiva = nuevoId;
           guardarEnLocalStorage();
 
           cargarSelectorCampanas();
           cargarSelectorClientes();
+          try {
+            await enviarASheets({ action: 'RENOMBRAR_CAMPANA', nombreAntiguo: idAnterior, nombreNuevo: nuevoId });
+            mostrarToast('✅ Campaña renombrada en Google Sheets', 'exito');
+          } catch (e) {
+            mostrarToast('Campaña renombrada solo en la app', 'aviso');
+          }
         }
       });
     }
@@ -2461,12 +2537,7 @@
           mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
 
           try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'ELIMINAR_CAMPANA_COMPLETA', campanaABorrar: campanaABorrarId })
-            });
+            await enviarASheets({ action: 'ELIMINAR_CAMPANA_COMPLETA', campanaABorrar: campanaABorrarId });
           } catch(e){}
         }
       });
@@ -2553,12 +2624,16 @@
           guardarEnLocalStorage();
           renderizarTablas();
           mostrarToast('Tablas de la entrega limpiadas', 'aviso');
+          enviarASheets({ action: 'LIMPIAR_TODO_CAMPANA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva })
+            .then(() => mostrarToast('Entrega limpiada en Google Sheets', 'exito'))
+            .catch(() => mostrarToast('Limpieza solo en la app', 'aviso'));
         }
       });
     }
 
     window.onload = () => {
       aplicarConfiguracionMarca();
+      aplicarRedesSociales();
       cargarSelectorCampanas();
       cargarSelectorClientes();
       cambiarModulo('lotes');
