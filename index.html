@@ -8,194 +8,270 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;500;600;700;900&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body { font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
-    .font-digital { font-family: 'Chakra Petch', monospace; font-variant-numeric: tabular-nums; }
-    .led-glow { text-shadow: 0 0 16px rgba(52, 211, 153, 0.7); }
-    .ticket-paper { background: #faf8eb; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-    input, select, textarea { font-size: 16px !important; }
-    .modal-backdrop { background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); }
-    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .animate-slide-down { animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-    @keyframes toastIn { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-    .animate-toast { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    body { 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+      -webkit-tap-highlight-color: transparent; 
+      overflow-x: hidden;
+    }
+    .font-digital { 
+      font-family: 'Chakra Petch', monospace; 
+      font-variant-numeric: tabular-nums; 
+    }
+    .led-glow { 
+      text-shadow: 0 0 16px rgba(52, 211, 153, 0.7); 
+    }
+    .ticket-paper { 
+      background: #faf8eb; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5); 
+    }
+    input, select, textarea { 
+      font-size: 16px !important; 
+    }
+    .modal-backdrop { 
+      background-color: rgba(0, 0, 0, 0.8); 
+      backdrop-filter: blur(6px); 
+    }
+    @keyframes slideDown { 
+      from { transform: translateY(-16px); opacity: 0; } 
+      to { transform: translateY(0); opacity: 1; } 
+    }
+    .animate-slide-down { 
+      animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+    @keyframes toastIn { 
+      from { transform: translateY(20px); opacity: 0; } 
+      to { transform: translateY(0); opacity: 1; } 
+    }
+    .animate-toast { 
+      animation: toastIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
+    }
+    /* Scrollbars delgados y discretos para tablas en galpón */
+    ::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #1e293b;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #334155;
+    }
   </style>
 </head>
 
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased selection:bg-amber-500 selection:text-slate-950">
 
-  <!-- TOASTS -->
-  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+  <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
+  <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
-  <!-- MODAL DINÁMICO -->
-  <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-slide-down space-y-4">
+  <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
+  <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
-        <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400">
+        <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400 shrink-0">
           ⚖️
         </div>
-        <div>
-          <h3 id="modalTitle" class="text-sm font-bold text-white">Gestión de Galpón</h3>
-          <p id="modalSubtitle" class="text-[11px] text-slate-400">Acción interactiva</p>
+        <div class="min-w-0">
+          <h3 id="modalTitle" class="text-sm sm:text-base font-bold text-white truncate">Gestión de Galpón</h3>
+          <p id="modalSubtitle" class="text-[11px] text-slate-400 truncate">Acción interactiva</p>
         </div>
       </div>
-      <div id="modalBody" class="text-xs text-slate-300 leading-relaxed"></div>
+      <div id="modalBody" class="text-xs sm:text-sm text-slate-300 leading-relaxed break-words"></div>
       
       <div id="modalInputCont" class="hidden">
-        <input id="modalInput" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
+        <input id="modalInput" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white outline-none focus:border-amber-400">
       </div>
 
       <div class="flex gap-2 pt-2">
-        <button onclick="cerrarCustomModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
+        <button onclick="cerrarCustomModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-300 text-xs sm:text-sm font-bold rounded-xl transition">
           Cancelar
         </button>
-        <button id="modalBtnConfirm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition">
+        <button id="modalBtnConfirm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 text-xs sm:text-sm font-black rounded-xl transition">
           Confirmar
         </button>
       </div>
     </div>
   </div>
 
-  <!-- CABECERA -->
-  <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 shadow-md">
-    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-3">
-        <div id="headerLogoContainer" class="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 shrink-0">
-          <img id="imgLogoApp" src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80" alt="Logo" class="w-full h-full object-cover">
+  <!-- CABECERA FLUIDA Y TOTALMENTE RESPONSIVA -->
+  <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-40 shadow-lg">
+    <div class="w-full max-w-[1920px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+      
+      <!-- Logo e Identidad -->
+      <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div id="headerLogoContainer" class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 shrink-0">
+            <img id="imgLogoApp" src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80" alt="Logo" class="w-full h-full object-cover">
+          </div>
+          <div class="min-w-0">
+            <h1 id="txtTituloApp" class="text-xs sm:text-base font-black uppercase tracking-wider text-amber-400 truncate">Control Galpón IoT</h1>
+            <p id="txtSubtituloApp" class="text-[9px] sm:text-xs text-slate-400 truncate">Multicomprador & Control de Tara Sobrante</p>
+          </div>
         </div>
-        <div>
-          <h1 id="txtTituloApp" class="text-sm sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
-          <p id="txtSubtituloApp" class="text-[10px] sm:text-xs text-slate-400">Multicomprador & Control de Tara Sobrante</p>
+
+        <!-- Botones de Vista en Mobile -->
+        <div class="flex md:hidden items-center gap-1.5 shrink-0">
+          <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
+          <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
+          <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
         </div>
       </div>
       
-      <div class="flex items-center gap-2">
-        <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow">
-          ⚖️ Pesaje
-        </button>
-        <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white">
-          📊 Dashboard
-        </button>
-        <button onclick="abrirAjustesMarca()" title="Personalizar Título y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700">
-          ⚙️ Marca
-        </button>
+      <!-- Controles Desktop & Selector Campaña -->
+      <div class="flex flex-wrap items-center justify-between md:justify-end gap-2 w-full md:w-auto">
+        <!-- Vistas en Desktop -->
+        <div class="hidden md:flex items-center gap-2 shrink-0">
+          <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow transition">
+            ⚖️ Registro Pesaje
+          </button>
+          <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition">
+            📊 Dashboard
+          </button>
+          <button onclick="abrirAjustesMarca()" title="Personalizar Título y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition">
+            ⚙️ Marca
+          </button>
+        </div>
+
+        <!-- Selector de Campaña Compacto -->
+        <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
+          <span class="text-[10px] sm:text-xs text-slate-400 font-bold pl-1.5 shrink-0">Campaña:</span>
+          <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-lg px-2 py-1 outline-none min-w-0 flex-1 sm:flex-initial">
+            <option value="Campana_1">Campaña 1</option>
+            <option value="Campana_2">Campaña 2</option>
+          </select>
+          <button onclick="abrirModalEditarCampana()" title="Renombrar campaña" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-lg text-xs border border-slate-700 shrink-0">✏️</button>
+          <button onclick="abrirModalNuevaCampana()" title="Nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2 py-1 rounded-lg text-xs font-black transition shrink-0">+ Nueva</button>
+        </div>
       </div>
 
-      <!-- SELECTOR DE CAMPAÑA -->
-      <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
-        <span class="text-xs text-slate-400 font-bold hidden sm:inline pl-1">Campaña:</span>
-        <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-2 py-1.5 outline-none">
-          <option value="Campana_1">Campaña 1</option>
-          <option value="Campana_2">Campaña 2</option>
-        </select>
-        <button onclick="abrirModalEditarCampana()" title="Renombrar campaña" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-lg text-xs border border-slate-700">✏️</button>
-        <button onclick="abrirModalNuevaCampana()" title="Nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2 py-1.5 rounded-lg text-xs font-black transition">+ Nueva</button>
-      </div>
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL -->
-  <main class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1 space-y-4">
+  <!-- CONTENEDOR PRINCIPAL FLUIDO A TODA PANTALLA -->
+  <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
     <!-- BARRA MULTICOMPRADOR DENTRO DE LA CAMPAÑA -->
-    <section class="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <span class="text-xs font-bold text-amber-400">👤 Comprador Activo:</span>
-        <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
+    <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
+        <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
           <option value="Cliente_A">Comprador A</option>
           <option value="Cliente_B">Comprador B</option>
         </select>
-        <button onclick="abrirModalNuevoCliente()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow">
-          + Agregar Comprador
+        <button onclick="abrirModalNuevoCliente()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0">
+          + Cliente
         </button>
-        <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg border border-slate-700" title="Renombrar comprador">
+        <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 shrink-0" title="Renombrar comprador">
           ✏️
         </button>
       </div>
       
-      <div class="flex items-center gap-3">
+      <div class="flex items-center justify-between sm:justify-end gap-2 shrink-0">
         <div class="flex items-center gap-1.5">
-          <label class="text-[11px] text-slate-400 font-semibold">Precio x Kg:</label>
+          <label class="text-[11px] text-slate-400 font-semibold shrink-0">Precio x Kg:</label>
           <div class="relative w-24">
-            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs font-bold text-emerald-400 outline-none">
+            <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-6 pr-2 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
           </div>
         </div>
-        <button onclick="guardarDatosClienteEnSheets()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-amber-300 font-bold rounded-xl text-xs active:scale-95 transition">
+        <button onclick="guardarDatosClienteEnSheets()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-amber-300 font-bold rounded-xl text-xs active:scale-95 transition shrink-0">
           Fijar Lote
         </button>
       </div>
     </section>
 
     <!-- VISTA 1: REGISTRO DE PESAJE -->
-    <div id="vistaPesaje" class="space-y-4">
+    <div id="vistaPesaje" class="space-y-3 sm:space-y-4">
 
       <!-- FECHA/HORA Y NOTA GENERAL -->
-      <section class="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+      <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
         <div class="sm:col-span-5 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold">🕒 Fecha / Hora:</span>
+            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora:</span>
             <div class="flex items-center gap-1">
               <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Auto</button>
               <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
             </div>
           </div>
-          <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400">
+          <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 truncate">
             <span id="txtRelojEnVivo">Cargando...</span>
           </div>
           <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white outline-none font-mono">
         </div>
 
         <div class="sm:col-span-7 bg-slate-950 p-2 rounded-xl border border-slate-800 flex gap-2 items-center">
-          <div class="flex-1">
-            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota del Comprador:</label>
+          <div class="flex-1 min-w-0">
+            <label class="text-[10px] sm:text-[11px] text-slate-400 font-semibold block mb-0.5 truncate">📝 Nota del Comprador:</label>
             <input id="txtNotaGeneral" type="text" placeholder="Ej. Trajo 50 jabas, camioneta blanca..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
           </div>
-          <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
+          <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition shrink-0">
             Guardar
           </button>
         </div>
       </section>
 
-      <!-- ÁREA DE OPERACIÓN -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <!-- BARRA DE ACCIONES (ACTUALIZAR / LIMPIAR) -->
+      <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
+        <span class="text-slate-400 text-[11px] font-semibold pl-1 truncate">
+          Lote: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
+        </span>
+        <div class="flex items-center gap-2">
+          <button onclick="actualizarSistema()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold rounded-lg text-xs active:scale-95 transition">
+            🔄 Recalcular
+          </button>
+          <button onclick="confirmarLimpiezaTotal()" class="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition">
+            ⚠️ Limpiar Tablas
+          </button>
+        </div>
+      </section>
 
-        <!-- DISPLAY BALANZA -->
-        <div class="lg:col-span-5 bg-slate-900 border-2 border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-3.5">
+      <!-- REJILLA RESPONSIVA PRINCIPAL (BALANZA + TABLAS) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
+
+        <!-- COLUMNA IZQUIERDA: DISPLAY DIGITAL LED (5 COLS EN ESCRITORIO) -->
+        <div class="lg:col-span-5 bg-slate-900 border-2 border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-3">
+          
           <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
-            <span class="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> BALANZA CONECTADA
+            <span class="flex items-center gap-1.5 text-emerald-400 font-mono font-bold text-[11px] sm:text-xs">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> BALANZA ACTIVA
             </span>
             <button onclick="alternarCamaraOCR()" class="bg-amber-500/20 border border-amber-500/50 text-amber-300 px-2.5 py-1 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1">
               📷 Cámara OCR
             </button>
           </div>
 
-          <div class="bg-black py-5 px-3 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
-            <div id="visorDisplay" class="font-digital text-6xl sm:text-7xl xl:text-8xl text-emerald-400 led-glow font-black tracking-tight my-1 select-none">
+          <!-- VISOR DIGITAL LED AUTOCONTENIDO (NO SE DESBORDA) -->
+          <div class="bg-black py-4 sm:py-6 px-3 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner overflow-hidden">
+            <div id="visorDisplay" class="font-digital text-5xl sm:text-7xl xl:text-8xl text-emerald-400 led-glow font-black tracking-tight my-1 select-none break-all">
               0.00
             </div>
-            <span class="absolute bottom-2 right-4 text-emerald-500 font-digital text-lg font-bold">KG</span>
+            <span class="absolute bottom-2 right-3 sm:right-4 text-emerald-500 font-digital text-sm sm:text-lg font-bold">KG</span>
           </div>
 
-          <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1.5">
+          <!-- ENTRADA MANUAL -->
+          <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1">
             <div class="flex justify-between items-center text-xs">
-              <label class="text-slate-300 font-bold">⌨ Peso Balanza:</label>
+              <label class="text-slate-300 font-bold text-[11px]">⌨ Peso Exacto de Balanza:</label>
               <span class="text-slate-500 text-[10px]">Punto (.) o coma (,)</span>
             </div>
             <div class="flex gap-2">
               <input id="inputPesoManual" type="text" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl px-3 py-1.5 rounded-xl text-center outline-none">
-              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl text-xs font-bold active:scale-95">Borrar</button>
+              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl text-xs font-bold active:scale-95 shrink-0">Borrar</button>
             </div>
           </div>
 
           <!-- MÓDULO OCR -->
           <div id="panelOCR" class="hidden p-2.5 bg-black border-2 border-amber-500/60 rounded-2xl space-y-2">
-            <div class="relative w-full h-44 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
+            <div class="relative w-full h-40 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
               <video id="videoCamara" class="w-full h-full object-cover" autoplay playsinline></video>
               <div class="absolute border-2 border-dashed border-emerald-400 w-4/5 h-16 rounded-lg pointer-events-none"></div>
             </div>
@@ -205,16 +281,16 @@
             </button>
           </div>
 
-          <!-- SELECTOR DE FASE DE 3 VÍAS -->
-          <div class="grid grid-cols-3 gap-1.5">
-            <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
-              📦 1. TARA INICIAL
+          <!-- SELECTOR DE FASE (3 BOTONES EQUILIBRADOS) -->
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
+              📦 1. TARA INI
             </button>
-            <button onclick="seleccionarTipo('CON_POLLOS')" id="btnTipoPollos" class="py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight">
-              🍗 2. CON POLLOS
+            <button onclick="seleccionarTipo('CON_POLLOS')" id="btnTipoPollos" class="py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight">
+              🍗 2. POLLOS
             </button>
-            <button onclick="seleccionarTipo('TARA_SOBRANTE')" id="btnTipoSobrante" class="py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight" title="Pesar jabas vacías que no se usaron">
-              🔄 3. SOBRANTE (-)
+            <button onclick="seleccionarTipo('TARA_SOBRANTE')" id="btnTipoSobrante" class="py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight">
+              🔄 3. SOBRE (-)
             </button>
           </div>
 
@@ -223,31 +299,32 @@
           </button>
         </div>
 
-        <!-- 3 TABLAS PARALELAS CON BOTONES TXT Y CRUD -->
-        <div class="lg:col-span-7 space-y-4">
+        <!-- COLUMNA DERECHA: 3 TABLAS PARALELAS + LIQUIDACIÓN (7 COLS EN ESCRITORIO) -->
+        <div class="lg:col-span-7 space-y-3 sm:space-y-4">
 
+          <!-- 3 TABLAS: APILADAS EN MÓVIL, 3 COLUMNAS EN TABLET/DESKTOP -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             
             <!-- 1. TARA INICIAL -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5 min-w-0">
               <div class="flex justify-between items-center pb-1 border-b border-slate-800">
-                <span class="text-[11px] font-black uppercase text-amber-400">📦 TARA INICIAL</span>
-                <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0 kg</span>
+                <span class="text-[10px] sm:text-[11px] font-black uppercase text-amber-400 truncate">📦 TARA INICIAL</span>
+                <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white shrink-0">0 kg</span>
               </div>
 
-              <!-- BOTÓN IMPORTAR TXT TARA INICIAL -->
+              <!-- BOTÓN TXT TARA -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
-                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
+                <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
+                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
+                  📂 Subir
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
                 </label>
               </div>
 
-              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
+              <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
-                  <thead class="bg-amber-950/70 text-amber-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
+                  <thead class="bg-amber-950/70 text-amber-300 sticky top-0 text-[10px]">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-12">ACC</th></tr>
                   </thead>
                   <tbody id="tablaTaraBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -255,25 +332,25 @@
             </div>
 
             <!-- 2. CON POLLOS (BRUTO) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5 min-w-0">
               <div class="flex justify-between items-center pb-1 border-b border-slate-800">
-                <span class="text-[11px] font-black uppercase text-sky-400">🍗 CON POLLOS</span>
-                <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0 kg</span>
+                <span class="text-[10px] sm:text-[11px] font-black uppercase text-sky-400 truncate">🍗 CON POLLOS</span>
+                <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white shrink-0">0 kg</span>
               </div>
 
-              <!-- BOTÓN IMPORTAR TXT CON POLLOS -->
+              <!-- BOTÓN TXT POLLOS -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
-                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
+                <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
+                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
+                  📂 Subir
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
                 </label>
               </div>
 
-              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
+              <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
-                  <thead class="bg-sky-950/70 text-sky-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
+                  <thead class="bg-sky-950/70 text-sky-300 sticky top-0 text-[10px]">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-12">ACC</th></tr>
                   </thead>
                   <tbody id="tablaPollosBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -281,25 +358,25 @@
             </div>
 
             <!-- 3. TARA SOBRANTE (RESTANTE / DEVOLUCIÓN) -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5 min-w-0">
               <div class="flex justify-between items-center pb-1 border-b border-slate-800">
-                <span class="text-[11px] font-black uppercase text-rose-400">🔄 SOBRANTE (-)</span>
-                <span id="badgeSubtotalSobrante" class="text-xs font-mono font-bold text-rose-300">0 kg</span>
+                <span class="text-[10px] sm:text-[11px] font-black uppercase text-rose-400 truncate">🔄 SOBRANTE (-)</span>
+                <span id="badgeSubtotalSobrante" class="text-xs font-mono font-bold text-rose-300 shrink-0">0 kg</span>
               </div>
 
-              <!-- BOTÓN IMPORTAR TXT SOBRANTE -->
+              <!-- BOTÓN TXT SOBRANTE -->
               <div class="flex items-center justify-between bg-slate-950 p-1.5 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 font-semibold">Importar:</span>
-                <label class="cursor-pointer bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
+                <span class="text-[9px] text-slate-400 font-semibold truncate">TXT:</span>
+                <label class="cursor-pointer bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/40 px-2 py-0.5 rounded-lg text-[10px] font-bold shrink-0">
+                  📂 Subir
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA_SOBRANTE')">
                 </label>
               </div>
 
-              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
+              <div class="overflow-y-auto max-h-48 sm:max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
-                  <thead class="bg-rose-950/70 text-rose-300 sticky top-0">
-                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-14">ACC</th></tr>
+                  <thead class="bg-rose-950/70 text-rose-300 sticky top-0 text-[10px]">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1 w-12">ACC</th></tr>
                   </thead>
                   <tbody id="tablaSobranteBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
@@ -309,54 +386,59 @@
           </div>
 
           <!-- PANEL DE LIQUIDACIÓN EXACTA -->
-          <section class="bg-slate-900 border-2 border-emerald-500/50 p-4 rounded-3xl space-y-3 shadow-xl">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
-              <span class="font-bold text-slate-300 uppercase tracking-wider">Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b></span>
-              <span class="text-slate-400 text-[11px] font-mono" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
+          <section class="bg-slate-900 border-2 border-emerald-500/50 p-3 sm:p-4 rounded-3xl space-y-3 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-800 text-xs">
+              <span class="font-bold text-slate-300 uppercase tracking-wider truncate">
+                Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b>
+              </span>
+              <span class="text-slate-400 text-[10px] sm:text-[11px] font-mono shrink-0" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
 
+            <!-- TARJETAS DE TOTALES (2 COLS EN MOBILE, 4 COLS EN DESKTOP) -->
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
-              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Tara Neta Usada</span>
-                <span id="resumenTaraNeta" class="text-sm font-bold text-amber-400">0.00 kg</span>
-                <span class="text-[9px] text-slate-500 block font-sans">(Inicial - Sobrante)</span>
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800 min-w-0">
+                <span class="text-[9px] sm:text-[10px] text-slate-400 block font-sans truncate">Tara Neta Usada</span>
+                <span id="resumenTaraNeta" class="text-xs sm:text-sm font-bold text-amber-400 truncate block">0.00 kg</span>
+                <span class="text-[8px] text-slate-500 block font-sans truncate">Ini - Sob</span>
               </div>
-              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Peso Bruto Pollos</span>
-                <span id="resumenBruto" class="text-sm font-bold text-sky-400">0.00 kg</span>
-                <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800 min-w-0">
+                <span class="text-[9px] sm:text-[10px] text-slate-400 block font-sans truncate">Bruto Pollos</span>
+                <span id="resumenBruto" class="text-xs sm:text-sm font-bold text-sky-400 truncate block">0.00 kg</span>
+                <span id="cntPesadasPollos" class="text-[8px] text-slate-500 block font-sans truncate">0 pesadas</span>
               </div>
-              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo</span>
-                <span id="resumenNeto" class="text-sm font-bold text-emerald-400">0.00 kg</span>
-                <span class="text-[9px] text-slate-500 block font-sans">Bruto - Tara Neta</span>
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800 min-w-0">
+                <span class="text-[9px] sm:text-[10px] text-slate-400 block font-sans truncate">Neto Vivo</span>
+                <span id="resumenNeto" class="text-xs sm:text-sm font-bold text-emerald-400 truncate block">0.00 kg</span>
+                <span class="text-[8px] text-slate-500 block font-sans truncate">Bruto - Tara Neta</span>
               </div>
-              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Precio x Kg</span>
-                <span id="resumenPrecio" class="text-sm font-bold text-purple-400">S/. 4.10</span>
-                <span class="text-[9px] text-slate-500 block font-sans">Pactado</span>
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800 min-w-0">
+                <span class="text-[9px] sm:text-[10px] text-slate-400 block font-sans truncate">Precio x Kg</span>
+                <span id="resumenPrecio" class="text-xs sm:text-sm font-bold text-purple-400 truncate block">S/. 4.10</span>
+                <span class="text-[8px] text-slate-500 block font-sans truncate">Pactado</span>
               </div>
             </div>
 
-            <div class="bg-emerald-950/40 border border-emerald-500/60 p-3 rounded-2xl flex items-center justify-between">
+            <!-- TOTAL A COBRAR DESTACADO -->
+            <div class="bg-emerald-950/40 border border-emerald-500/60 p-2.5 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
               <div>
-                <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR A ESTE CLIENTE</span>
-                <span class="text-[10px] text-slate-400">Neto Vivo × Precio por Kg</span>
+                <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR A ESTE CLIENTE</span>
+                <span class="text-[9px] text-slate-400">Neto Vivo × Precio por Kg</span>
               </div>
-              <div id="resumenTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400">
+              <div id="resumenTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 self-end sm:self-auto">
                 S/. 0.00
               </div>
             </div>
 
+            <!-- BOTONES DE SALIDA -->
             <div class="grid grid-cols-2 gap-2 pt-1">
-              <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 active:scale-95 transition">
-                🧾 Ver Ticket Cliente
+              <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition text-center truncate">
+                🧾 Ver Ticket
               </button>
-              <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-bold text-white active:scale-95 transition">
-                ☁️ Guardar PDF en Drive
+              <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs font-bold text-white transition text-center truncate">
+                ☁️ Guardar en Drive
               </button>
             </div>
-            <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3"></div>
+            <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3 truncate"></div>
           </section>
 
         </div>
@@ -364,54 +446,54 @@
     </div>
 
     <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL -->
-    <div id="vistaDashboard" class="hidden space-y-5">
-      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
-          <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Facturación Global Campaña</span><span class="text-emerald-400 font-bold">TOTAL</span>
+    <div id="vistaDashboard" class="hidden space-y-4">
+      <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
+          <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
+            <span class="truncate">Facturación Global</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
           </div>
-          <div id="dashTotalFacturado" class="text-2xl font-black font-digital text-emerald-400 my-1">S/. 0.00</div>
-          <p class="text-[11px] text-slate-500">Suma de todos los compradores</p>
+          <div id="dashTotalFacturado" class="text-lg sm:text-2xl font-black font-digital text-emerald-400 my-0.5 truncate">S/. 0.00</div>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Suma todos compradores</p>
         </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
-          <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Carne Neta Total</span><span class="text-sky-400 font-bold">VIVO</span>
+        <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
+          <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
+            <span class="truncate">Carne Neta Total</span><span class="text-sky-400 font-bold shrink-0">VIVO</span>
           </div>
-          <div id="dashTotalNetoKg" class="text-2xl font-black font-digital text-sky-400 my-1">0.00 kg</div>
-          <p class="text-[11px] text-slate-500">Kilos totales despachados</p>
+          <div id="dashTotalNetoKg" class="text-lg sm:text-2xl font-black font-digital text-sky-400 my-0.5 truncate">0.00 kg</div>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Despacho vivo neto</p>
         </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
-          <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Compradores Atendidos</span><span class="text-purple-400 font-bold">CLIENTES</span>
+        <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
+          <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
+            <span class="truncate">Compradores</span><span class="text-purple-400 font-bold shrink-0">CLIENTES</span>
           </div>
-          <div id="dashTotalClientes" class="text-2xl font-black font-digital text-purple-400 my-1">0</div>
-          <p class="text-[11px] text-slate-500">Lotes de compradores en la campaña</p>
+          <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Lotes en la campaña</p>
         </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
-          <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Tara Neta Global</span><span class="text-amber-400 font-bold">PLÁSTICO</span>
+        <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
+          <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
+            <span class="truncate">Tara Neta Global</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
           </div>
-          <div id="dashTotalTaraKg" class="text-2xl font-black font-digital text-amber-400 my-1">0.00 kg</div>
-          <p class="text-[11px] text-slate-500">Descontando devoluciones</p>
+          <div id="dashTotalTaraKg" class="text-lg sm:text-2xl font-black font-digital text-amber-400 my-0.5 truncate">0.00 kg</div>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando devoluciones</p>
         </div>
       </section>
 
       <!-- TABLA RESUMEN POR COMPRADOR -->
-      <section class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
-        <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">
+      <section class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-6 shadow-xl space-y-3">
+        <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-2.5">
           👥 Resumen por Comprador en la Campaña Activa
         </h2>
-        <div class="overflow-x-auto">
-          <table class="w-full text-xs sm:text-sm text-left font-mono">
-            <thead class="bg-slate-950 text-slate-300 border-b border-slate-800">
+        <div class="overflow-x-auto w-full">
+          <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
+            <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
               <tr>
-                <th class="p-3">COMPRADOR</th>
-                <th class="p-3 text-center">TARA INI</th>
-                <th class="p-3 text-center">SOBRANTE (-)</th>
-                <th class="p-3 text-center">TARA USADA</th>
-                <th class="p-3 text-center">BRUTO</th>
-                <th class="p-3 text-center">NETO VIVO</th>
-                <th class="p-3 text-right">TOTAL (S/.)</th>
+                <th class="p-2 sm:p-3">COMPRADOR</th>
+                <th class="p-2 sm:p-3 text-center">TARA INI</th>
+                <th class="p-2 sm:p-3 text-center">SOBRANTE (-)</th>
+                <th class="p-2 sm:p-3 text-center">TARA USADA</th>
+                <th class="p-2 sm:p-3 text-center">BRUTO</th>
+                <th class="p-2 sm:p-3 text-center">NETO VIVO</th>
+                <th class="p-2 sm:p-3 text-right">TOTAL (S/.)</th>
               </tr>
             </thead>
             <tbody id="cuerpoTablaDashboard" class="divide-y divide-slate-800 text-slate-200"></tbody>
@@ -423,7 +505,7 @@
   </main>
 
   <!-- MODAL TICKET TÉRMICO -->
-  <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3.5">
+  <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5 animate-slide-down">
       <button onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
@@ -463,7 +545,7 @@
     // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    let tipoActual = 'TARA';
+    let tipoActual = 'TARA'; // 'TARA', 'CON_POLLOS', 'TARA_SOBRANTE'
     let campanaActiva = 'Campana_1';
     let clienteActivo = 'Cliente_A';
     let modoFechaActual = 'auto';
@@ -496,7 +578,7 @@
 
     function abrirAjustesMarca() {
       abrirCustomModal({
-        titulo: 'Personalizar Identidad de Marca',
+        titulo: 'Personalizar Marca',
         subtitulo: 'Ajustes Visuales',
         htmlBody: `
           <div class="space-y-3">
@@ -510,7 +592,7 @@
             </div>
           </div>
         `,
-        textoBtn: 'Guardar Ajustes',
+        textoBtn: 'Guardar',
         colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
         onConfirm: () => {
           const tit = document.getElementById('cfgTitulo').value.trim();
@@ -524,9 +606,7 @@
       });
     }
 
-    // ========================================================
-    // TOASTS Y MODALES PERSONALIZADOS
-    // ========================================================
+    // TOASTS
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -534,18 +614,18 @@
         exito: { bg: 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200', icon: '✅' },
         error: { bg: 'bg-rose-950/90 border-rose-500/50 text-rose-200', icon: '❌' },
         aviso: { bg: 'bg-amber-950/90 border-amber-500/50 text-amber-200', icon: '⚠️' },
-        info: { bg: 'bg-sky-950/90 border-sky-500/50 text-sky-200', icon: 'ℹ️' }
+        info: { bg: 'bg-sky-950/90 border-sky-500/50 text-sky-200', icon: 'ℹ️️' }
       }[tipo] || { bg: 'bg-slate-900 border-slate-700 text-white', icon: '🔔' };
 
-      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl text-xs font-semibold backdrop-blur-md pointer-events-auto animate-toast ${config.bg}`;
-      toast.innerHTML = `<span>${config.icon}</span><span>${mensaje}</span>`;
+      toast.className = `flex items-center gap-2 px-3.5 py-2.5 rounded-2xl border shadow-2xl text-xs font-semibold backdrop-blur-md pointer-events-auto animate-toast ${config.bg}`;
+      toast.innerHTML = `<span>${config.icon}</span><span class="truncate">${mensaje}</span>`;
       cont.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
-        toast.style.transform = 'translateY(15px)';
-        toast.style.transition = 'all 0.3s ease';
-        setTimeout(() => toast.remove(), 300);
-      }, 4000);
+        toast.style.transform = 'translateY(10px)';
+        toast.style.transition = 'all 0.25s ease';
+        setTimeout(() => toast.remove(), 250);
+      }, 3500);
     }
 
     let modalCallback = null;
@@ -583,9 +663,7 @@
       cerrarCustomModal();
     });
 
-    // ========================================================
-    // GESTIÓN DE CLIENTES / COMPRADORES
-    // ========================================================
+    // CLIENTES
     function cargarSelectorClientes() {
       const sel = document.getElementById('selClienteActivo');
       sel.innerHTML = '';
@@ -661,31 +739,27 @@
       });
     }
 
-    // ========================================================
-    // SELECTOR DE TIPO (FASES 1, 2 Y 3)
-    // ========================================================
+    // SELECCIÓN DE FASES (1, 2 Y 3)
     function seleccionarTipo(tipo) {
       tipoActual = tipo;
       const bT = document.getElementById('btnTipoTara');
       const bP = document.getElementById('btnTipoPollos');
       const bS = document.getElementById('btnTipoSobrante');
 
-      bT.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
-      bP.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
-      bS.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+      bT.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+      bP.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+      bS.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
 
       if (tipo === 'TARA') {
-        bT.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight";
+        bT.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight";
       } else if (tipo === 'CON_POLLOS') {
-        bP.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-sky-500 bg-sky-500 text-slate-950 shadow transition text-center leading-tight";
+        bP.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-sky-500 bg-sky-500 text-slate-950 shadow transition text-center leading-tight";
       } else if (tipo === 'TARA_SOBRANTE') {
-        bS.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-rose-500 bg-rose-500 text-slate-950 shadow transition text-center leading-tight";
+        bS.className = "py-2.5 px-1 rounded-xl font-bold text-[11px] sm:text-xs border-2 border-rose-500 bg-rose-500 text-slate-950 shadow transition text-center leading-tight";
       }
     }
 
-    // ========================================================
-    // REGISTRO DE PESADA
-    // ========================================================
+    // REGISTRO Y ENTRADA
     const inputPesoManual = document.getElementById('inputPesoManual');
     const visorDisplay = document.getElementById('visorDisplay');
     inputPesoManual.addEventListener('input', (e) => {
@@ -744,9 +818,7 @@
       }
     }
 
-    // ========================================================
-    // IMPORTADOR TXT CON DECIMALES EXACTOS RESTAURADO
-    // ========================================================
+    // IMPORTADOR TXT
     function importarArchivoTXTRobusto(event, destino) {
       const file = event.target.files[0];
       if (!file) return;
@@ -801,9 +873,7 @@
       reader.readAsText(file);
     }
 
-    // ========================================================
-    // CRUD: EDITAR Y ELIMINAR PESADA
-    // ========================================================
+    // CRUD
     function editarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
       let lista = c.tara;
@@ -813,7 +883,7 @@
 
       const valorActual = lista[index];
       abrirCustomModal({
-        titulo: `Editar Pesada #${index + 1}`,
+        titulo: `Editar #${index + 1}`,
         subtitulo: `Modificar valor de ${label}`,
         htmlBody: `Ingrese el nuevo peso en kilogramos:`,
         esInput: true,
@@ -823,7 +893,7 @@
         onConfirm: (val) => {
           const num = parseFloat(val.replace(',', '.'));
           if (isNaN(num) || num <= 0) {
-            mostrarToast("El peso ingresado no es válido", "error");
+            mostrarToast("Peso no válido", "error");
             return;
           }
           lista[index] = num;
@@ -856,7 +926,7 @@
           <td class="p-1 text-slate-500">${i+1}</td>
           <td class="p-1 text-amber-300">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
-            <button onclick="editarItem('TARA', ${i})" class="text-amber-400 font-bold hover:text-amber-300">✏️</button>
+            <button onclick="editarItem('TARA', ${i})" class="text-amber-400 font-bold hover:text-amber-300">✏️️</button>
             <button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
           </td>
         </tr>`;
@@ -893,9 +963,6 @@
       recalcularTotales();
     }
 
-    // ========================================================
-    // CÁLCULO PRECISO CON TARA SOBRANTE
-    // ========================================================
     function recalcularTotales() {
       const c = database[campanaActiva][clienteActivo];
       const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
@@ -952,9 +1019,6 @@
       }
     }
 
-    // ========================================================
-    // TICKET Y DRIVE POR COMPRADOR
-    // ========================================================
     async function guardarTicketEnGoogleDrive() {
       const c = database[campanaActiva][clienteActivo];
       const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
@@ -1030,9 +1094,7 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
-    // ========================================================
-    // DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL
-    // ========================================================
+    // DASHBOARD
     function renderizarDashboard() {
       let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraUsadaGlobal = 0;
       const clientes = database[campanaActiva] || {};
@@ -1055,13 +1117,13 @@
 
         tbody.innerHTML += `
           <tr>
-            <td class="p-3 font-bold text-amber-400">${c.nombre || k}</td>
-            <td class="p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
-            <td class="p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
-            <td class="p-3 text-center font-bold text-amber-300">${sTaraUsada.toFixed(2)}</td>
-            <td class="p-3 text-center text-sky-300">${sBruto.toFixed(2)}</td>
-            <td class="p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
-            <td class="p-3 text-right font-black text-emerald-400">S/. ${total.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 font-bold text-amber-400">${c.nombre || k}</td>
+            <td class="p-2 sm:p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center font-bold text-amber-300">${sTaraUsada.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center text-sky-300">${sBruto.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
+            <td class="p-2 sm:p-3 text-right font-black text-emerald-400">S/. ${total.toFixed(2)}</td>
           </tr>
         `;
       });
@@ -1072,9 +1134,7 @@
       document.getElementById('dashTotalTaraKg').innerText = `${totalTaraUsadaGlobal.toFixed(2)} kg`;
     }
 
-    // ========================================================
-    // GESTIÓN DE CAMPAÑAS
-    // ========================================================
+    // CAMPAÑAS
     function cargarSelectorCampanas() {
       const sel = document.getElementById('selCampana');
       sel.innerHTML = '';
@@ -1097,6 +1157,7 @@
       clienteActivo = Object.keys(database[campanaActiva])[0];
       cargarSelectorClientes();
       cargarDatosClienteActivo();
+      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
     }
 
     function abrirModalNuevaCampana() {
@@ -1136,16 +1197,27 @@
     }
 
     function cambiarVista(v) {
+      const pPesaje = document.getElementById('vistaPesaje');
+      const pDash = document.getElementById('vistaDashboard');
+      const bPesDesk = document.getElementById('btnTabPesaje');
+      const bDashDesk = document.getElementById('btnTabDashboard');
+      const bPesMob = document.getElementById('btnTabPesajeMob');
+      const bDashMob = document.getElementById('btnTabDashboardMob');
+
       if (v === 'pesaje') {
-        document.getElementById('vistaPesaje').classList.remove('hidden');
-        document.getElementById('vistaDashboard').classList.add('hidden');
-        document.getElementById('btnTabPesaje').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
-        document.getElementById('btnTabDashboard').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
+        pPesaje.classList.remove('hidden');
+        pDash.classList.add('hidden');
+        if (bPesDesk) bPesDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow transition";
+        if (bDashDesk) bDashDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition";
+        if (bPesMob) bPesMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950";
+        if (bDashMob) bDashMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300";
       } else {
-        document.getElementById('vistaPesaje').classList.add('hidden');
-        document.getElementById('vistaDashboard').classList.remove('hidden');
-        document.getElementById('btnTabDashboard').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
-        document.getElementById('btnTabPesaje').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
+        pPesaje.classList.add('hidden');
+        pDash.classList.remove('hidden');
+        if (bDashDesk) bDashDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow transition";
+        if (bPesDesk) bPesDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition";
+        if (bDashMob) bDashMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950";
+        if (bPesMob) bPesMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300";
         renderizarDashboard();
       }
     }
@@ -1153,7 +1225,8 @@
     // FECHA / HORA
     setInterval(() => {
       if (modoFechaActual === 'auto') {
-        document.getElementById('txtRelojEnVivo').innerText = new Date().toLocaleString('es-PE');
+        const el = document.getElementById('txtRelojEnVivo');
+        if (el) el.innerText = new Date().toLocaleString('es-PE');
       }
     }, 1000);
 
@@ -1241,6 +1314,31 @@
       } catch (err) {
         mostrarToast("Error en OCR", "error");
       }
+    }
+
+    function confirmarLimpiezaTotal() {
+      abrirCustomModal({
+        titulo: '⚠️ Limpiar Tablas',
+        subtitulo: 'Reinicio de Lote del Cliente',
+        htmlBody: `Se vaciarán las pesadas de <b>${database[campanaActiva][clienteActivo].nombre}</b>.<br><br>¿Desea continuar?`,
+        textoBtn: 'Sí, Limpiar',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: () => {
+          const c = database[campanaActiva][clienteActivo];
+          c.tara = [];
+          c.sobrante = [];
+          c.pollos = [];
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast('Tablas limpiadas', 'aviso');
+        }
+      });
+    }
+
+    function actualizarSistema() {
+      recalcularTotales();
+      renderizarTablas();
+      mostrarToast('Datos recalculados', 'exito');
     }
 
     window.onload = () => {
