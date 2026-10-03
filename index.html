@@ -30,6 +30,11 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-track { background: #090d16; }
     ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    @media print {
+      body * { visibility: hidden; }
+      #areaImpresionReporte, #areaImpresionReporte * { visibility: visible; }
+      #areaImpresionReporte { position: absolute; left: 0; top: 0; width: 100%; }
+    }
   </style>
 </head>
 
@@ -37,7 +42,7 @@
 
   <div id="toastContainer" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
-  <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD / CREACIÓN -->
+  <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
@@ -77,7 +82,7 @@
           </div>
           <div class="min-w-0">
             <h1 id="txtTituloApp" class="text-xs sm:text-base font-black uppercase tracking-wider text-amber-400 truncate">Control Galpón IoT</h1>
-            <p id="txtSubtituloApp" class="text-[9px] sm:text-xs text-slate-400 truncate">Comprador Único con Múltiples Días</p>
+            <p id="txtSubtituloApp" class="text-[9px] sm:text-xs text-slate-400 truncate">Pesaje & Liquidación por Campaña</p>
           </div>
         </div>
 
@@ -95,7 +100,7 @@
             ⚖️ Registro Pesaje
           </button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition">
-            📊 Dashboard & Gráficos
+            📊 Comparativo Campañas
           </button>
           <button onclick="sincronizarDesdeGoogleSheets()" title="Cargar de Sheets" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-600 transition flex items-center gap-1">
             🔄 Cargar de Sheets
@@ -122,65 +127,62 @@
 
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA DUAL: COMPRADOR ÚNICO (CON BOTÓN + CLIENTE 100% OPERATIVO) + JORNADA -->
-    <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
-      
-      <!-- COMPRADOR ÚNICO CON BOTÓN + CLIENTE, EDITAR Y BORRAR -->
-      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
-        <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
-        <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
-          <option value="COMPRADOR_A">Comprador A</option>
-        </select>
-        
-        <!-- BOTÓN + CLIENTE CORREGIDO Y BLINDADO -->
-        <button type="button" onclick="abrirModalNuevoCliente()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0 flex items-center gap-1">
-          + Cliente
-        </button>
-        <!-- BOTÓN EDITAR COMPRADOR -->
-        <button type="button" onclick="abrirModalRenombrarCliente()" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs rounded-xl border border-slate-700 active:scale-95 transition shrink-0" title="Editar nombre del comprador">
-          ✏️
-        </button>
-        <!-- BOTÓN ELIMINAR COMPRADOR -->
-        <button type="button" onclick="confirmarEliminarComprador()" class="p-2 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition shrink-0" title="Eliminar este comprador con todas sus compras">
-          🗑️
-        </button>
-      </div>
-
-      <!-- SELECTOR DE JORNADA + PRECIO POR KG + BOTÓN GUARDAR PRECIO -->
-      <div class="flex flex-wrap items-center justify-between md:justify-end gap-2.5">
-        <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
-          <span class="text-[11px] font-bold text-sky-400 shrink-0">📅 Día / Jornada:</span>
-          <select id="selJornadaDia" onchange="cambiarJornadaDia()" class="bg-slate-900 border border-sky-500/60 text-sky-300 font-bold text-xs rounded-lg px-2 py-1 outline-none">
-            <option value="Dia_1">Día 1</option>
-          </select>
-          <button type="button" onclick="abrirModalNuevoDia()" class="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-lg active:scale-95 transition shrink-0" title="Agregar jornada de compra para este cliente">
-            + Nuevo Día
-          </button>
-        </div>
-
-        <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-emerald-500/40">
-          <label class="text-[11px] text-slate-300 font-bold pl-1.5 shrink-0">Precio x Kg:</label>
-          <div class="relative w-20">
-            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-5 pr-1.5 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
-          </div>
-          <button type="button" onclick="guardarPrecioExclusivoEnSheets()" id="btnGuardarPrecioExclusivo" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-lg transition shadow shrink-0 flex items-center gap-1" title="Asegurar precio en Sheets">
-            💾 Guardar Precio
-          </button>
-        </div>
-
-      </div>
-    </section>
-
-    <!-- VISTA 1: REGISTRO DE PESAJE -->
+    <!-- ======================================================== -->
+    <!-- VISTA 1: REGISTRO DE PESAJE (CON SECCIÓN DE COMPRADOR ADENTRO) -->
+    <!-- ======================================================== -->
     <div id="vistaPesaje" class="space-y-3 sm:space-y-4">
 
-      <!-- FECHA/HORA CON BOTÓN DEDICADO "GUARDAR FECHA" Y NOTA -->
+      <!-- BARRA DE COMPRADOR, ENTREGA UNIFICADA Y PRECIO -->
+      <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
+        
+        <!-- COMPRADOR CON EDITAR Y BORRAR -->
+        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+          <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
+          <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
+            <option value="COMPRADOR_A">Comprador A</option>
+          </select>
+          <button type="button" onclick="abrirModalNuevoCliente()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0">
+            + Cliente
+          </button>
+          <button type="button" onclick="abrirModalRenombrarCliente()" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs rounded-xl border border-slate-700 active:scale-95 transition shrink-0" title="Editar comprador">
+            ✏️
+          </button>
+          <button type="button" onclick="confirmarEliminarComprador()" class="p-2 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition shrink-0" title="Eliminar comprador">
+            🗑️️
+          </button>
+        </div>
+
+        <!-- ENTREGA/JORNADA UNIFICADA + PRECIO POR KG -->
+        <div class="flex flex-wrap items-center justify-between md:justify-end gap-2.5">
+          <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
+            <span class="text-[11px] font-bold text-sky-400 shrink-0">📅 Entrega:</span>
+            <select id="selJornadaDia" onchange="cambiarJornadaDia()" class="bg-slate-900 border border-sky-500/60 text-sky-300 font-bold text-xs rounded-lg px-2 py-1 outline-none">
+              <option value="Entrega_1">Entrega 1</option>
+            </select>
+            <button type="button" onclick="abrirModalNuevoDia()" class="px-2 py-1 bg-sky-600 hover:bg-sky-500 text-white font-bold text-xs rounded-lg active:scale-95 transition shrink-0" title="Agregar nueva entrega para este cliente">
+              + Nueva Entrega
+            </button>
+          </div>
+
+          <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-emerald-500/40">
+            <label class="text-[11px] text-slate-300 font-bold pl-1.5 shrink-0">Precio x Kg:</label>
+            <div class="relative w-20">
+              <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+              <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-5 pr-1.5 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
+            </div>
+            <button type="button" onclick="guardarPrecioExclusivoEnSheets()" id="btnGuardarPrecioExclusivo" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-lg transition shadow shrink-0" title="Guardar precio">
+              💾 Guardar Precio
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- FECHA Y HORA UNIFICADA (AUTO / MANUAL) + NOTA DEL COMPRADOR -->
       <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
         
         <div class="sm:col-span-6 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora del Ticket y Pesaje:</span>
+            <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora de la Entrega y Ticket:</span>
             <div class="flex items-center gap-1">
               <button type="button" onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Auto</button>
               <button type="button" onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
@@ -191,9 +193,10 @@
             <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 flex-1 truncate">
               <span id="txtRelojEnVivo">Cargando fecha...</span>
             </div>
-            <input id="inputFechaManual" type="datetime-local" onchange="actualizarFechaManualEnTicket()" class="hidden flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none font-mono">
+            <!-- INPUT DATETIME-LOCAL SIN BLOQUEOS -->
+            <input id="inputFechaManual" type="datetime-local" oninput="actualizarFechaManualEnTicket()" class="hidden flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none font-mono">
             
-            <button type="button" onclick="guardarFechaManualEnSheets()" id="btnGuardarFecha" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-xs rounded-lg transition shadow shrink-0 flex items-center gap-1" title="Fijar esta fecha en Google Sheets y en el ticket">
+            <button type="button" onclick="guardarFechaManualEnSheets()" id="btnGuardarFecha" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-xs rounded-lg transition shadow shrink-0 flex items-center gap-1" title="Guardar fecha de esta entrega">
               💾 Guardar Fecha
             </button>
           </div>
@@ -201,8 +204,8 @@
 
         <div class="sm:col-span-6 bg-slate-950 p-2 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1 min-w-0">
-            <label class="text-[10px] sm:text-[11px] text-slate-400 font-semibold block mb-0.5 truncate">📝 Nota del Día:</label>
-            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC, viaje 1..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
+            <label class="text-[10px] sm:text-[11px] text-slate-400 font-semibold block mb-0.5 truncate">📝 Nota de la Entrega:</label>
+            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC, chofer Carlos..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
           </div>
           <button type="button" onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition shrink-0">
             Guardar
@@ -210,22 +213,26 @@
         </div>
       </section>
 
-      <!-- BARRA DE ACCIONES -->
+      <!-- BARRA DE ACCIONES Y REPORTE DETALLADO -->
       <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2 rounded-xl border border-slate-800 text-xs">
         <span class="text-slate-400 text-[11px] font-semibold pl-1 truncate">
-          Atendiendo a: <b id="lblCompradorActivoBarra" class="text-emerald-400">Comprador A</b> (<span id="lblDiaActivoBarra" class="text-sky-300">Día 1</span>)
+          Atendiendo a: <b id="lblCompradorActivoBarra" class="text-emerald-400">Comprador A</b> (<span id="lblDiaActivoBarra" class="text-sky-300">Entrega 1</span>)
         </span>
         <div class="flex items-center gap-2">
+          <!-- BOTÓN IMPLEMENTADO PARA EXPORTAR REPORTE DETALLADO EN PDF -->
+          <button type="button" onclick="abrirReporteDetalladoPDF()" class="px-3 py-1 bg-purple-700 hover:bg-purple-600 text-white font-bold rounded-lg text-xs active:scale-95 transition flex items-center gap-1 shadow" title="Exportar todas las listas de tara, pollos y totales en hoja completa PDF">
+            📄 Reporte Detallado PDF
+          </button>
           <button type="button" onclick="sincronizarDesdeGoogleSheets()" class="px-2.5 py-1 bg-emerald-950 border border-emerald-600 text-emerald-300 font-bold rounded-lg text-xs active:scale-95 transition">
             🔄 Traer de Sheets
           </button>
           <button type="button" onclick="confirmarLimpiezaTotal()" class="px-2.5 py-1 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-lg text-xs active:scale-95 transition">
-            ⚠️ Limpiar Tablas Día
+            ⚠️ Limpiar Tablas
           </button>
         </div>
       </section>
 
-      <!-- REJILLA RESPONSIVA -->
+      <!-- REJILLA RESPONSIVA: BALANZA + TABLAS -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 items-start">
 
         <!-- DISPLAY BALANZA -->
@@ -363,11 +370,11 @@
 
           </div>
 
-          <!-- PANEL DE LIQUIDACIÓN DEL DÍA -->
+          <!-- PANEL DE LIQUIDACIÓN -->
           <section class="bg-slate-900 border-2 border-emerald-500/50 p-3 sm:p-4 rounded-3xl space-y-3 shadow-xl">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-2 border-b border-slate-800 text-xs">
               <span class="font-bold text-slate-300 uppercase tracking-wider truncate">
-                Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b> (<span id="lblLiquidacionDiaNombre" class="text-sky-300">Día 1</span>)
+                Liquidación: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b> (<span id="lblLiquidacionDiaNombre" class="text-sky-300">Entrega 1</span>)
               </span>
               <span class="text-slate-400 text-[10px] sm:text-[11px] font-mono shrink-0" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
@@ -398,7 +405,7 @@
             <!-- TOTAL A COBRAR -->
             <div class="bg-emerald-950/40 border border-emerald-500/60 p-2.5 sm:p-3 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
               <div>
-                <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR ESTE DÍA</span>
+                <span class="text-[10px] sm:text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR EN ESTA ENTREGA</span>
                 <span class="text-[9px] text-slate-400">Neto Vivo × Precio por Kg</span>
               </div>
               <div id="resumenTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 self-end sm:self-auto">
@@ -408,10 +415,10 @@
 
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button type="button" onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 transition text-center truncate">
-                🧾 Ver Ticket del Día
+                🧾 Ver Ticket de Caja
               </button>
               <button type="button" onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs font-bold text-white transition text-center truncate">
-                ☁ Guardar en Drive
+                ☁ Guardar PDF en Drive
               </button>
             </div>
             <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3 truncate"></div>
@@ -421,59 +428,19 @@
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y GRÁFICOS ESTADÍSTICOS -->
+    <!-- ======================================================== -->
+    <!-- VISTA 2: DASHBOARD EXCLUSIVO (SIN SECCIÓN DE COMPRADOR) -->
+    <!-- ======================================================== -->
     <div id="vistaDashboard" class="hidden space-y-4">
       
-      <!-- BARRA DE FILTROS VINCULADOS A ESTADÍSTICAS Y GRÁFICOS -->
-      <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow space-y-2.5">
-        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
-          <span class="text-xs sm:text-sm font-bold text-amber-400 flex items-center gap-1.5">
-            🔍 Filtros Analíticos en Tiempo Real:
-          </span>
-          <button type="button" onclick="limpiarFiltrosDashboard()" class="text-[11px] text-slate-400 hover:text-white font-bold underline">
-            Restablecer Filtros
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Campaña:</label>
-            <select id="filtroCampana" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
-              <option value="TODAS">⭐ Todas las Campañas</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Comprador:</label>
-            <select id="filtroComprador" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
-              <option value="TODOS">👥 Todos los Compradores</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Mes / Año:</label>
-            <select id="filtroMes" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
-              <option value="TODOS">📅 Todos los Meses</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Jornada / Día:</label>
-            <select id="filtroDia" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
-              <option value="TODOS">🌞 Todos los Días</option>
-            </select>
-          </div>
-        </div>
-      </section>
-
-      <!-- KPIS DINÁMICOS FILTRADOS -->
+      <!-- KPIS TOTALES DE CAMPAÑAS -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Facturación Filtrada</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
+            <span class="truncate">Facturación Total</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
           </div>
           <div id="dashTotalFacturado" class="text-lg sm:text-2xl font-black font-digital text-emerald-400 my-0.5 truncate">S/. 0.00</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate" id="subDashFacturado">Según filtros aplicados</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Suma global de campañas</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
@@ -484,73 +451,66 @@
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Compradores Activos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
+            <span class="truncate">Campañas Totales</span><span class="text-purple-400 font-bold shrink-0">LOTES</span>
           </div>
-          <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Clientes en el periodo</p>
+          <div id="dashTotalCampanas" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Lotes registrados</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Tara Neta Utilizada</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
+            <span class="truncate">Tara Neta Total</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
           </div>
           <div id="dashTotalTaraKg" class="text-lg sm:text-2xl font-black font-digital text-amber-400 my-0.5 truncate">0.00 kg</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando sobrantes</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando devoluciones</p>
         </div>
       </section>
 
-      <!-- 3 GRÁFICOS COMPARATIVOS VINCULADOS A LOS FILTROS -->
-      <section class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+      <!-- 2 GRÁFICAS ESTADÍSTICAS: COMPARATIVO ENTRE CAMPAÑAS Y DINERO -->
+      <section class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
         
-        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
+        <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
-              📊 Comparativo: Kilos Netos vs Tara Usada
+              📊 Comparación Gráfica entre Campañas (Kilos Netos vs Tara)
             </h3>
-            <span class="text-[10px] font-mono text-emerald-400 font-semibold">FILTRADO</span>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold">CAMPAÑAS</span>
           </div>
-          <div class="h-60 sm:h-72 w-full relative">
-            <canvas id="chartKilos"></canvas>
+          <div class="h-64 sm:h-72 w-full relative">
+            <canvas id="chartKilosCampanas"></canvas>
           </div>
         </div>
 
-        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
+        <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
-              📈 Facturación en Soles (S/.)
+              📈 Cantidad de Dinero por Campaña (S/.)
             </h3>
             <span class="text-[10px] font-mono text-emerald-400 font-semibold">SOLES</span>
           </div>
-          <div class="h-60 sm:h-72 w-full relative">
-            <canvas id="chartSoles"></canvas>
-          </div>
-        </div>
-
-        <div class="lg:col-span-12 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
-          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
-            <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
-              🍩 Participación y Cuota de Compra por Cliente (%)
-            </h3>
-            <span class="text-[10px] font-mono text-slate-400">DISTRIBUCIÓN</span>
-          </div>
-          <div class="h-60 sm:h-64 w-full relative">
-            <canvas id="chartDona"></canvas>
+          <div class="h-64 sm:h-72 w-full relative">
+            <canvas id="chartDineroCampanas"></canvas>
           </div>
         </div>
 
       </section>
 
-      <!-- TABLA RESUMEN VINCULADA -->
+      <!-- CUADRO COMPARATIVO DETALLADO CON FECHAS REALES -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-6 shadow-xl space-y-3">
-        <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-2.5">
-          📋 Cuadro Comparativo Detallado Según Filtros
-        </h2>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+          <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide">
+            📋 Cuadro Comparativo Detallado de Ventas por Entrega y Fecha
+          </h2>
+          <span class="text-[11px] text-slate-400 font-mono">Desglose exacto sin agrupaciones ficticias</span>
+        </div>
+        
         <div class="overflow-x-auto w-full">
           <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
               <tr>
                 <th class="p-2 sm:p-3">CAMPAÑA</th>
                 <th class="p-2 sm:p-3">COMPRADOR</th>
-                <th class="p-2 sm:p-3 text-center">JORNADA / DÍA</th>
+                <th class="p-2 sm:p-3 text-center">FECHA OFICIAL</th>
+                <th class="p-2 sm:p-3 text-center">ENTREGA</th>
                 <th class="p-2 sm:p-3 text-center">TARA INI</th>
                 <th class="p-2 sm:p-3 text-center">SOBRANTE (-)</th>
                 <th class="p-2 sm:p-3 text-center">TARA USADA</th>
@@ -579,7 +539,7 @@
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
         <div class="flex justify-between"><span>Campaña:</span><b id="tktCampana">-</b></div>
         <div class="flex justify-between"><span>Comprador:</span><b id="tktCliente">-</b></div>
-        <div class="flex justify-between"><span>Jornada / Día:</span><b id="tktJornadaDia">-</b></div>
+        <div class="flex justify-between"><span>Entrega:</span><b id="tktJornadaDia">-</b></div>
         <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
         <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
       </div>
@@ -603,6 +563,146 @@
     </div>
   </div>
 
+  <!-- MODAL: REPORTE DETALLADO COMPLETO EN HOJA A4 PARA IMPRIMIR / PDF -->
+  <div id="modalReporteDetallado" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
+    <div class="bg-white text-slate-900 w-full max-w-4xl rounded-2xl p-4 sm:p-8 shadow-2xl relative space-y-4 font-sans max-h-[92vh] overflow-y-auto">
+      
+      <!-- Botón de Cerrar -->
+      <button type="button" onclick="cerrarReporteDetallado()" class="absolute top-4 right-4 text-slate-400 hover:text-black font-black text-xl p-1">✕</button>
+
+      <!-- ÁREA IMPRIMIBLE A4 -->
+      <div id="areaImpresionReporte" class="space-y-4">
+        
+        <!-- Encabezado Oficial -->
+        <div class="border-b-2 border-slate-800 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h2 id="repMarcaTitulo" class="text-xl sm:text-2xl font-black text-slate-900 uppercase">Control Galpón IoT</h2>
+            <p class="text-xs text-slate-600">Hoja Oficial de Liquidación y Detalle de Pesadas</p>
+          </div>
+          <div class="text-left sm:text-right font-mono text-xs text-slate-600">
+            <p><b>Fecha y Hora:</b> <span id="repFechaHora">-</span></p>
+            <p><b>Campaña:</b> <span id="repCampana">-</span></p>
+          </div>
+        </div>
+
+        <!-- Ficha del Cliente y Entrega -->
+        <div class="bg-slate-100 p-3 rounded-xl border border-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div><span class="text-slate-500 block">Comprador:</span><b id="repComprador" class="text-slate-900 text-sm">-</b></div>
+          <div><span class="text-slate-500 block">Entrega / Jornada:</span><b id="repJornada" class="text-slate-900 text-sm">-</b></div>
+          <div><span class="text-slate-500 block">Precio x Kg Pactado:</span><b id="repPrecioKg" class="text-emerald-700 text-sm">-</b></div>
+          <div><span class="text-slate-500 block">Observación / Nota:</span><span id="repNota" class="text-slate-800">-</span></div>
+        </div>
+
+        <!-- TABLAS COMPLETAS EN 3 COLUMNAS PARALELAS -->
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          
+          <!-- Tabla 1: Tara Inicial -->
+          <div class="border border-slate-300 rounded-xl overflow-hidden">
+            <div class="bg-amber-100 border-b border-slate-300 p-2 font-black text-amber-900 flex justify-between">
+              <span>📦 1. TARA INICIAL</span>
+              <span id="repCntTara">0 pesadas</span>
+            </div>
+            <div class="max-h-64 overflow-y-auto">
+              <table class="w-full text-center font-mono text-[11px]">
+                <thead class="bg-slate-50 text-slate-600 border-b">
+                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
+                </thead>
+                <tbody id="repTbodyTara" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabla 2: Con Pollos (Bruto) -->
+          <div class="border border-slate-300 rounded-xl overflow-hidden">
+            <div class="bg-sky-100 border-b border-slate-300 p-2 font-black text-sky-900 flex justify-between">
+              <span>🍗 2. CON POLLOS</span>
+              <span id="repCntPollos">0 pesadas</span>
+            </div>
+            <div class="max-h-64 overflow-y-auto">
+              <table class="w-full text-center font-mono text-[11px]">
+                <thead class="bg-slate-50 text-slate-600 border-b">
+                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
+                </thead>
+                <tbody id="repTbodyPollos" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Tabla 3: Tara Sobrante (-) -->
+          <div class="border border-slate-300 rounded-xl overflow-hidden">
+            <div class="bg-rose-100 border-b border-slate-300 p-2 font-black text-rose-900 flex justify-between">
+              <span>🔄 3. SOBRANTE (-)</span>
+              <span id="repCntSobrante">0 pesadas</span>
+            </div>
+            <div class="max-h-64 overflow-y-auto">
+              <table class="w-full text-center font-mono text-[11px]">
+                <thead class="bg-slate-50 text-slate-600 border-b">
+                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
+                </thead>
+                <tbody id="repTbodySobrante" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- CUADRO DE RESUMEN Y TOTALES MATEMÁTICOS -->
+        <div class="border-2 border-slate-800 rounded-2xl p-4 bg-slate-50 space-y-2">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
+            <div class="bg-white p-2 rounded-xl border border-slate-300">
+              <span class="text-slate-500 block font-sans text-[10px]">Total Tara Inicial:</span>
+              <b id="repTotTaraIni" class="text-sm text-slate-800">0.00 kg</b>
+            </div>
+            <div class="bg-white p-2 rounded-xl border border-slate-300">
+              <span class="text-slate-500 block font-sans text-[10px]">Tara Sobrante (-):</span>
+              <b id="repTotTaraSob" class="text-sm text-rose-700">-0.00 kg</b>
+            </div>
+            <div class="bg-white p-2 rounded-xl border border-slate-300">
+              <span class="text-slate-500 block font-sans text-[10px]">Tara Real Utilizada:</span>
+              <b id="repTotTaraNeta" class="text-sm text-amber-800">0.00 kg</b>
+            </div>
+            <div class="bg-white p-2 rounded-xl border border-slate-300">
+              <span class="text-slate-500 block font-sans text-[10px]">Peso Bruto Pollos:</span>
+              <b id="repTotBruto" class="text-sm text-sky-800">0.00 kg</b>
+            </div>
+          </div>
+
+          <div class="bg-emerald-100 border border-emerald-400 p-3 rounded-xl flex justify-between items-center">
+            <div>
+              <span class="text-xs font-black text-emerald-900 uppercase block">PESO NETO CARNE VIVA:</span>
+              <span class="text-[10px] text-emerald-700 font-mono">(Peso Bruto Pollos - Tara Real Usada)</span>
+            </div>
+            <div id="repPesoNetoVivo" class="text-xl sm:text-2xl font-black font-mono text-emerald-900">
+              0.00 kg
+            </div>
+          </div>
+
+          <div class="bg-slate-900 text-white p-3.5 rounded-xl flex justify-between items-center">
+            <div>
+              <span class="text-xs sm:text-sm font-black text-amber-400 uppercase tracking-wide block">TOTAL A COBRAR EN SOLES:</span>
+              <span class="text-[10px] text-slate-300">Neto Vivo × Precio por Kg</span>
+            </div>
+            <div id="repTotalSolesFinal" class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
+              S/. 0.00
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- BOTONES DE ACCIÓN PARA EL REPORTE -->
+      <div class="pt-2 flex flex-col sm:flex-row gap-2 border-t border-slate-200">
+        <button type="button" onclick="window.print()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5 shadow">
+          🖨️ Imprimir / Guardar como PDF
+        </button>
+        <button type="button" onclick="cerrarReporteDetallado()" class="py-3 px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition">
+          Cerrar
+        </button>
+      </div>
+
+    </div>
+  </div>
+
   <script>
     // ========================================================
     // PEGA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
@@ -612,18 +712,23 @@
     let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
     let clienteActivo = 'COMPRADOR_A';
-    let jornadaActiva = 'Dia_1';
+    let jornadaActiva = 'Entrega_1';
     let modoFechaActual = 'auto';
 
-    let chartKilosInstance = null;
-    let chartSolesInstance = null;
-    let chartDonaInstance = null;
+    let chartKilosCampanasInstance = null;
+    let chartDineroCampanasInstance = null;
 
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
-      subtitulo: 'Comprador Único con Múltiples Días',
+      subtitulo: 'Pesaje & Liquidación por Campaña',
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
+
+    function obtenerFechaIsoLocalActual() {
+      const now = new Date();
+      const offset = now.getTimezoneOffset() * 60000;
+      return (new Date(now - offset)).toISOString().slice(0, 16);
+    }
 
     function normalizarBaseDatos(rawObj) {
       const limpia = {};
@@ -640,7 +745,7 @@
             limpia[cId][keyUnica] = {
               nombre: nombreReal,
               dias: cli.dias || {
-                'Dia_1': { tara: cli.tara || [], sobrante: cli.sobrante || [], pollos: cli.pollos || [], precio: cli.precio || '4.10', nota: cli.nota || '', fecha: new Date().toISOString().slice(0, 10) }
+                'Entrega_1': { tara: cli.tara || [], sobrante: cli.sobrante || [], pollos: cli.pollos || [], precio: cli.precio || '4.10', nota: cli.nota || '', fechaHora: obtenerFechaIsoLocalActual() }
               }
             };
           } else {
@@ -653,20 +758,20 @@
       return limpia;
     }
 
-    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v22')) || {
+    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v24')) || {
       'Campana_1': {
         'COMPRADOR_A': {
           nombre: 'Comprador A',
-          dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+          dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
         }
       }
     });
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v22', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v24', JSON.stringify(database));
     }
 
-    // SINCRONIZACIÓN DESDE GOOGLE SHEETS
+    // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
         mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
@@ -706,8 +811,7 @@
           guardarEnLocalStorage();
           cargarSelectorCampanas();
           seleccionarCampana();
-          poblarOpcionesFiltrosDashboard();
-          mostrarToast("✅ Sincronizado sin duplicados desde Sheets", "exito");
+          mostrarToast("✅ Datos sincronizados desde Google Sheets", "exito");
         } else {
           mostrarToast("Sincronizado (sin datos nuevos)", "info");
         }
@@ -723,6 +827,8 @@
       document.getElementById('imgLogoApp').src = brandConfig.logoUrl;
       const tktTit = document.getElementById('tktTituloMarca');
       if (tktTit) tktTit.innerText = brandConfig.titulo;
+      const repTit = document.getElementById('repMarcaTitulo');
+      if (repTit) repTit.innerText = brandConfig.titulo;
     }
 
     function abrirAjustesMarca() {
@@ -755,7 +861,7 @@
       });
     }
 
-    // FECHA Y HORA
+    // GESTIÓN DE FECHA Y HORA UNIFICADA
     setInterval(() => {
       if (modoFechaActual === 'auto') {
         const d = new Date();
@@ -783,9 +889,13 @@
         bAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
         cAuto.classList.add('hidden');
         iMan.classList.remove('hidden');
-        if (!iMan.value) {
-          const now = new Date();
-          iMan.value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+
+        const c = database[campanaActiva][clienteActivo];
+        const diaData = (c && c.dias && c.dias[jornadaActiva]) ? c.dias[jornadaActiva] : null;
+        if (diaData && diaData.fechaHora && diaData.fechaHora.includes('T')) {
+          iMan.value = diaData.fechaHora;
+        } else {
+          iMan.value = obtenerFechaIsoLocalActual();
         }
         actualizarFechaManualEnTicket();
       }
@@ -807,9 +917,9 @@
       if (tktF) tktF.innerText = obtenerFechaHoraSeleccionada();
     }
 
-    // BOTÓN EXCLUSIVO: GUARDAR FECHA MANUAL EN SHEETS
     async function guardarFechaManualEnSheets() {
       const fechaExacta = obtenerFechaHoraSeleccionada();
+      const valInput = document.getElementById('inputFechaManual').value || obtenerFechaIsoLocalActual();
       const sel = document.getElementById('selClienteActivo');
       const keyCli = sel && sel.value ? sel.value : clienteActivo;
       
@@ -817,7 +927,7 @@
       const c = database[campanaActiva][keyCli];
       const diaData = c.dias[jornadaActiva];
       
-      diaData.fecha = fechaExacta;
+      diaData.fechaHora = valInput;
       guardarEnLocalStorage();
       actualizarFechaManualEnTicket();
 
@@ -838,7 +948,7 @@
             fecha: fechaExacta
           })
         });
-        mostrarToast(`✅ Fecha "${fechaExacta}" fijada y guardada`, "exito");
+        mostrarToast(`✅ Fecha fijada para ${jornadaActiva.replace(/_/g, ' ')}`, "exito");
       } catch (e) {
         mostrarToast("Fecha guardada localmente", "info");
       } finally {
@@ -847,7 +957,7 @@
       }
     }
 
-    // TOASTS Y MODAL NATIVO
+    // TOASTS Y MODAL
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -900,19 +1010,13 @@
 
     function ejecutarConfirmacionModal() {
       const inputVal = document.getElementById('modalInput').value;
-      if (modalCallback) {
-        modalCallback(inputVal);
-      }
+      if (modalCallback) modalCallback(inputVal);
       cerrarCustomModal();
     }
 
-    // ========================================================
-    // BOTÓN + CLIENTE 100% OPERATIVO Y SIN ERRORES
-    // ========================================================
+    // BOTÓN + CLIENTE
     function abrirModalNuevoCliente() {
-      if (!database[campanaActiva]) {
-        database[campanaActiva] = {};
-      }
+      if (!database[campanaActiva]) database[campanaActiva] = {};
 
       const clientesActuales = Object.keys(database[campanaActiva]);
       const numSiguiente = clientesActuales.length + 1;
@@ -935,7 +1039,6 @@
           const nombreLimpio = nombre.trim();
           const keyUnica = nombreLimpio.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
 
-          // Si ya existe
           if (database[campanaActiva][keyUnica]) {
             mostrarToast(`El comprador "${nombreLimpio}" ya existe en esta campaña`, "aviso");
             clienteActivo = keyUnica;
@@ -943,27 +1046,25 @@
             return;
           }
 
-          // Crear cliente nuevo
           database[campanaActiva][keyUnica] = {
             nombre: nombreLimpio,
             dias: {
-              'Dia_1': { 
+              'Entrega_1': { 
                 tara: [], 
                 sobrante: [], 
                 pollos: [], 
                 precio: document.getElementById('txtPrecio') ? document.getElementById('txtPrecio').value : '4.10', 
                 nota: '', 
-                fecha: new Date().toISOString().slice(0, 10) 
+                fechaHora: obtenerFechaIsoLocalActual()
               }
             }
           };
 
           guardarEnLocalStorage();
           clienteActivo = keyUnica;
-          jornadaActiva = 'Dia_1';
+          jornadaActiva = 'Entrega_1';
           
           cargarSelectorClientes();
-          poblarOpcionesFiltrosDashboard();
           mostrarToast(`✅ Comprador "${nombreLimpio}" creado y seleccionado`, 'exito');
         }
       });
@@ -985,7 +1086,7 @@
       abrirCustomModal({
         titulo: '⚠️ ¿Eliminar Comprador?',
         subtitulo: `Eliminación de ${nombreCliente}`,
-        htmlBody: `Se eliminarán <b>todas las compras, pesadas y jornadas</b> de <b>${nombreCliente}</b> en esta campaña.<br><br><span class="text-rose-400 font-bold">* Se eliminará también su pestaña de Google Sheets.</span>`,
+        htmlBody: `Se eliminarán <b>todas las compras y pesadas</b> de <b>${nombreCliente}</b> en esta campaña.<br><br><span class="text-rose-400 font-bold">* Se eliminará también su pestaña de Google Sheets.</span>`,
         textoBtn: 'Sí, Eliminar Comprador',
         colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
         onConfirm: async () => {
@@ -995,18 +1096,16 @@
           if (clavesRestantes.length === 0) {
             database[campanaActiva]['COMPRADOR_A'] = {
               nombre: 'Comprador A',
-              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+              dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
             };
             clienteActivo = 'COMPRADOR_A';
           } else {
             clienteActivo = clavesRestantes[0];
           }
 
-          jornadaActiva = 'Dia_1';
+          jornadaActiva = 'Entrega_1';
           guardarEnLocalStorage();
           cargarSelectorClientes();
-          poblarOpcionesFiltrosDashboard();
-          aplicarFiltrosDashboard();
           mostrarToast(`Comprador "${nombreCliente}" eliminado con éxito`, 'aviso');
 
           try {
@@ -1065,8 +1164,6 @@
 
           guardarEnLocalStorage();
           cargarSelectorClientes();
-          poblarOpcionesFiltrosDashboard();
-          aplicarFiltrosDashboard();
           mostrarToast(`Comprador actualizado a "${nuevoNombre}"`, 'exito');
 
           try {
@@ -1126,7 +1223,7 @@
       if (!c) return;
 
       if (!c.dias) {
-        c.dias = { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } };
+        c.dias = { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } };
       }
       Object.keys(c.dias).forEach(dKey => {
         const opt = document.createElement('option');
@@ -1135,7 +1232,7 @@
         selD.appendChild(opt);
       });
       if (!c.dias[jornadaActiva]) {
-        jornadaActiva = Object.keys(c.dias)[0] || 'Dia_1';
+        jornadaActiva = Object.keys(c.dias)[0] || 'Entrega_1';
       }
       selD.value = jornadaActiva;
       cargarDatosJornadaActiva();
@@ -1167,6 +1264,15 @@
       if (lblCB) lblCB.innerText = c.nombre || clienteActivo;
       if (lblDB) lblDB.innerText = jornadaActiva.replace(/_/g, ' ');
 
+      const iMan = document.getElementById('inputFechaManual');
+      if (iMan) {
+        if (diaData.fechaHora && diaData.fechaHora.includes('T')) {
+          iMan.value = diaData.fechaHora;
+        } else {
+          iMan.value = obtenerFechaIsoLocalActual();
+        }
+      }
+
       actualizarFechaManualEnTicket();
       renderizarTablas();
     }
@@ -1175,15 +1281,14 @@
       const c = database[campanaActiva][clienteActivo];
       if (!c) return;
       const numDia = Object.keys(c.dias || {}).length + 1;
-      const fechaHoy = new Date().toLocaleDateString('es-PE').replace(/\//g, '-');
       
       abrirCustomModal({
-        titulo: 'Agregar Día de Compra',
+        titulo: 'Agregar Nueva Entrega',
         subtitulo: `Para ${c.nombre}`,
-        htmlBody: `Identifique la nueva jornada para este comprador:`,
+        htmlBody: `Identifique la nueva entrega o lote para este comprador:`,
         esInput: true,
-        valorInput: `Día ${numDia} - ${fechaHoy}`,
-        textoBtn: 'Crear Día',
+        valorInput: `Entrega ${numDia}`,
+        textoBtn: 'Crear Entrega',
         colorBtn: 'bg-sky-500 hover:bg-sky-400 text-slate-950',
         onConfirm: (nombreDia) => {
           if (!nombreDia || nombreDia.trim() === '') return;
@@ -1194,13 +1299,12 @@
             pollos: [], 
             precio: document.getElementById('txtPrecio') ? document.getElementById('txtPrecio').value : '4.10', 
             nota: '', 
-            fecha: new Date().toISOString().slice(0, 10) 
+            fechaHora: obtenerFechaIsoLocalActual()
           };
           guardarEnLocalStorage();
           jornadaActiva = keyDia;
           cargarSelectorDias();
-          poblarOpcionesFiltrosDashboard();
-          mostrarToast(`Jornada agregada para ${c.nombre}`, 'exito');
+          mostrarToast(`Entrega agregada para ${c.nombre}`, 'exito');
         }
       });
     }
@@ -1574,11 +1678,12 @@
       } catch (err) {
         mostrarToast("Error al conectar con Drive", "error");
       } finally {
-        btn.innerText = "☁️ Guardar en Drive";
+        btn.innerText = "☁️ Guardar PDF en Drive";
         btn.disabled = false;
       }
     }
 
+    // TICKET TÉRMICO
     function abrirTicketTermico() {
       const c = database[campanaActiva][clienteActivo];
       const diaData = c.dias[jornadaActiva];
@@ -1611,98 +1716,99 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
-    // DASHBOARD Y FILTROS
-    function poblarOpcionesFiltrosDashboard() {
-      const fCamp = document.getElementById('filtroCampana');
-      const fCli = document.getElementById('filtroComprador');
-      const fMes = document.getElementById('filtroMes');
-      const fDia = document.getElementById('filtroDia');
+    // ========================================================
+    // REPORTE DETALLADO COMPLETO EN HOJA A4 (PDF / IMPRESIÓN)
+    // ========================================================
+    function abrirReporteDetalladoPDF() {
+      const c = database[campanaActiva][clienteActivo];
+      if (!c) return;
+      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [] };
+      if (!diaData.sobrante) diaData.sobrante = [];
 
-      if (!fCamp || !fCli || !fMes || !fDia) return;
+      const sumTaraIni = diaData.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = diaData.sobrante.reduce((a, b) => a + b, 0);
+      const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
+      const sumBruto = diaData.pollos.reduce((a, b) => a + b, 0);
+      const neto = Math.max(0, sumBruto - taraNetaUsada);
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
+      const soles = neto * precio;
 
-      const campanas = Object.keys(database);
-      const clientesUnicos = new Set();
-      const mesesUnicos = new Set();
-      const diasUnicos = new Set();
+      // Llenar Ficha Oficial
+      document.getElementById('repMarcaTitulo').innerText = brandConfig.titulo;
+      document.getElementById('repFechaHora').innerText = obtenerFechaHoraSeleccionada();
+      document.getElementById('repCampana').innerText = campanaActiva.replace(/_/g, ' ');
+      document.getElementById('repComprador').innerText = c.nombre;
+      document.getElementById('repJornada').innerText = jornadaActiva.replace(/_/g, ' ');
+      document.getElementById('repPrecioKg').innerText = `S/. ${precio.toFixed(2)}`;
+      document.getElementById('repNota').innerText = diaData.nota || 'Sin notas adicionales';
 
-      campanas.forEach(cId => {
-        const objCli = database[cId] || {};
-        Object.keys(objCli).forEach(cliKey => {
-          const cli = objCli[cliKey];
-          if (!cli) return;
-          if (cli.nombre) clientesUnicos.add(cli.nombre);
-          Object.keys(cli.dias || {}).forEach(dKey => {
-            diasUnicos.add(dKey);
-            const fechaStr = (cli.dias[dKey] && cli.dias[dKey].fecha) ? String(cli.dias[dKey].fecha) : '';
-            if (fechaStr.length >= 7) {
-              mesesUnicos.add(fechaStr.slice(0, 7));
-            }
-          });
-        });
+      // Llenar Lista Tara Inicial
+      const tbTara = document.getElementById('repTbodyTara');
+      tbTara.innerHTML = '';
+      diaData.tara.forEach((val, i) => {
+        tbTara.innerHTML += `<tr><td class="p-1 text-slate-500 font-bold">${i+1}</td><td class="p-1 font-semibold text-slate-900">${val.toFixed(2)}</td></tr>`;
       });
+      document.getElementById('repCntTara').innerText = `${diaData.tara.length} pesadas`;
 
-      fCamp.innerHTML = '<option value="TODAS">⭐ Todas las Campañas</option>';
-      campanas.forEach(c => {
-        fCamp.innerHTML += `<option value="${c}">${c.replace(/_/g, ' ')}</option>`;
+      // Llenar Lista Con Pollos
+      const tbPollos = document.getElementById('repTbodyPollos');
+      tbPollos.innerHTML = '';
+      diaData.pollos.forEach((val, i) => {
+        tbPollos.innerHTML += `<tr><td class="p-1 text-slate-500 font-bold">${i+1}</td><td class="p-1 font-semibold text-slate-900">${val.toFixed(2)}</td></tr>`;
       });
+      document.getElementById('repCntPollos').innerText = `${diaData.pollos.length} pesadas`;
 
-      fCli.innerHTML = '<option value="TODOS">👥 Todos los Compradores</option>';
-      clientesUnicos.forEach(nombre => {
-        fCli.innerHTML += `<option value="${nombre}">${nombre}</option>`;
+      // Llenar Lista Tara Sobrante
+      const tbSob = document.getElementById('repTbodySobrante');
+      tbSob.innerHTML = '';
+      diaData.sobrante.forEach((val, i) => {
+        tbSob.innerHTML += `<tr><td class="p-1 text-slate-500 font-bold">${i+1}</td><td class="p-1 font-semibold text-rose-700">${val.toFixed(2)}</td></tr>`;
       });
+      document.getElementById('repCntSobrante').innerText = `${diaData.sobrante.length} pesadas`;
 
-      fMes.innerHTML = '<option value="TODOS">📅 Todos los Meses</option>';
-      mesesUnicos.forEach(m => {
-        fMes.innerHTML += `<option value="${m}">${m}</option>`;
-      });
+      // Llenar Totales Matemáticos
+      document.getElementById('repTotTaraIni').innerText = `${sumTaraIni.toFixed(2)} kg`;
+      document.getElementById('repTotTaraSob').innerText = `-${sumTaraSob.toFixed(2)} kg`;
+      document.getElementById('repTotTaraNeta').innerText = `${taraNetaUsada.toFixed(2)} kg`;
+      document.getElementById('repTotBruto').innerText = `${sumBruto.toFixed(2)} kg`;
+      document.getElementById('repPesoNetoVivo').innerText = `${neto.toFixed(2)} kg`;
+      document.getElementById('repTotalSolesFinal').innerText = `S/. ${soles.toFixed(2)}`;
 
-      fDia.innerHTML = '<option value="TODOS">🌞 Todos los Días</option>';
-      diasUnicos.forEach(d => {
-        fDia.innerHTML += `<option value="${d}">${d.replace(/_/g, ' ')}</option>`;
-      });
+      document.getElementById('modalReporteDetallado').classList.remove('hidden');
     }
 
-    function limpiarFiltrosDashboard() {
-      document.getElementById('filtroCampana').value = 'TODAS';
-      document.getElementById('filtroComprador').value = 'TODOS';
-      document.getElementById('filtroMes').value = 'TODOS';
-      document.getElementById('filtroDia').value = 'TODOS';
-      aplicarFiltrosDashboard();
+    function cerrarReporteDetallado() {
+      document.getElementById('modalReporteDetallado').classList.add('hidden');
     }
 
-    function aplicarFiltrosDashboard() {
-      const selCamp = document.getElementById('filtroCampana').value;
-      const selCli = document.getElementById('filtroComprador').value;
-      const selMes = document.getElementById('filtroMes').value;
-      const selDia = document.getElementById('filtroDia').value;
-
+    // ========================================================
+    // DASHBOARD: COMPARACIÓN GRÁFICA ENTRE CAMPAÑAS Y DINERO
+    // ========================================================
+    function renderizarDashboard() {
       let facturacionTotal = 0;
       let kilosNetosGlobal = 0;
       let totalTaraUsadaGlobal = 0;
-      const compradoresUnicosFiltrados = new Set();
 
       const tbody = document.getElementById('cuerpoTablaDashboard');
       tbody.innerHTML = '';
 
-      const mapaAgrupado = {};
+      const campanasTotales = {};
 
       Object.keys(database).forEach(cId => {
-        if (selCamp !== 'TODAS' && cId !== selCamp) return;
+        const nombreCampana = cId.replace(/_/g, ' ');
+        if (!campanasTotales[nombreCampana]) {
+          campanasTotales[nombreCampana] = { netos: 0, taras: 0, soles: 0 };
+        }
 
         const objCli = database[cId] || {};
         Object.keys(objCli).forEach(cliKey => {
           const cli = objCli[cliKey];
           if (!cli) return;
           const nombreCliente = cli.nombre;
-          if (selCli !== 'TODOS' && nombreCliente !== selCli) return;
 
           Object.keys(cli.dias || {}).forEach(dKey => {
-            if (selDia !== 'TODOS' && dKey !== selDia) return;
-
             const dData = cli.dias[dKey];
             if (!dData) return;
-            const fechaD = dData.fecha ? String(dData.fecha) : '';
-            if (selMes !== 'TODOS' && !fechaD.startsWith(selMes)) return;
 
             const sIni = dData.tara.reduce((a, b) => a + b, 0);
             const sSob = (dData.sobrante || []).reduce((a, b) => a + b, 0);
@@ -1715,20 +1821,18 @@
             facturacionTotal += sTotal;
             kilosNetosGlobal += sNeto;
             totalTaraUsadaGlobal += sTaraUsada;
-            compradoresUnicosFiltrados.add(nombreCliente);
 
-            const claveAgrupacion = (selCamp === 'TODAS') ? `${cId.replace(/_/g, ' ')} - ${nombreCliente}` : nombreCliente;
-            if (!mapaAgrupado[claveAgrupacion]) {
-              mapaAgrupado[claveAgrupacion] = { netos: 0, taras: 0, soles: 0 };
-            }
-            mapaAgrupado[claveAgrupacion].netos += sNeto;
-            mapaAgrupado[claveAgrupacion].taras += sTaraUsada;
-            mapaAgrupado[claveAgrupacion].soles += sTotal;
+            campanasTotales[nombreCampana].netos += sNeto;
+            campanasTotales[nombreCampana].taras += sTaraUsada;
+            campanasTotales[nombreCampana].soles += sTotal;
+
+            let fechaVenta = dData.fechaHora ? dData.fechaHora.replace('T', ' ') : '-';
 
             tbody.innerHTML += `
               <tr>
-                <td class="p-2 sm:p-3 font-bold text-amber-400">${cId.replace(/_/g, ' ')}</td>
+                <td class="p-2 sm:p-3 font-bold text-amber-400">${nombreCampana}</td>
                 <td class="p-2 sm:p-3 text-slate-200 font-semibold">${nombreCliente}</td>
+                <td class="p-2 sm:p-3 text-center text-emerald-400 font-mono">${fechaVenta}</td>
                 <td class="p-2 sm:p-3 text-center text-sky-400 font-bold">${dKey.replace(/_/g, ' ')}</td>
                 <td class="p-2 sm:p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
                 <td class="p-2 sm:p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
@@ -1744,21 +1848,22 @@
 
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
-      document.getElementById('dashTotalClientes').innerText = compradoresUnicosFiltrados.size;
+      document.getElementById('dashTotalCampanas').innerText = Object.keys(database).length;
       document.getElementById('dashTotalTaraKg').innerText = `${totalTaraUsadaGlobal.toFixed(2)} kg`;
 
-      const labels = Object.keys(mapaAgrupado);
-      const dataNetos = labels.map(k => parseFloat(mapaAgrupado[k].netos.toFixed(2)));
-      const dataTaras = labels.map(k => parseFloat(mapaAgrupado[k].taras.toFixed(2)));
-      const dataSoles = labels.map(k => parseFloat(mapaAgrupado[k].soles.toFixed(2)));
+      const campanaLabels = Object.keys(campanasTotales);
+      const campanaNetos = campanaLabels.map(c => parseFloat(campanasTotales[c].netos.toFixed(2)));
+      const campanaTaras = campanaLabels.map(c => parseFloat(campanasTotales[c].taras.toFixed(2)));
+      const campanaDinero = campanaLabels.map(c => parseFloat(campanasTotales[c].soles.toFixed(2)));
 
-      actualizarGraficosAvanzados(labels, dataNetos, dataTaras, dataSoles);
+      actualizarGraficosCampanas(campanaLabels, campanaNetos, campanaTaras, campanaDinero);
     }
 
-    function actualizarGraficosAvanzados(labels, netos, taras, soles) {
-      const ctxK = document.getElementById('chartKilos').getContext('2d');
-      if (chartKilosInstance) chartKilosInstance.destroy();
-      chartKilosInstance = new Chart(ctxK, {
+    function actualizarGraficosCampanas(labels, netos, taras, dinero) {
+      // Gráfica 1: Kilos Netos vs Tara por Campaña
+      const ctxK = document.getElementById('chartKilosCampanas').getContext('2d');
+      if (chartKilosCampanasInstance) chartKilosCampanasInstance.destroy();
+      chartKilosCampanasInstance = new Chart(ctxK, {
         type: 'bar',
         data: {
           labels: labels.length ? labels : ['Sin datos'],
@@ -1790,21 +1895,22 @@
         }
       });
 
-      const ctxS = document.getElementById('chartSoles').getContext('2d');
-      if (chartSolesInstance) chartSolesInstance.destroy();
-      chartSolesInstance = new Chart(ctxS, {
+      // Gráfica 2: Dinero por Campaña (S/.)
+      const ctxD = document.getElementById('chartDineroCampanas').getContext('2d');
+      if (chartDineroCampanasInstance) chartDineroCampanasInstance.destroy();
+      chartDineroCampanasInstance = new Chart(ctxD, {
         type: 'line',
         data: {
           labels: labels.length ? labels : ['Sin datos'],
           datasets: [{
-            label: 'Facturación (S/.)',
-            data: soles.length ? soles : [0],
+            label: 'Total Dinero a Cobrar (S/.)',
+            data: dinero.length ? dinero : [0],
             borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+            backgroundColor: 'rgba(16, 185, 129, 0.25)',
             fill: true,
             tension: 0.35,
             pointBackgroundColor: '#34d399',
-            pointRadius: 5
+            pointRadius: 6
           }]
         },
         options: {
@@ -1814,29 +1920,6 @@
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-          }
-        }
-      });
-
-      const ctxD = document.getElementById('chartDona').getContext('2d');
-      if (chartDonaInstance) chartDonaInstance.destroy();
-      chartDonaInstance = new Chart(ctxD, {
-        type: 'doughnut',
-        data: {
-          labels: labels.length ? labels : ['Sin datos'],
-          datasets: [{
-            label: 'Ingresos (S/.)',
-            data: soles.length ? soles : [1],
-            backgroundColor: [
-              '#10b981', '#f59e0b', '#38bdf8', '#a855f7', '#ec4899', '#6366f1', '#14b8a6'
-            ]
-          }]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { position: 'right', labels: { color: '#cbd5e1' } }
           }
         }
       });
@@ -1861,7 +1944,7 @@
         database[campanaActiva] = {
           'COMPRADOR_A': {
             nombre: 'Comprador A',
-            dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+            dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
           }
         };
       }
@@ -1881,14 +1964,13 @@
           database[id] = {
             'COMPRADOR_A': {
               nombre: 'Comprador A',
-              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+              dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
             }
           };
           guardarEnLocalStorage();
           campanaActiva = id;
           cargarSelectorCampanas();
           seleccionarCampana();
-          poblarOpcionesFiltrosDashboard();
         }
       });
     }
@@ -1907,7 +1989,6 @@
           campanaActiva = nuevoId;
           cargarSelectorCampanas();
           seleccionarCampana();
-          poblarOpcionesFiltrosDashboard();
         }
       });
     }
@@ -1929,7 +2010,7 @@
             database['Campana_1'] = {
               'COMPRADOR_A': {
                 nombre: 'Comprador A',
-                dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+                dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
               }
             };
             campanaActiva = 'Campana_1';
@@ -1940,7 +2021,6 @@
           guardarEnLocalStorage();
           cargarSelectorCampanas();
           seleccionarCampana();
-          poblarOpcionesFiltrosDashboard();
           mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
 
           try {
@@ -1977,8 +2057,7 @@
         if (bPesDesk) bPesDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition";
         if (bDashMob) bDashMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950";
         if (bPesMob) bPesMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300";
-        poblarOpcionesFiltrosDashboard();
-        aplicarFiltrosDashboard();
+        renderizarDashboard();
       }
     }
 
@@ -2050,9 +2129,9 @@
       if (!c) return;
 
       abrirCustomModal({
-        titulo: '⚠️ Limpiar Tablas del Día',
+        titulo: '⚠️ Limpiar Tablas de la Entrega',
         subtitulo: `${jornadaActiva.replace(/_/g, ' ')} de ${c.nombre}`,
-        htmlBody: `Se vaciarán las pesadas de este día puntual.<br><br>¿Desea continuar?`,
+        htmlBody: `Se vaciarán las pesadas de esta entrega puntual.<br><br>¿Desea continuar?`,
         textoBtn: 'Sí, Limpiar',
         colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
         onConfirm: () => {
@@ -2062,7 +2141,7 @@
           diaData.pollos = [];
           guardarEnLocalStorage();
           renderizarTablas();
-          mostrarToast('Tablas del día limpiadas', 'aviso');
+          mostrarToast('Tablas de la entrega limpiadas', 'aviso');
         }
       });
     }
@@ -2071,7 +2150,6 @@
       aplicarConfiguracionMarca();
       cargarSelectorCampanas();
       seleccionarCampana();
-      poblarOpcionesFiltrosDashboard();
       sincronizarDesdeGoogleSheets();
     };
   </script>
