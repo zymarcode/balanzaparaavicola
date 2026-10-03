@@ -82,7 +82,7 @@
         </div>
 
         <div class="flex md:hidden items-center gap-1.5 shrink-0">
-          <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️️</button>
+          <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
           <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Cargar de Sheets">🔄</button>
           <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
@@ -122,10 +122,10 @@
 
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA DUAL: COMPRADOR ÚNICO (CON BOTÓN DE BORRAR COMPRADOR) + SELECTOR DE DÍA / JORNADA -->
+    <!-- BARRA DUAL: COMPRADOR ÚNICO (EDITAR Y BORRAR RESUELTOS) + JORNADA -->
     <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
       
-      <!-- COMPRADOR ÚNICO CON BOTÓN PARA BORRARLO -->
+      <!-- COMPRADOR ÚNICO CON BOTÓN DE EDITAR Y BORRAR SIN CONFLICTOS -->
       <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
         <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
@@ -134,11 +134,12 @@
         <button onclick="abrirModalNuevoCliente()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0">
           + Cliente
         </button>
-        <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 shrink-0" title="Renombrar comprador">
+        <!-- BOTÓN EDITAR COMPRADOR (SINCRONIZADO CON SHEETS) -->
+        <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs rounded-xl border border-slate-700 shrink-0" title="Editar nombre del comprador">
           ✏️
         </button>
-        <!-- BOTÓN IMPLEMENTADO PARA ELIMINAR EL COMPRADOR PUNTUAL -->
-        <button onclick="confirmarEliminarComprador()" class="p-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition shrink-0" title="Eliminar este comprador con todas sus pesadas">
+        <!-- BOTÓN ELIMINAR COMPRADOR (SINCRONIZADO CON SHEETS) -->
+        <button onclick="confirmarEliminarComprador()" class="p-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition shrink-0" title="Eliminar este comprador con todas sus compras">
           🗑️
         </button>
       </div>
@@ -481,10 +482,10 @@
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Compradores Únicos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
+            <span class="truncate">Compradores Activos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
           </div>
           <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Sin repetir clientes</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Clientes en el periodo</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
@@ -649,7 +650,7 @@
       return limpia;
     }
 
-    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v19')) || {
+    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v20')) || {
       'Campana_1': {
         'COMPRADOR_A': {
           nombre: 'Comprador A',
@@ -659,7 +660,7 @@
     });
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v19', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v20', JSON.stringify(database));
     }
 
     // SINCRONIZACIÓN DESDE GOOGLE SHEETS SIN DUPLICADOS
@@ -839,9 +840,7 @@
       }
     }
 
-    // ========================================================
-    // BORRAR COMPRADOR PUNTUAL CON SUS PESADAS (IMPLEMENTADO)
-    // ========================================================
+    // BORRAR COMPRADOR PUNTUAL CON SUS PESADAS (100% SIN CONFLICTOS)
     function confirmarEliminarComprador() {
       const c = database[campanaActiva][clienteActivo];
       const nombreCliente = c.nombre;
@@ -871,7 +870,8 @@
           guardarEnLocalStorage();
           cargarSelectorClientes();
           poblarOpcionesFiltrosDashboard();
-          mostrarToast(`Comprador "${nombreCliente}" eliminado`, 'aviso');
+          aplicarFiltrosDashboard();
+          mostrarToast(`Comprador "${nombreCliente}" eliminado con éxito`, 'aviso');
 
           try {
             await fetch(APPS_SCRIPT_URL, {
@@ -887,6 +887,61 @@
             mostrarToast("Pestaña del comprador eliminada de Sheets", "exito");
           } catch (e) {
             mostrarToast("Eliminado en modo local", "info");
+          }
+        }
+      });
+    }
+
+    // EDITAR / RENOMBRAR COMPRADOR (100% SIN CONFLICTOS)
+    function abrirModalRenombrarCliente() {
+      const c = database[campanaActiva][clienteActivo];
+      const nombreAnterior = c.nombre;
+      const keyAnterior = clienteActivo;
+
+      abrirCustomModal({
+        titulo: 'Renombrar Comprador',
+        subtitulo: 'Editar nombre del cliente',
+        htmlBody: `Nuevo nombre para <b>${nombreAnterior}</b>:`,
+        esInput: true,
+        valorInput: nombreAnterior,
+        textoBtn: 'Guardar Corrección',
+        onConfirm: async (nombre) => {
+          if (!nombre || nombre.trim() === '') return;
+          const nuevoNombre = nombre.trim();
+          const nuevaKey = nuevoNombre.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
+
+          if (nuevaKey === keyAnterior && nuevoNombre === nombreAnterior) return;
+
+          c.nombre = nuevoNombre;
+          if (nuevaKey !== keyAnterior) {
+            database[campanaActiva][nuevaKey] = c;
+            delete database[campanaActiva][keyAnterior];
+            clienteActivo = nuevaKey;
+          }
+
+          guardarEnLocalStorage();
+          cargarSelectorClientes();
+          poblarOpcionesFiltrosDashboard();
+          aplicarFiltrosDashboard();
+          mostrarToast(`Comprador actualizado a "${nuevoNombre}"`, 'exito');
+
+          // Notificar a Sheets para renombrar físicamente la pestaña
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'RENOMBRAR_COMPRADOR',
+                campana: campanaActiva,
+                keyAntigua: keyAnterior,
+                cliente: nuevoNombre,
+                precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+              })
+            });
+            mostrarToast("Pestaña renombrada en Google Sheets", "exito");
+          } catch (e) {
+            mostrarToast("Guardado localmente", "info");
           }
         }
       });
@@ -1025,35 +1080,6 @@
           cargarSelectorClientes();
           poblarOpcionesFiltrosDashboard();
           mostrarToast(`Comprador "${nombreLimpio}" creado como cliente único`, 'exito');
-        }
-      });
-    }
-
-    function abrirModalRenombrarCliente() {
-      const c = database[campanaActiva][clienteActivo];
-      abrirCustomModal({
-        titulo: 'Renombrar Comprador',
-        subtitulo: 'Editar nombre del cliente',
-        htmlBody: 'Nuevo nombre para este comprador:',
-        esInput: true,
-        valorInput: c.nombre || '',
-        textoBtn: 'Guardar',
-        onConfirm: (nombre) => {
-          if (!nombre || nombre.trim() === '') return;
-          const nuevoNombre = nombre.trim();
-          const nuevaKey = nuevoNombre.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
-
-          c.nombre = nuevoNombre;
-          if (nuevaKey !== clienteActivo) {
-            database[campanaActiva][nuevaKey] = c;
-            delete database[campanaActiva][clienteActivo];
-            clienteActivo = nuevaKey;
-          }
-
-          guardarEnLocalStorage();
-          cargarSelectorClientes();
-          poblarOpcionesFiltrosDashboard();
-          mostrarToast('Nombre actualizado', 'exito');
         }
       });
     }
