@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title id="htmlDocTitle">Sistema de Pesaje y Dashboard Avícola</title>
+  <title id="htmlDocTitle">Sistema de Pesaje y Liquidación Avícola</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,15 +31,15 @@
   <!-- TOASTS -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- MODAL DINÁMICO (PARA EDITAR, CREAR O CONFIRMAR) -->
+  <!-- MODAL DINÁMICO -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
         <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400">
-          ⚙️
+          ⚖️
         </div>
         <div>
-          <h3 id="modalTitle" class="text-sm font-bold text-white">Gestión del Sistema</h3>
+          <h3 id="modalTitle" class="text-sm font-bold text-white">Gestión de Galpón</h3>
           <p id="modalSubtitle" class="text-[11px] text-slate-400">Acción interactiva</p>
         </div>
       </div>
@@ -69,39 +69,31 @@
         </div>
         <div>
           <h1 id="txtTituloApp" class="text-sm sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
-          <p id="txtSubtituloApp" class="text-[10px] sm:text-xs text-slate-400">Taras, Cargas & Dashboard Multicampaña</p>
+          <p id="txtSubtituloApp" class="text-[10px] sm:text-xs text-slate-400">Multicomprador & Control de Tara Sobrante</p>
         </div>
       </div>
       
       <div class="flex items-center gap-2">
         <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow">
-          ⚖️ Registro Pesaje
+          ⚖️ Pesaje
         </button>
         <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white">
           📊 Dashboard
         </button>
-        <button onclick="abrirAjustesMarca()" title="Personalizar Título, Subtítulo y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700">
-          ⚙️ Marca
+        <button onclick="abrirAjustesMarca()" title="Personalizar Título y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700">
+          ⚙️
         </button>
       </div>
 
-      <!-- GESTIÓN COMPLETA DE CAMPAÑA (SELECTOR, EDITAR Y CREAR NUEVA) -->
+      <!-- SELECTOR DE CAMPAÑA -->
       <div class="flex items-center gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
         <span class="text-xs text-slate-400 font-bold hidden sm:inline pl-1">Campaña:</span>
-        <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none">
+        <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-2 py-1.5 outline-none">
           <option value="Campana_1">Campaña 1</option>
           <option value="Campana_2">Campaña 2</option>
         </select>
-        
-        <!-- BOTÓN PARA EDITAR / RENOMBRAR LA CAMPAÑA ACTIVA -->
-        <button onclick="abrirModalEditarCampana()" title="Renombrar la campaña actual" class="p-2 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-xl text-xs transition border border-slate-700">
-          ✏️
-        </button>
-
-        <!-- BOTÓN PARA CREAR NUEVA CAMPAÑA -->
-        <button onclick="abrirModalNuevaCampana()" title="Crear nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2.5 py-1.5 rounded-xl text-xs font-black shadow transition">
-          + Nueva
-        </button>
+        <button onclick="abrirModalEditarCampana()" title="Renombrar campaña" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded-lg text-xs border border-slate-700">✏️</button>
+        <button onclick="abrirModalNuevaCampana()" title="Nueva campaña" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2 py-1.5 rounded-lg text-xs font-black transition">+ Nueva</button>
       </div>
     </div>
   </header>
@@ -109,71 +101,62 @@
   <!-- CONTENEDOR PRINCIPAL -->
   <main class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1 space-y-4">
     
-    <!-- VISTA 1: REGISTRO DE PESAJE -->
-    <div id="vistaPesaje" class="space-y-4">
+    <!-- BARRA MULTICOMPRADOR DENTRO DE LA CAMPAÑA -->
+    <section class="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-bold text-amber-400">👤 Comprador Activo:</span>
+        <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
+          <option value="Cliente_A">Comprador A</option>
+          <option value="Cliente_B">Comprador B</option>
+        </select>
+        <button onclick="abrirModalNuevoCliente()" class="px-2.5 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition shadow">
+          + Agregar Comprador
+        </button>
+        <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-lg border border-slate-700" title="Renombrar comprador">
+          ✏️
+        </button>
+      </div>
       
-      <!-- CONFIGURACIÓN DE LOTE Y PRECIO -->
-      <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
-        <div class="sm:col-span-4">
-          <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador / Cliente:</label>
-          <input id="txtCliente" type="text" placeholder="Ej. Distribuidor Lima" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
-        </div>
-        <div class="sm:col-span-3">
-          <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Galpón / Lote:</label>
-          <input id="txtGalpon" type="text" placeholder="Ej. Galpón 4" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs sm:text-sm text-white focus:border-amber-400 outline-none">
-        </div>
-        <div class="sm:col-span-3">
-          <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Precio x Kg (S/.):</label>
-          <div class="relative">
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-8 pr-3 py-2 text-xs sm:text-sm font-bold text-emerald-400 focus:border-emerald-400 outline-none">
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <label class="text-[11px] text-slate-400 font-semibold">Precio x Kg:</label>
+          <div class="relative w-24">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
+            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-6 pr-2 py-1 text-xs font-bold text-emerald-400 outline-none">
           </div>
         </div>
-        <div class="sm:col-span-2">
-          <button onclick="guardarDatosLote()" class="w-full bg-slate-800 hover:bg-slate-700 border border-slate-600 text-amber-400 font-bold py-2 rounded-xl text-xs sm:text-sm transition active:scale-95">
-            Fijar Lote
-          </button>
-        </div>
-      </section>
+        <button onclick="guardarDatosClienteEnSheets()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-600 text-amber-300 font-bold rounded-xl text-xs active:scale-95 transition">
+          Fijar Lote
+        </button>
+      </div>
+    </section>
 
-      <!-- FECHA/HORA Y NOTA GENERAL INDEPENDIENTE -->
-      <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-        <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+    <!-- VISTA 1: REGISTRO DE PESAJE -->
+    <div id="vistaPesaje" class="space-y-4">
+
+      <!-- FECHA/HORA Y NOTA GENERAL -->
+      <section class="bg-slate-900 border border-slate-800 p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+        <div class="sm:col-span-5 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold flex items-center gap-1">🕒 Fecha y Hora de Registro:</span>
-            <div class="flex items-center gap-1.5">
-              <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Automático</button>
+            <span class="text-slate-400 font-semibold">🕒 Fecha / Hora:</span>
+            <div class="flex items-center gap-1">
+              <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Auto</button>
               <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
             </div>
           </div>
-          <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 py-1 px-1">
-            <span id="txtRelojEnVivo">Cargando fecha...</span>
+          <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400">
+            <span id="txtRelojEnVivo">Cargando...</span>
           </div>
-          <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-amber-400 font-mono">
+          <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-0.5 text-xs text-white outline-none font-mono">
         </div>
 
-        <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
+        <div class="sm:col-span-7 bg-slate-950 p-2 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1">
-            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación Independiente:</label>
-            <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota del Comprador:</label>
+            <input id="txtNotaGeneral" type="text" placeholder="Ej. Trajo 50 jabas, camioneta blanca..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-white outline-none focus:border-amber-400">
           </div>
-          <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
-            Guardar Nota
-          </button>
-        </div>
-      </section>
-
-      <!-- BARRA DE ACCIONES -->
-      <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800 text-xs">
-        <span class="text-slate-400 text-[11px] font-semibold pl-1">
-          📌 Campaña activa: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
-        </span>
-        <div class="flex items-center gap-2">
-          <button onclick="actualizarSistema()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
-            🔄 Actualizar Datos
-          </button>
-          <button onclick="confirmarLimpiezaTotal()" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
-            ⚠️ Limpiar Tablas de Campaña
+          <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
+            Guardar
           </button>
         </div>
       </section>
@@ -182,169 +165,152 @@
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
         <!-- DISPLAY BALANZA -->
-        <div class="lg:col-span-6 bg-slate-900 border-2 border-slate-800 p-4 sm:p-6 rounded-3xl shadow-xl space-y-4">
-          <div class="flex items-center justify-between text-xs sm:text-sm border-b border-slate-800 pb-2">
+        <div class="lg:col-span-5 bg-slate-900 border-2 border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-3.5">
+          <div class="flex items-center justify-between text-xs border-b border-slate-800 pb-2">
             <span class="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
-              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> EN LÍNEA
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> BALANZA CONECTADA
             </span>
-            <button onclick="alternarCamaraOCR()" class="bg-amber-500/20 border border-amber-500/50 text-amber-300 px-3 py-1.5 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1.5 transition">
+            <button onclick="alternarCamaraOCR()" class="bg-amber-500/20 border border-amber-500/50 text-amber-300 px-2.5 py-1 rounded-xl text-xs font-bold active:scale-95 flex items-center gap-1">
               📷 Cámara OCR
             </button>
           </div>
 
-          <div class="bg-black py-6 sm:py-10 px-4 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
-            <span class="absolute top-2 left-3 sm:top-3 sm:left-4 text-[10px] sm:text-xs text-emerald-700 font-mono tracking-widest uppercase">
-              Visor Balanza
-            </span>
-            <div id="visorDisplay" class="font-digital text-6xl sm:text-8xl xl:text-9xl text-emerald-400 led-glow font-black tracking-tight my-2 select-none">
+          <div class="bg-black py-5 px-3 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
+            <div id="visorDisplay" class="font-digital text-6xl sm:text-7xl xl:text-8xl text-emerald-400 led-glow font-black tracking-tight my-1 select-none">
               0.00
             </div>
-            <span class="absolute bottom-2 right-4 sm:bottom-3 sm:right-6 text-emerald-500 font-digital text-base sm:text-2xl font-bold">
-              KG
-            </span>
+            <span class="absolute bottom-2 right-4 text-emerald-500 font-digital text-lg font-bold">KG</span>
           </div>
 
-          <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-2">
+          <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800 space-y-1.5">
             <div class="flex justify-between items-center text-xs">
-              <label class="text-slate-300 font-bold">⌨ Peso de Balanza (con decimales exactos):</label>
-              <span class="text-slate-500 text-[11px]">Soporta coma (,) o punto (.)</span>
+              <label class="text-slate-300 font-bold">⌨ Peso Balanza:</label>
+              <span class="text-slate-500 text-[10px]">Punto (.) o coma (,)</span>
             </div>
             <div class="flex gap-2">
-              <input id="inputPesoManual" type="text" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl sm:text-3xl px-4 py-2 rounded-xl text-center outline-none">
-              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl text-xs font-bold active:scale-95">Borrar</button>
+              <input id="inputPesoManual" type="text" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl px-3 py-1.5 rounded-xl text-center outline-none">
+              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl text-xs font-bold active:scale-95">Borrar</button>
             </div>
           </div>
 
           <!-- MÓDULO OCR -->
-          <div id="panelOCR" class="hidden p-3 bg-black border-2 border-amber-500/60 rounded-2xl space-y-3">
-            <div class="flex justify-between items-center text-xs text-amber-300 font-bold">
-              <span>Enfoque los números dentro del recuadro:</span>
-              <button onclick="alternarCamaraOCR()" class="text-slate-400 hover:text-white text-sm font-bold">✕ Cerrar</button>
-            </div>
-            <div class="relative w-full h-48 sm:h-60 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
+          <div id="panelOCR" class="hidden p-2.5 bg-black border-2 border-amber-500/60 rounded-2xl space-y-2">
+            <div class="relative w-full h-44 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
               <video id="videoCamara" class="w-full h-full object-cover" autoplay playsinline></video>
-              <div class="absolute border-2 border-dashed border-emerald-400 w-4/5 h-20 rounded-lg pointer-events-none flex items-center justify-center">
-                <span class="text-[10px] bg-black/80 text-emerald-300 px-2 py-0.5 rounded font-mono">Dígitos aquí</span>
-              </div>
+              <div class="absolute border-2 border-dashed border-emerald-400 w-4/5 h-16 rounded-lg pointer-events-none"></div>
             </div>
             <canvas id="canvasPreprocesador" class="hidden"></canvas>
-            <button onclick="capturarNumeroFielOCR()" id="btnDispararOCR" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl active:scale-95 transition shadow-lg">
+            <button onclick="capturarNumeroFielOCR()" id="btnDispararOCR" class="w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs rounded-xl shadow">
               📸 Capturar Número
             </button>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
-            <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border-2 border-amber-500 bg-amber-500 text-slate-950 shadow-lg active:scale-95 transition text-center">
-              📦 1. TARA (JABAS)
+          <!-- SELECTOR DE FASE DE 3 VÍAS (TARA INICIAL, CON POLLOS Y TARA SOBRANTE) -->
+          <div class="grid grid-cols-3 gap-1.5">
+            <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
+              📦 1. TARA INICIAL
             </button>
-            <button onclick="seleccionarTipo('CON_POLLOS')" id="btnTipoPollos" class="py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border border-slate-700 bg-slate-900 text-slate-400 active:scale-95 transition text-center">
-              🍗 2. CON POLLOS (BRUTO)
+            <button onclick="seleccionarTipo('CON_POLLOS')" id="btnTipoPollos" class="py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight">
+              🍗 2. CON POLLOS
+            </button>
+            <button onclick="seleccionarTipo('TARA_SOBRANTE')" id="btnTipoSobrante" class="py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight" title="Pesar jabas vacías que no se usaron">
+              🔄 3. SOBRANTE (-)
             </button>
           </div>
 
-          <button onclick="guardarPesadaActual()" id="btnGuardar" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-xl transition flex items-center justify-center gap-2">
-            <span>💾 GUARDAR PESADA EN GOOGLE SHEETS</span>
+          <button onclick="guardarPesadaActual()" id="btnGuardar" class="w-full py-3.5 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-black text-sm rounded-2xl shadow-xl transition">
+            💾 GUARDAR PESADA
           </button>
         </div>
 
-        <!-- TABLAS PARALELAS CON CRUD -->
-        <div class="lg:col-span-6 space-y-4">
+        <!-- 3 TABLAS PARALELAS: TARA INICIAL, CON POLLOS Y SOBRANTE -->
+        <div class="lg:col-span-7 space-y-4">
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             
-            <!-- TABLA TARA -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
-              <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
-                <span class="text-xs font-black uppercase text-amber-400">📦 1. TARA</span>
-                <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0.00 kg</span>
+            <!-- 1. TARA INICIAL -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+              <div class="flex justify-between items-center pb-1 border-b border-slate-800">
+                <span class="text-[11px] font-black uppercase text-amber-400">📦 TARA INICIAL</span>
+                <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0 kg</span>
               </div>
-              
-              <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
-                <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
-                  <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
-                </label>
-              </div>
-
-              <div class="overflow-y-auto max-h-72 border border-slate-800 rounded-xl">
+              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
-                  <thead class="bg-amber-950/70 text-amber-300 sticky top-0 border-b border-slate-800">
-                    <tr>
-                      <th class="p-2 w-10">N°</th>
-                      <th class="p-2">PESO (KG)</th>
-                      <th class="p-2 w-20">ACCIONES</th>
-                    </tr>
+                  <thead class="bg-amber-950/70 text-amber-300 sticky top-0">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
                   </thead>
-                  <tbody id="tablaTaraBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
+                  <tbody id="tablaTaraBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
               </div>
             </div>
 
-            <!-- TABLA CON POLLOS -->
-            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
-              <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
-                <span class="text-xs font-black uppercase text-sky-400">🐔 2. CON POLLOS</span>
-                <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0.00 kg</span>
+            <!-- 2. CON POLLOS (BRUTO) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+              <div class="flex justify-between items-center pb-1 border-b border-slate-800">
+                <span class="text-[11px] font-black uppercase text-sky-400">🍗 CON POLLOS</span>
+                <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0 kg</span>
               </div>
-
-              <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
-                <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
-                  <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
-                </label>
-              </div>
-
-              <div class="overflow-y-auto max-h-72 border border-slate-800 rounded-xl">
+              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
                 <table class="w-full text-xs font-mono text-center">
-                  <thead class="bg-sky-950/70 text-sky-300 sticky top-0 border-b border-slate-800">
-                    <tr>
-                      <th class="p-2 w-10">N°</th>
-                      <th class="p-2">PESO (KG)</th>
-                      <th class="p-2 w-20">ACCIONES</th>
-                    </tr>
+                  <thead class="bg-sky-950/70 text-sky-300 sticky top-0">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
                   </thead>
-                  <tbody id="tablaPollosBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
+                  <tbody id="tablaPollosBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- 3. TARA SOBRANTE (RESTANTE / DEVOLUCIÓN) -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-2.5 shadow space-y-1.5">
+              <div class="flex justify-between items-center pb-1 border-b border-slate-800">
+                <span class="text-[11px] font-black uppercase text-rose-400">🔄 SOBRANTE (-)</span>
+                <span id="badgeSubtotalSobrante" class="text-xs font-mono font-bold text-rose-300">0 kg</span>
+              </div>
+              <div class="overflow-y-auto max-h-56 border border-slate-800 rounded-xl">
+                <table class="w-full text-xs font-mono text-center">
+                  <thead class="bg-rose-950/70 text-rose-300 sticky top-0">
+                    <tr><th class="p-1">N°</th><th class="p-1">KG</th><th class="p-1">✕</th></tr>
+                  </thead>
+                  <tbody id="tablaSobranteBody" class="divide-y divide-slate-800 text-slate-200"></tbody>
                 </table>
               </div>
             </div>
 
           </div>
 
-          <!-- PANEL DE TOTALES -->
-          <section class="bg-slate-900 border-2 border-emerald-500/50 p-4 rounded-3xl space-y-3.5 shadow-xl">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs sm:text-sm">
-              <span class="font-bold text-slate-300 uppercase tracking-wider text-[11px] sm:text-xs">Liquidación del Lote</span>
-              <span id="lblCampanaActualBadge" class="text-amber-400 font-bold font-mono">Campaña 1</span>
+          <!-- PANEL DE LIQUIDACIÓN EXACTA CON TARA SOBRANTE -->
+          <section class="bg-slate-900 border-2 border-emerald-500/50 p-4 rounded-3xl space-y-3 shadow-xl">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
+              <span class="font-bold text-slate-300 uppercase tracking-wider">Liquidación del Comprador: <b id="lblLiquidacionClienteNombre" class="text-emerald-400">Comprador A</b></span>
+              <span class="text-slate-400 text-[11px] font-mono" id="lblFormulaTaraUsada">Tara Usada: 0 kg</span>
             </div>
 
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center font-mono">
-              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Total Tara</span>
-                <span id="resumenTara" class="text-sm sm:text-base font-bold text-amber-400">0.00</span>
-                <span id="cntPesadasTara" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center font-mono">
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 block font-sans">Tara Neta Usada</span>
+                <span id="resumenTaraNeta" class="text-sm font-bold text-amber-400">0.00 kg</span>
+                <span class="text-[9px] text-slate-500 block font-sans">(Inicial - Sobrante)</span>
               </div>
-              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Total con Pollos</span>
-                <span id="resumenBruto" class="text-sm sm:text-base font-bold text-sky-400">0.00</span>
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
+                <span class="text-[10px] text-slate-400 block font-sans">Peso Bruto Pollos</span>
+                <span id="resumenBruto" class="text-sm font-bold text-sky-400">0.00 kg</span>
                 <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
               </div>
-              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo</span>
-                <span id="resumenNeto" class="text-sm sm:text-base font-bold text-emerald-400">0.00</span>
-                <span class="text-[9px] text-slate-500 block font-sans">Bruto - Tara</span>
+                <span id="resumenNeto" class="text-sm font-bold text-emerald-400">0.00 kg</span>
+                <span class="text-[9px] text-slate-500 block font-sans">Bruto - Tara Neta</span>
               </div>
-              <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
+              <div class="bg-slate-950 p-2 rounded-2xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 block font-sans">Precio x Kg</span>
-                <span id="resumenPrecio" class="text-sm sm:text-base font-bold text-purple-400">S/. 4.10</span>
+                <span id="resumenPrecio" class="text-sm font-bold text-purple-400">S/. 4.10</span>
                 <span class="text-[9px] text-slate-500 block font-sans">Pactado</span>
               </div>
             </div>
 
-            <div class="bg-emerald-950/40 border border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between">
+            <div class="bg-emerald-950/40 border border-emerald-500/60 p-3 rounded-2xl flex items-center justify-between">
               <div>
-                <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR</span>
+                <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR A ESTE CLIENTE</span>
                 <span class="text-[10px] text-slate-400">Neto Vivo × Precio por Kg</span>
               </div>
               <div id="resumenTotalSoles" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400">
@@ -353,77 +319,69 @@
             </div>
 
             <div class="grid grid-cols-2 gap-2 pt-1">
-              <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200 active:scale-95 transition">
-                🧾 Ver / Imprimir Ticket
+              <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs font-bold text-slate-200 active:scale-95 transition">
+                🧾 Ver Ticket Cliente
               </button>
-              <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs sm:text-sm font-bold text-white active:scale-95 transition">
+              <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs font-bold text-white active:scale-95 transition">
                 ☁️ Guardar PDF en Drive
               </button>
             </div>
-            <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-4"></div>
+            <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-3"></div>
           </section>
 
         </div>
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD -->
+    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL -->
     <div id="vistaDashboard" class="hidden space-y-5">
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Facturación Global</span><span class="text-emerald-400 font-bold">TOTAL</span>
+            <span>Facturación Global Campaña</span><span class="text-emerald-400 font-bold">TOTAL</span>
           </div>
-          <div id="dashTotalFacturado" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 my-1">S/. 0.00</div>
-          <p class="text-[11px] text-slate-500">Suma total de campañas</p>
+          <div id="dashTotalFacturado" class="text-2xl font-black font-digital text-emerald-400 my-1">S/. 0.00</div>
+          <p class="text-[11px] text-slate-500">Suma de todos los compradores</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
             <span>Carne Neta Total</span><span class="text-sky-400 font-bold">VIVO</span>
           </div>
-          <div id="dashTotalNetoKg" class="text-2xl sm:text-3xl font-black font-digital text-sky-400 my-1">0.00 kg</div>
-          <p class="text-[11px] text-slate-500">Kilos netos despachados</p>
+          <div id="dashTotalNetoKg" class="text-2xl font-black font-digital text-sky-400 my-1">0.00 kg</div>
+          <p class="text-[11px] text-slate-500">Kilos totales despachados</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>% Merma de Tara</span><span class="text-amber-400 font-bold">EFICIENCIA</span>
+            <span>Compradores Atendidos</span><span class="text-purple-400 font-bold">CLIENTES</span>
           </div>
-          <div id="dashPorcentajeTara" class="text-2xl sm:text-3xl font-black font-digital text-amber-400 my-1">0.0 %</div>
-          <p class="text-[11px] text-slate-500">Peso plástico / peso bruto</p>
+          <div id="dashTotalClientes" class="text-2xl font-black font-digital text-purple-400 my-1">0</div>
+          <p class="text-[11px] text-slate-500">Lotes de compradores en la campaña</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Campañas Operadas</span><span class="text-purple-400 font-bold">LOTES</span>
+            <span>Tara Neta Global</span><span class="text-amber-400 font-bold">PLÁSTICO</span>
           </div>
-          <div id="dashTotalCampanas" class="text-2xl sm:text-3xl font-black font-digital text-purple-400 my-1">0</div>
-          <p class="text-[11px] text-slate-500">Lotes activos con pesadas</p>
+          <div id="dashTotalTaraKg" class="text-2xl font-black font-digital text-amber-400 my-1">0.00 kg</div>
+          <p class="text-[11px] text-slate-500">Descontando devoluciones</p>
         </div>
       </section>
 
-      <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
-          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">📊 Kilos Netos vs Tara por Campaña</h3>
-          <div class="h-64 sm:h-72"><canvas id="chartKilos"></canvas></div>
-        </div>
-        <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
-          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">📈 Facturación Total a Cobrar (S/.)</h3>
-          <div class="h-64 sm:h-72"><canvas id="chartSoles"></canvas></div>
-        </div>
-      </section>
-
+      <!-- TABLA RESUMEN POR COMPRADOR -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
-        <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">📋 Cuadro Comparativo Multicampaña</h2>
+        <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">
+          👥 Resumen por Comprador en la Campaña Activa
+        </h2>
         <div class="overflow-x-auto">
           <table class="w-full text-xs sm:text-sm text-left font-mono">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800">
               <tr>
-                <th class="p-3">CAMPAÑA</th>
-                <th class="p-3">CLIENTE</th>
-                <th class="p-3 text-center">BRUTO (KG)</th>
-                <th class="p-3 text-center">TARA (KG)</th>
-                <th class="p-3 text-center">NETO VIVO (KG)</th>
-                <th class="p-3 text-center">PRECIO (S/.)</th>
-                <th class="p-3 text-right">TOTAL A COBRAR</th>
+                <th class="p-3">COMPRADOR</th>
+                <th class="p-3 text-center">TARA INI</th>
+                <th class="p-3 text-center">SOBRANTE (-)</th>
+                <th class="p-3 text-center">TARA USADA</th>
+                <th class="p-3 text-center">BRUTO</th>
+                <th class="p-3 text-center">NETO VIVO</th>
+                <th class="p-3 text-right">TOTAL (S/.)</th>
               </tr>
             </thead>
             <tbody id="cuerpoTablaDashboard" class="divide-y divide-slate-800 text-slate-200"></tbody>
@@ -440,19 +398,20 @@
       <button onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
         <h3 id="tktTituloMarca" class="font-black text-sm uppercase">Granja Avícola</h3>
-        <p class="text-[10px] text-slate-600">Comprobante de Pesaje y Liquidación</p>
+        <p class="text-[10px] text-slate-600">Comprobante de Carguío Individual</p>
         <p id="tktFecha" class="text-[9px] text-slate-500 mt-0.5"></p>
       </div>
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
         <div class="flex justify-between"><span>Campaña:</span><b id="tktCampana">-</b></div>
-        <div class="flex justify-between"><span>Cliente:</span><span id="tktCliente">-</span></div>
-        <div class="flex justify-between"><span>Galpón:</span><span id="tktGalpon">-</span></div>
+        <div class="flex justify-between"><span>Comprador:</span><b id="tktCliente">-</b></div>
         <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
         <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
       </div>
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
-        <div class="flex justify-between"><span>Total con Pollos:</span><span id="tktBruto">0.00 kg</span></div>
-        <div class="flex justify-between"><span>Total Tara (Jabas):</span><span id="tktTara">-0.00 kg</span></div>
+        <div class="flex justify-between"><span>Tara Inicial:</span><span id="tktTaraIni">0.00 kg</span></div>
+        <div class="flex justify-between text-rose-700"><span>Tara Sobrante (-):</span><span id="tktTaraSob">-0.00 kg</span></div>
+        <div class="flex justify-between font-bold"><span>Tara Usada:</span><span id="tktTaraUsada">0.00 kg</span></div>
+        <div class="flex justify-between"><span>Peso Bruto:</span><span id="tktBruto">0.00 kg</span></div>
         <div class="flex justify-between font-black text-xs pt-1 border-t border-slate-300">
           <span>PESO NETO VIVO:</span><span id="tktNeto">0.00 kg</span>
         </div>
@@ -463,37 +422,35 @@
       </div>
       <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
         <button onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
-        <button onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁️ Guardar Copia en Drive</button>
+        <button onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁️ Guardar en Drive</button>
       </div>
     </div>
   </div>
 
   <script>
-    // ========================================================
-    // PEGA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
-    // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    let tipoActual = 'TARA';
+    let tipoActual = 'TARA'; // 'TARA', 'CON_POLLOS', 'TARA_SOBRANTE'
     let campanaActiva = 'Campana_1';
+    let clienteActivo = 'Cliente_A';
     let modoFechaActual = 'auto';
-
-    let chartKilosInstance = null;
-    let chartSolesInstance = null;
 
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
-      subtitulo: 'Taras, Cargas & Dashboard Multicampaña',
+      subtitulo: 'Multicomprador & Control de Tara Sobrante',
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v8')) || {
-      'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
-      'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
+    // Estructura Multicomprador dentro de cada Campaña
+    let database = JSON.parse(localStorage.getItem('avicola_db_v9')) || {
+      'Campana_1': {
+        'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' },
+        'Cliente_B': { nombre: 'Comprador B', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+      }
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v8', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v9', JSON.stringify(database));
     }
 
     function aplicarConfiguracionMarca() {
@@ -516,12 +473,8 @@
               <input id="cfgTitulo" type="text" value="${brandConfig.titulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
             </div>
             <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">Subtítulo / Eslogan:</label>
-              <input id="cfgSubtitulo" type="text" value="${brandConfig.subtitulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-            </div>
-            <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">URL del Icono / Logo (Web):</label>
-              <input id="cfgLogoUrl" type="url" value="${brandConfig.logoUrl}" placeholder="https://..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+              <label class="block text-[11px] text-slate-400 font-semibold mb-1">URL del Logo (Web):</label>
+              <input id="cfgLogoUrl" type="url" value="${brandConfig.logoUrl}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
             </div>
           </div>
         `,
@@ -529,78 +482,19 @@
         colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
         onConfirm: () => {
           const tit = document.getElementById('cfgTitulo').value.trim();
-          const sub = document.getElementById('cfgSubtitulo').value.trim();
           const logo = document.getElementById('cfgLogoUrl').value.trim();
           if (tit) brandConfig.titulo = tit;
-          if (sub) brandConfig.subtitulo = sub;
           if (logo) brandConfig.logoUrl = logo;
           localStorage.setItem('avicola_brand', JSON.stringify(brandConfig));
           aplicarConfiguracionMarca();
-          mostrarToast('Marca actualizada con éxito', 'exito');
+          mostrarToast('Marca actualizada', 'exito');
         }
       });
     }
 
     // ========================================================
-    // MODAL EDITAR / RENOMBRAR CAMPAÑA
+    // TOASTS Y MODALES PERSONALIZADOS
     // ========================================================
-    function abrirModalEditarCampana() {
-      const nombreActual = campanaActiva.replace(/_/g, ' ');
-      abrirCustomModal({
-        titulo: 'Editar Nombre de Campaña',
-        subtitulo: `Modificar identificador de ${nombreActual}`,
-        htmlBody: `Ingrese el nuevo nombre para la campaña activa:`,
-        esInput: true,
-        valorInput: nombreActual,
-        textoBtn: 'Guardar y Renombrar',
-        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
-        onConfirm: async (nuevoNombre) => {
-          if (!nuevoNombre || nuevoNombre.trim() === '') {
-            mostrarToast("El nombre de la campaña no puede estar vacío", "error");
-            return;
-          }
-
-          const nuevoId = nuevoNombre.trim().replace(/\s+/g, '_');
-          if (nuevoId === campanaActiva) {
-            mostrarToast("El nombre es el mismo", "info");
-            return;
-          }
-
-          if (database[nuevoId]) {
-            mostrarToast("Ya existe una campaña con ese nombre", "aviso");
-            return;
-          }
-
-          const nombreAntiguoId = campanaActiva;
-          database[nuevoId] = database[nombreAntiguoId];
-          delete database[nombreAntiguoId];
-
-          guardarEnLocalStorage();
-          campanaActiva = nuevoId;
-          cargarSelectorCampanas();
-          seleccionarCampana();
-          mostrarToast(`Campaña renombrada a "${nuevoNombre.trim()}"`, "exito");
-
-          try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'RENOMBRAR_CAMPANA',
-                nombreAntiguo: nombreAntiguoId,
-                nombreNuevo: nuevoId,
-                precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-              })
-            });
-            mostrarToast("Pestaña renombrada en Google Sheets", "exito");
-          } catch(e) {
-            mostrarToast("Renombrada en la app local", "aviso");
-          }
-        }
-      });
-    }
-
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -657,289 +551,109 @@
       cerrarCustomModal();
     });
 
-    // CRUD: EDITAR PESADA
-    function editarItem(tipo, index) {
-      const cData = database[campanaActiva];
-      const lista = (tipo === 'TARA') ? cData.tara : cData.pollos;
-      const valorActual = lista[index];
-
-      abrirCustomModal({
-        titulo: `Editar Pesada #${index + 1}`,
-        subtitulo: `Modificar valor de ${tipo === 'TARA' ? 'Tara' : 'Con Pollos'}`,
-        htmlBody: `Ingrese el nuevo peso en kilogramos:`,
-        esInput: true,
-        valorInput: valorActual.toString(),
-        textoBtn: 'Guardar Corrección',
-        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
-        onConfirm: async (val) => {
-          const num = parseFloat(val.replace(',', '.'));
-          if (isNaN(num) || num <= 0) {
-            mostrarToast("El peso ingresado no es válido", "error");
-            return;
-          }
-          lista[index] = num;
-          guardarEnLocalStorage();
-          renderizarTablas();
-          mostrarToast(`Pesada #${index + 1} actualizada a ${num} kg`, "exito");
-
-          try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'ACTUALIZAR_PESADA', campana: campanaActiva, tipo: tipo, index: index, nuevoPeso: num })
-            });
-          } catch(e){}
-        }
-      });
-    }
-
-    // CRUD: ELIMINAR PESADA INDIVIDUAL
-    function eliminarItem(tipo, index) {
-      const cData = database[campanaActiva];
-      abrirCustomModal({
-        titulo: '¿Eliminar Pesada?',
-        subtitulo: 'Confirmar Eliminación',
-        htmlBody: `¿Está seguro de eliminar la pesada #${index + 1} de la lista de ${tipo === 'TARA' ? 'Tara' : 'Con Pollos'}?`,
-        textoBtn: 'Eliminar',
-        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
-        onConfirm: async () => {
-          if (tipo === 'TARA') cData.tara.splice(index, 1);
-          else cData.pollos.splice(index, 1);
-          guardarEnLocalStorage();
-          renderizarTablas();
-          mostrarToast(`Pesada #${index + 1} eliminada`, "info");
-
-          try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'ELIMINAR_PESADA', campana: campanaActiva, tipo: tipo, index: index })
-            });
-          } catch(e){}
-        }
-      });
-    }
-
-    // LIMPIAR TABLAS
-    function confirmarLimpiezaTotal() {
-      abrirCustomModal({
-        titulo: '⚠️ Limpiar Tablas de Campaña',
-        subtitulo: 'Reinicio de Filas en Pantalla y Sheets',
-        htmlBody: `Esta acción vaciará las pesadas de <b>${campanaActiva.replace(/_/g, ' ')}</b>.<br><br><span class="text-rose-400 font-bold">¿Desea proceder?</span>`,
-        textoBtn: 'Sí, Limpiar',
-        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
-        onConfirm: async () => {
-          database[campanaActiva].pollos = [];
-          database[campanaActiva].tara = [];
-          guardarEnLocalStorage();
-          renderizarTablas();
-          mostrarToast('Tablas de la campaña limpiadas', 'aviso');
-
-          try {
-            await fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ action: 'LIMPIAR_TODO_CAMPANA', campana: campanaActiva })
-            });
-          } catch(e){}
-        }
-      });
-    }
-
-    // CREAR NUEVA CAMPAÑA
-    function abrirModalNuevaCampana() {
-      const num = Object.keys(database).length + 1;
-      abrirCustomModal({
-        titulo: 'Crear Nueva Campaña',
-        subtitulo: 'Gestión de Lotes',
-        htmlBody: 'Ingrese el nombre de la nueva campaña:',
-        esInput: true,
-        valorInput: `Campaña ${num}`,
-        textoBtn: 'Crear Campaña',
-        colorBtn: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950',
-        onConfirm: (nombre) => {
-          if (nombre && nombre.trim() !== '') {
-            const id = nombre.trim().replace(/\s+/g, '_');
-            database[id] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
-            guardarEnLocalStorage();
-            campanaActiva = id;
-            cargarSelectorCampanas();
-            seleccionarCampana();
-            mostrarToast(`Campaña "${nombre.trim()}" creada`, 'exito');
-          }
-        }
-      });
-    }
-
-    async function actualizarSistema() {
-      mostrarToast('Sincronizando y recalculando datos...', 'info');
-      recalcularTotales();
-      renderizarTablas();
-      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
-      try {
-        const cData = database[campanaActiva];
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'GUARDAR_NOTA', campana: campanaActiva, nota: cData.nota || '', precioKg: document.getElementById('txtPrecio').value.replace(',', '.') })
-        });
-        mostrarToast('Datos sincronizados con Google Sheets', 'exito');
-      } catch (e) {
-        mostrarToast('Datos locales recalculados', 'exito');
-      }
-    }
-
-    setInterval(() => {
-      if (modoFechaActual === 'auto') {
-        const d = new Date();
-        document.getElementById('txtRelojEnVivo').innerText = d.toLocaleString('es-PE');
-      }
-    }, 1000);
-
-    function toggleModoFecha(modo) {
-      modoFechaActual = modo;
-      const btnAuto = document.getElementById('btnFechaAuto');
-      const btnManual = document.getElementById('btnFechaManual');
-      const contAuto = document.getElementById('lblFechaAutoCont');
-      const inputMan = document.getElementById('inputFechaManual');
-
-      if (modo === 'auto') {
-        btnAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
-        btnManual.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
-        contAuto.classList.remove('hidden');
-        inputMan.classList.add('hidden');
-      } else {
-        btnManual.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
-        btnAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
-        contAuto.classList.add('hidden');
-        inputMan.classList.remove('hidden');
-        const now = new Date();
-        inputMan.value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
-      }
-    }
-
-    function obtenerFechaHoraSeleccionada() {
-      if (modoFechaActual === 'auto') return new Date().toLocaleString('es-PE');
-      const val = document.getElementById('inputFechaManual').value;
-      if (!val) return new Date().toLocaleString('es-PE');
-      const d = new Date(val);
-      return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE');
-    }
-
-    window.onload = () => {
-      aplicarConfiguracionMarca();
-      document.getElementById('txtRelojEnVivo').innerText = new Date().toLocaleString('es-PE');
-      cargarSelectorCampanas();
-      seleccionarCampana();
-    };
-
-    function cambiarVista(vista) {
-      const pnlPesaje = document.getElementById('vistaPesaje');
-      const pnlDash = document.getElementById('vistaDashboard');
-      const btnPesaje = document.getElementById('btnTabPesaje');
-      const btnDash = document.getElementById('btnTabDashboard');
-
-      if (vista === 'pesaje') {
-        pnlPesaje.classList.remove('hidden');
-        pnlDash.classList.add('hidden');
-        btnPesaje.className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
-        btnDash.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
-      } else {
-        pnlPesaje.classList.add('hidden');
-        pnlDash.classList.remove('hidden');
-        btnDash.className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
-        btnPesaje.className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
-        renderizarDashboard();
-      }
-    }
-
-    function cargarSelectorCampanas() {
-      const sel = document.getElementById('selCampana');
+    // ========================================================
+    // GESTIÓN DE CLIENTES / COMPRADORES
+    // ========================================================
+    function cargarSelectorClientes() {
+      const sel = document.getElementById('selClienteActivo');
       sel.innerHTML = '';
-      Object.keys(database).forEach(cId => {
+      const clientes = database[campanaActiva] || {};
+      Object.keys(clientes).forEach(cKey => {
         const opt = document.createElement('option');
-        opt.value = cId;
-        opt.innerText = cId.replace(/_/g, ' ');
+        opt.value = cKey;
+        opt.innerText = clientes[cKey].nombre || cKey;
         sel.appendChild(opt);
       });
-      sel.value = campanaActiva;
+      if (!clientes[clienteActivo]) {
+        clienteActivo = Object.keys(clientes)[0] || 'Cliente_A';
+      }
+      sel.value = clienteActivo;
     }
 
-    function seleccionarCampana() {
-      campanaActiva = document.getElementById('selCampana').value;
-      if (!database[campanaActiva]) {
-        database[campanaActiva] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
+    function cambiarClienteActivo() {
+      clienteActivo = document.getElementById('selClienteActivo').value;
+      cargarDatosClienteActivo();
+    }
+
+    function cargarDatosClienteActivo() {
+      if (!database[campanaActiva][clienteActivo]) {
+        database[campanaActiva][clienteActivo] = { nombre: clienteActivo, tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
       }
-      const cData = database[campanaActiva];
-      document.getElementById('txtCliente').value = cData.cliente || '';
-      document.getElementById('txtGalpon').value = cData.galpon || '';
-      document.getElementById('txtPrecio').value = cData.precio || '4.10';
-      document.getElementById('txtNotaGeneral').value = cData.nota || '';
-      document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace(/_/g, ' ');
-      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace(/_/g, ' ');
+      const c = database[campanaActiva][clienteActivo];
+      document.getElementById('txtPrecio').value = c.precio || '4.10';
+      document.getElementById('txtNotaGeneral').value = c.nota || '';
+      document.getElementById('lblLiquidacionClienteNombre').innerText = c.nombre || clienteActivo;
       renderizarTablas();
     }
 
-    function guardarDatosLote() {
-      const cData = database[campanaActiva];
-      cData.cliente = document.getElementById('txtCliente').value;
-      cData.galpon = document.getElementById('txtGalpon').value;
-      cData.precio = document.getElementById('txtPrecio').value.replace(',', '.');
-      guardarEnLocalStorage();
-      recalcularTotales();
-      guardarNotaGeneralEnSheets();
+    function abrirModalNuevoCliente() {
+      const num = Object.keys(database[campanaActiva] || {}).length + 1;
+      abrirCustomModal({
+        titulo: 'Nuevo Comprador',
+        subtitulo: 'Agregar a la campaña',
+        htmlBody: 'Ingrese el nombre o identificación del comprador:',
+        esInput: true,
+        valorInput: `Comprador ${String.fromCharCode(64 + num)}`,
+        textoBtn: 'Crear',
+        colorBtn: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950',
+        onConfirm: (nombre) => {
+          if (!nombre || nombre.trim() === '') return;
+          const key = 'Cli_' + Date.now();
+          database[campanaActiva][key] = { nombre: nombre.trim(), tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
+          guardarEnLocalStorage();
+          clienteActivo = key;
+          cargarSelectorClientes();
+          cargarDatosClienteActivo();
+          mostrarToast(`Comprador "${nombre.trim()}" agregado`, 'exito');
+        }
+      });
     }
 
-    async function guardarNotaGeneralEnSheets() {
-      const cData = database[campanaActiva];
-      cData.nota = document.getElementById('txtNotaGeneral').value;
-      const fechaHoraNota = obtenerFechaHoraSeleccionada();
-      cData.fechaHora = fechaHoraNota;
-      guardarEnLocalStorage();
-
-      const btn = document.getElementById('btnGuardarNota');
-      btn.innerText = "⏳...";
-      btn.disabled = true;
-
-      try {
-        await fetch(APPS_SCRIPT_URL, {
-          method: 'POST',
-          mode: 'no-cors',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'GUARDAR_NOTA',
-            campana: campanaActiva,
-            nota: cData.nota,
-            fecha: fechaHoraNota,
-            precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-          })
-        });
-        mostrarToast('Nota guardada en columnas L y M de Sheets', 'exito');
-      } catch (e) {
-        mostrarToast('Nota guardada localmente', 'aviso');
-      } finally {
-        btn.innerText = "Guardar Nota";
-        btn.disabled = false;
-      }
+    function abrirModalRenombrarCliente() {
+      const c = database[campanaActiva][clienteActivo];
+      abrirCustomModal({
+        titulo: 'Renombrar Comprador',
+        subtitulo: 'Editar nombre',
+        htmlBody: 'Nuevo nombre para este comprador:',
+        esInput: true,
+        valorInput: c.nombre || '',
+        textoBtn: 'Guardar',
+        onConfirm: (nombre) => {
+          if (!nombre || nombre.trim() === '') return;
+          c.nombre = nombre.trim();
+          guardarEnLocalStorage();
+          cargarSelectorClientes();
+          cargarDatosClienteActivo();
+          mostrarToast('Nombre actualizado', 'exito');
+        }
+      });
     }
 
+    // ========================================================
+    // SELECTOR DE TIPO (FASES 1, 2 Y 3)
+    // ========================================================
     function seleccionarTipo(tipo) {
       tipoActual = tipo;
-      const btnT = document.getElementById('btnTipoTara');
-      const btnP = document.getElementById('btnTipoPollos');
+      const bT = document.getElementById('btnTipoTara');
+      const bP = document.getElementById('btnTipoPollos');
+      const bS = document.getElementById('btnTipoSobrante');
+
+      bT.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+      bP.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+      bS.className = "py-2.5 px-1 rounded-xl font-bold text-xs border border-slate-700 bg-slate-900 text-slate-400 transition text-center leading-tight";
+
       if (tipo === 'TARA') {
-        btnT.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border-2 border-amber-500 bg-amber-500 text-slate-950 shadow-lg active:scale-95 transition text-center";
-        btnP.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border border-slate-700 bg-slate-900 text-slate-400 active:scale-95 transition text-center";
-      } else {
-        btnP.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border-2 border-sky-500 bg-sky-500 text-slate-950 shadow-lg active:scale-95 transition text-center";
-        btnT.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border border-slate-700 bg-slate-900 text-slate-400 active:scale-95 transition text-center";
+        bT.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight";
+      } else if (tipo === 'CON_POLLOS') {
+        bP.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-sky-500 bg-sky-500 text-slate-950 shadow transition text-center leading-tight";
+      } else if (tipo === 'TARA_SOBRANTE') {
+        bS.className = "py-2.5 px-1 rounded-xl font-bold text-xs border-2 border-rose-500 bg-rose-500 text-slate-950 shadow transition text-center leading-tight";
       }
     }
 
+    // ========================================================
+    // REGISTRO DE PESADA
+    // ========================================================
     const inputPesoManual = document.getElementById('inputPesoManual');
     const visorDisplay = document.getElementById('visorDisplay');
     inputPesoManual.addEventListener('input', (e) => {
@@ -958,16 +672,17 @@
       const btn = document.getElementById('btnGuardar');
 
       if (!strVal || isNaN(peso) || peso <= 0) {
-        mostrarToast("Ingrese un peso válido mayor a 0", "aviso");
+        mostrarToast("Ingrese un peso mayor a 0", "aviso");
         return;
       }
 
       btn.disabled = true;
-      btn.innerText = "⏳ GUARDANDO...";
+      btn.innerText = "⏳...";
 
-      const cData = database[campanaActiva];
-      if (tipoActual === 'TARA') cData.tara.push(peso);
-      else cData.pollos.push(peso);
+      const c = database[campanaActiva][clienteActivo];
+      if (tipoActual === 'TARA') c.tara.push(peso);
+      else if (tipoActual === 'CON_POLLOS') c.pollos.push(peso);
+      else if (tipoActual === 'TARA_SOBRANTE') c.sobrante.push(peso);
 
       guardarEnLocalStorage();
       renderizarTablas();
@@ -980,137 +695,130 @@
           body: JSON.stringify({
             action: 'REGISTRAR_PESADA',
             campana: campanaActiva,
+            cliente: c.nombre || clienteActivo,
             tipo: tipoActual,
             peso: peso,
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-            fecha: obtenerFechaHoraSeleccionada(),
-            nota: document.getElementById('txtNotaGeneral').value
+            fecha: obtenerFechaHoraSeleccionada()
           })
         });
-        mostrarToast(`Pesada de ${strVal} kg registrada`, 'exito');
-      } catch (err) {
+        mostrarToast(`Pesada de ${strVal} kg guardada`, 'exito');
+      } catch (e) {
         mostrarToast("Guardado localmente", "aviso");
       } finally {
         limpiarCaja();
         btn.disabled = false;
-        btn.innerText = "💾 GUARDAR PESADA EN GOOGLE SHEETS";
+        btn.innerText = "💾 GUARDAR PESADA";
       }
     }
 
-    function importarArchivoTXTRobusto(event, destino) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = async function(e) {
-        const lineas = e.target.result.split(/\r?\n/);
-        const cData = database[campanaActiva];
-        let nums = [];
-
-        lineas.forEach(lin => {
-          let t = lin.trim().replace(',', '.');
-          let n = parseFloat(t);
-          if (!isNaN(n) && n > 0) {
-            nums.push(n);
-            if (destino === 'TARA') cData.tara.push(n);
-            else cData.pollos.push(n);
-          }
-        });
-
-        guardarEnLocalStorage();
-        renderizarTablas();
-
-        if (nums.length === 0) {
-          mostrarToast("No hay números válidos en el archivo TXT", "error");
-          return;
-        }
-
-        try {
-          mostrarToast(`Enviando ${nums.length} pesadas a Google Sheets...`, "info");
-          await fetch(APPS_SCRIPT_URL, {
-            method: 'POST',
-            mode: 'no-cors',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'REGISTRAR_LOTE_TXT',
-              campana: campanaActiva,
-              tipo: destino,
-              pesos: nums,
-              precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-              fecha: obtenerFechaHoraSeleccionada()
-            })
-          });
-          mostrarToast(`¡Éxito! ${nums.length} pesadas importadas en Sheets`, "exito");
-        } catch (err) {
-          mostrarToast("Guardado en la app", "aviso");
-        }
-        event.target.value = '';
-      };
-      reader.readAsText(file);
+    function eliminarItem(tipo, index) {
+      const c = database[campanaActiva][clienteActivo];
+      if (tipo === 'TARA') c.tara.splice(index, 1);
+      else if (tipo === 'CON_POLLOS') c.pollos.splice(index, 1);
+      else if (tipo === 'TARA_SOBRANTE') c.sobrante.splice(index, 1);
+      guardarEnLocalStorage();
+      renderizarTablas();
+      mostrarToast("Registro eliminado", "info");
     }
 
     function renderizarTablas() {
-      const cData = database[campanaActiva];
+      const c = database[campanaActiva][clienteActivo];
+      if (!c.sobrante) c.sobrante = [];
 
-      const tTara = document.getElementById('tablaTaraBody');
-      tTara.innerHTML = '';
-      cData.tara.forEach((val, i) => {
-        const numVal = typeof val === 'object' ? val.peso : val;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
-          <td class="p-2 text-amber-300 font-semibold">${numVal.toFixed(2)}</td>
-          <td class="p-2 flex items-center justify-center gap-1.5">
-            <button onclick="editarItem('TARA', ${i})" title="Editar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded text-[10px]">✏️</button>
-            <button onclick="eliminarItem('TARA', ${i})" title="Eliminar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-rose-900 text-rose-400 font-bold rounded text-[10px]">✕</button>
-          </td>
-        `;
-        tTara.appendChild(tr);
+      // 1. TARA INICIAL
+      const tT = document.getElementById('tablaTaraBody');
+      tT.innerHTML = '';
+      c.tara.forEach((val, i) => {
+        tT.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-amber-300">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
       });
 
-      const tPollos = document.getElementById('tablaPollosBody');
-      tPollos.innerHTML = '';
-      cData.pollos.forEach((val, i) => {
-        const numVal = typeof val === 'object' ? val.peso : val;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
-          <td class="p-2 text-sky-300 font-semibold">${numVal.toFixed(2)}</td>
-          <td class="p-2 flex items-center justify-center gap-1.5">
-            <button onclick="editarItem('CON_POLLOS', ${i})" title="Editar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded text-[10px]">✏️</button>
-            <button onclick="eliminarItem('CON_POLLOS', ${i})" title="Eliminar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-rose-900 text-rose-400 font-bold rounded text-[10px]">✕</button>
-          </td>
-        `;
-        tPollos.appendChild(tr);
+      // 2. CON POLLOS
+      const tP = document.getElementById('tablaPollosBody');
+      tP.innerHTML = '';
+      c.pollos.forEach((val, i) => {
+        tP.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-sky-300">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
+      });
+
+      // 3. TARA SOBRANTE
+      const tS = document.getElementById('tablaSobranteBody');
+      tS.innerHTML = '';
+      c.sobrante.forEach((val, i) => {
+        tS.innerHTML += `<tr><td class="p-1 text-slate-500">${i+1}</td><td class="p-1 text-rose-300 font-semibold">${val.toFixed(2)}</td><td class="p-1"><button onclick="eliminarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold">✕</button></td></tr>`;
       });
 
       recalcularTotales();
     }
 
+    // ========================================================
+    // CÁLCULO PRECISO CON TARA SOBRANTE
+    // ========================================================
     function recalcularTotales() {
-      const cData = database[campanaActiva];
-      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const pesoNeto = Math.max(0, sumBruto - sumTara);
+      const c = database[campanaActiva][clienteActivo];
+      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
+
+      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const pesoNeto = Math.max(0, sumBruto - taraNetaUsada);
       const precioKg = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const totalSoles = pesoNeto * precioKg;
 
-      document.getElementById('badgeSubtotalTara').innerText = `${sumTara.toFixed(2)} kg`;
+      document.getElementById('badgeSubtotalTara').innerText = `${sumTaraIni.toFixed(2)} kg`;
       document.getElementById('badgeSubtotalPollos').innerText = `${sumBruto.toFixed(2)} kg`;
-      document.getElementById('resumenBruto').innerText = sumBruto.toFixed(2);
-      document.getElementById('cntPesadasPollos').innerText = `${cData.pollos.length} pesadas`;
-      document.getElementById('resumenTara').innerText = sumTara.toFixed(2);
-      document.getElementById('cntPesadasTara').innerText = `${cData.tara.length} pesadas`;
-      document.getElementById('resumenNeto').innerText = pesoNeto.toFixed(2);
+      document.getElementById('badgeSubtotalSobrante').innerText = `-${sumTaraSob.toFixed(2)} kg`;
+
+      document.getElementById('resumenTaraNeta').innerText = `${taraNetaUsada.toFixed(2)} kg`;
+      document.getElementById('resumenBruto').innerText = `${sumBruto.toFixed(2)} kg`;
+      document.getElementById('cntPesadasPollos').innerText = `${c.pollos.length} pesadas`;
+      document.getElementById('resumenNeto').innerText = `${pesoNeto.toFixed(2)} kg`;
       document.getElementById('resumenPrecio').innerText = `S/. ${precioKg.toFixed(2)}`;
       document.getElementById('resumenTotalSoles').innerText = `S/. ${totalSoles.toFixed(2)}`;
+
+      document.getElementById('lblFormulaTaraUsada').innerText = `Tara: ${sumTaraIni.toFixed(2)} - ${sumTaraSob.toFixed(2)} = ${taraNetaUsada.toFixed(2)} kg`;
     }
 
+    async function guardarDatosClienteEnSheets() {
+      const c = database[campanaActiva][clienteActivo];
+      c.precio = document.getElementById('txtPrecio').value.replace(',', '.');
+      guardarEnLocalStorage();
+      mostrarToast("Precio fijado", "exito");
+    }
+
+    async function guardarNotaGeneralEnSheets() {
+      const c = database[campanaActiva][clienteActivo];
+      c.nota = document.getElementById('txtNotaGeneral').value;
+      guardarEnLocalStorage();
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'GUARDAR_NOTA',
+            campana: campanaActiva,
+            cliente: c.nombre || clienteActivo,
+            nota: c.nota,
+            precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+          })
+        });
+        mostrarToast("Nota sincronizada con Sheets", "exito");
+      } catch (e) {
+        mostrarToast("Guardada localmente", "aviso");
+      }
+    }
+
+    // ========================================================
+    // TICKET Y DRIVE POR COMPRADOR
+    // ========================================================
     async function guardarTicketEnGoogleDrive() {
-      const cData = database[campanaActiva];
-      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const neto = Math.max(0, sumBruto - sumTara);
+      const c = database[campanaActiva][clienteActivo];
+      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
+      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const neto = Math.max(0, sumBruto - taraNetaUsada);
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
 
@@ -1118,7 +826,6 @@
       const feedback = document.getElementById('driveTicketFeedback');
       btn.innerText = "⏳ Creando PDF...";
       btn.disabled = true;
-      feedback.innerText = "Generando PDF en la subcarpeta 'PDFs_Tickets'...";
 
       try {
         await fetch(APPS_SCRIPT_URL, {
@@ -1128,49 +835,51 @@
           body: JSON.stringify({
             action: 'GUARDAR_TICKET_DRIVE',
             campana: campanaActiva,
-            cliente: document.getElementById('txtCliente').value || '-',
-            galpon: document.getElementById('txtGalpon').value || '-',
-            nota: document.getElementById('txtNotaGeneral').value || '-',
-            fecha: obtenerFechaHoraSeleccionada(),
-            pesadasBruto: cData.pollos.length,
+            cliente: c.nombre || clienteActivo,
+            taraInicial: sumTaraIni.toFixed(2),
+            taraSobrante: sumTaraSob.toFixed(2),
+            taraNeta: taraNetaUsada.toFixed(2),
             brutoTotal: sumBruto.toFixed(2),
-            pesadasTara: cData.tara.length,
-            taraTotal: sumTara.toFixed(2),
             netoTotal: neto.toFixed(2),
             precioKg: precio.toFixed(2),
-            totalPagar: soles.toFixed(2)
+            totalPagar: soles.toFixed(2),
+            nota: c.nota || '-'
           })
         });
-        feedback.innerText = "✅ ¡Ticket PDF guardado en 'PDFs_Tickets' de Drive!";
-        mostrarToast("PDF guardado en Google Drive", "exito");
+        feedback.innerText = "✅ ¡PDF guardado en Drive!";
+        mostrarToast("Ticket en PDF guardado en Drive", "exito");
       } catch (err) {
-        feedback.innerText = "⚠️️ Error al conectar con Drive";
-        mostrarToast("Error al conectar con Drive", "error");
+        mostrarToast("Error de conexión", "error");
       } finally {
-        btn.innerText = "☁️ Guardar PDF en Drive";
+        btn.innerText = "☁️ Guardar en Drive";
         btn.disabled = false;
-        setTimeout(() => feedback.innerText = '', 6000);
+        setTimeout(() => feedback.innerText = '', 5000);
       }
     }
 
     function abrirTicketTermico() {
-      const cData = database[campanaActiva];
-      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const neto = Math.max(0, sumBruto - sumTara);
+      const c = database[campanaActiva][clienteActivo];
+      const sumTaraIni = c.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+      const taraNeta = Math.max(0, sumTaraIni - sumTaraSob);
+      const sumBruto = c.pollos.reduce((a, b) => a + b, 0);
+      const neto = Math.max(0, sumBruto - taraNeta);
       const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const soles = neto * precio;
 
       document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
       document.getElementById('tktCampana').innerText = campanaActiva.replace(/_/g, ' ');
-      document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
-      document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
+      document.getElementById('tktCliente').innerText = c.nombre || clienteActivo;
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
-      document.getElementById('tktNota').innerText = document.getElementById('txtNotaGeneral').value || '-';
+      document.getElementById('tktNota').innerText = c.nota || '-';
+
+      document.getElementById('tktTaraIni').innerText = `${sumTaraIni.toFixed(2)} kg`;
+      document.getElementById('tktTaraSob').innerText = `-${sumTaraSob.toFixed(2)} kg`;
+      document.getElementById('tktTaraUsada').innerText = `${taraNeta.toFixed(2)} kg`;
       document.getElementById('tktBruto').innerText = `${sumBruto.toFixed(2)} kg`;
-      document.getElementById('tktTara').innerText = `-${sumTara.toFixed(2)} kg`;
       document.getElementById('tktNeto').innerText = `${neto.toFixed(2)} kg`;
       document.getElementById('tktMontoPagar').innerText = `S/. ${soles.toFixed(2)}`;
+
       document.getElementById('modalTicket').classList.remove('hidden');
     }
 
@@ -1178,85 +887,156 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
+    // ========================================================
+    // DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL
+    // ========================================================
     function renderizarDashboard() {
-      let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraGlobal = 0, totalBrutoGlobal = 0, campanasConDatos = 0;
-      const labels = [], dataNetos = [], dataTaras = [], dataSoles = [];
+      let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraUsadaGlobal = 0;
+      const clientes = database[campanaActiva] || {};
       const tbody = document.getElementById('cuerpoTablaDashboard');
       tbody.innerHTML = '';
 
-      Object.keys(database).forEach(cId => {
-        const c = database[cId];
-        const sBruto = c.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-        const sTara = c.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-        const sNeto = Math.max(0, sBruto - sTara);
+      Object.keys(clientes).forEach(k => {
+        const c = clientes[k];
+        const sIni = c.tara.reduce((a, b) => a + b, 0);
+        const sSob = (c.sobrante || []).reduce((a, b) => a + b, 0);
+        const sTaraUsada = Math.max(0, sIni - sSob);
+        const sBruto = c.pollos.reduce((a, b) => a + b, 0);
+        const sNeto = Math.max(0, sBruto - sTaraUsada);
         const pKg = parseFloat(c.precio) || 0;
         const total = sNeto * pKg;
 
-        if (c.tara.length > 0 || c.pollos.length > 0) campanasConDatos++;
+        facturacionTotal += total;
+        kilosNetosGlobal += sNeto;
+        totalTaraUsadaGlobal += sTaraUsada;
 
-        facturacionTotal += total; kilosNetosGlobal += sNeto; totalTaraGlobal += sTara; totalBrutoGlobal += sBruto;
-
-        const nombreCampana = cId.replace(/_/g, ' ');
-        labels.push(nombreCampana);
-        dataNetos.push(parseFloat(sNeto.toFixed(2)));
-        dataTaras.push(parseFloat(sTara.toFixed(2)));
-        dataSoles.push(parseFloat(total.toFixed(2)));
-
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td class="p-3 font-bold text-amber-400">${nombreCampana}</td>
-          <td class="p-3 text-slate-300 font-sans">${c.cliente || '-'}</td>
-          <td class="p-3 text-center text-sky-300 font-semibold">${sBruto.toFixed(2)}</td>
-          <td class="p-3 text-center text-amber-300 font-semibold">${sTara.toFixed(2)}</td>
-          <td class="p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
-          <td class="p-3 text-center">S/ ${pKg.toFixed(2)}</td>
-          <td class="p-3 text-right font-black text-emerald-400">S/. ${total.toFixed(2)}</td>
+        tbody.innerHTML += `
+          <tr>
+            <td class="p-3 font-bold text-amber-400">${c.nombre || k}</td>
+            <td class="p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
+            <td class="p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
+            <td class="p-3 text-center font-bold text-amber-300">${sTaraUsada.toFixed(2)}</td>
+            <td class="p-3 text-center text-sky-300">${sBruto.toFixed(2)}</td>
+            <td class="p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
+            <td class="p-3 text-right font-black text-emerald-400">S/. ${total.toFixed(2)}</td>
+          </tr>
         `;
-        tbody.appendChild(tr);
       });
 
-      const porcentajeTara = totalBrutoGlobal > 0 ? ((totalTaraGlobal / totalBrutoGlobal) * 100).toFixed(1) : 0;
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
-      document.getElementById('dashPorcentajeTara').innerText = `${porcentajeTara} %`;
-      document.getElementById('dashTotalCampanas').innerText = campanasConDatos;
-
-      actualizarGraficos(labels, dataNetos, dataTaras, dataSoles);
+      document.getElementById('dashTotalClientes').innerText = Object.keys(clientes).length;
+      document.getElementById('dashTotalTaraKg').innerText = `${totalTaraUsadaGlobal.toFixed(2)} kg`;
     }
 
-    function actualizarGraficos(labels, netos, taras, soles) {
-      const ctxKilos = document.getElementById('chartKilos').getContext('2d');
-      if (chartKilosInstance) chartKilosInstance.destroy();
-      chartKilosInstance = new Chart(ctxKilos, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            { label: 'Carne Neta (kg)', data: netos, backgroundColor: 'rgba(52, 211, 153, 0.8)', borderRadius: 6 },
-            { label: 'Tara Jabas (kg)', data: taras, backgroundColor: 'rgba(251, 191, 36, 0.8)', borderRadius: 6 }
-          ]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#cbd5e1' } } },
-          scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } }
-        }
+    // ========================================================
+    // GESTIÓN DE CAMPAÑAS
+    // ========================================================
+    function cargarSelectorCampanas() {
+      const sel = document.getElementById('selCampana');
+      sel.innerHTML = '';
+      Object.keys(database).forEach(cId => {
+        const opt = document.createElement('option');
+        opt.value = cId;
+        opt.innerText = cId.replace(/_/g, ' ');
+        sel.appendChild(opt);
       });
+      sel.value = campanaActiva;
+    }
 
-      const ctxSoles = document.getElementById('chartSoles').getContext('2d');
-      if (chartSolesInstance) chartSolesInstance.destroy();
-      chartSolesInstance = new Chart(ctxSoles, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [{ label: 'Total a Cobrar (S/.)', data: soles, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true, tension: 0.3 }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#cbd5e1' } } },
-          scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } }
+    function seleccionarCampana() {
+      campanaActiva = document.getElementById('selCampana').value;
+      if (!database[campanaActiva]) {
+        database[campanaActiva] = {
+          'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+        };
+      }
+      clienteActivo = Object.keys(database[campanaActiva])[0];
+      cargarSelectorClientes();
+      cargarDatosClienteActivo();
+    }
+
+    function abrirModalNuevaCampana() {
+      const num = Object.keys(database).length + 1;
+      abrirCustomModal({
+        titulo: 'Nueva Campaña',
+        esInput: true,
+        valorInput: `Campaña ${num}`,
+        onConfirm: (n) => {
+          if (!n || n.trim() === '') return;
+          const id = n.trim().replace(/\s+/g, '_');
+          database[id] = { 'Cliente_A': { nombre: 'Comprador A', tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
+          guardarEnLocalStorage();
+          campanaActiva = id;
+          cargarSelectorCampanas();
+          seleccionarCampana();
         }
       });
+    }
+
+    function abrirModalEditarCampana() {
+      abrirCustomModal({
+        titulo: 'Renombrar Campaña',
+        esInput: true,
+        valorInput: campanaActiva.replace(/_/g, ' '),
+        onConfirm: (n) => {
+          if (!n || n.trim() === '') return;
+          const nuevoId = n.trim().replace(/\s+/g, '_');
+          database[nuevoId] = database[campanaActiva];
+          delete database[campanaActiva];
+          guardarEnLocalStorage();
+          campanaActiva = nuevoId;
+          cargarSelectorCampanas();
+          seleccionarCampana();
+        }
+      });
+    }
+
+    function cambiarVista(v) {
+      if (v === 'pesaje') {
+        document.getElementById('vistaPesaje').classList.remove('hidden');
+        document.getElementById('vistaDashboard').classList.add('hidden');
+        document.getElementById('btnTabPesaje').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
+        document.getElementById('btnTabDashboard').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
+      } else {
+        document.getElementById('vistaPesaje').classList.add('hidden');
+        document.getElementById('vistaDashboard').classList.remove('hidden');
+        document.getElementById('btnTabDashboard').className = "px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow";
+        document.getElementById('btnTabPesaje').className = "px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white";
+        renderizarDashboard();
+      }
+    }
+
+    // FECHA / HORA
+    setInterval(() => {
+      if (modoFechaActual === 'auto') {
+        document.getElementById('txtRelojEnVivo').innerText = new Date().toLocaleString('es-PE');
+      }
+    }, 1000);
+
+    function toggleModoFecha(m) {
+      modoFechaActual = m;
+      if (m === 'auto') {
+        document.getElementById('btnFechaAuto').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
+        document.getElementById('btnFechaManual').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
+        document.getElementById('lblFechaAutoCont').classList.remove('hidden');
+        document.getElementById('inputFechaManual').classList.add('hidden');
+      } else {
+        document.getElementById('btnFechaManual').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950";
+        document.getElementById('btnFechaAuto').className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
+        document.getElementById('lblFechaAutoCont').classList.add('hidden');
+        document.getElementById('inputFechaManual').classList.remove('hidden');
+        const now = new Date();
+        document.getElementById('inputFechaManual').value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+      }
+    }
+
+    function obtenerFechaHoraSeleccionada() {
+      if (modoFechaActual === 'auto') return new Date().toLocaleString('es-PE');
+      const val = document.getElementById('inputFechaManual').value;
+      if (!val) return new Date().toLocaleString('es-PE');
+      const d = new Date(val);
+      return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE');
     }
 
     // CÁMARA Y OCR
@@ -1269,7 +1049,7 @@
           streamVideo = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" }, width: { ideal: 1280 }, height: { ideal: 720 } } });
           document.getElementById('videoCamara').srcObject = streamVideo;
         } catch (e) {
-          mostrarToast("No se pudo acceder a la cámara", "error");
+          mostrarToast("Cámara no disponible", "error");
           panel.classList.add('hidden');
         }
       } else {
@@ -1280,13 +1060,8 @@
 
     async function capturarNumeroFielOCR() {
       const video = document.getElementById('videoCamara');
-      const btn = document.getElementById('btnDispararOCR');
       const canvas = document.getElementById('canvasPreprocesador');
       const ctx = canvas.getContext('2d');
-
-      btn.innerText = "⏳ Leyendo...";
-      btn.disabled = true;
-
       const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
       const cropW = Math.floor(vw * 0.8), cropH = Math.floor(vh * 0.4);
       const cropX = Math.floor((vw - cropW) / 2), cropY = Math.floor((vh - cropH) / 2);
@@ -1313,21 +1088,23 @@
         let raw = res.data.text.replace(/\s+/g, '').replace(',', '.');
         let match = raw.match(/\d+(\.\d+)?/);
         if (match) {
-          let lectura = match[0];
-          inputPesoManual.value = lectura;
-          visorDisplay.innerText = lectura;
+          inputPesoManual.value = match[0];
+          visorDisplay.innerText = match[0];
           alternarCamaraOCR();
-          mostrarToast(`Lectura OCR capturada: ${lectura} kg`, "exito");
+          mostrarToast(`Capturado: ${match[0]} kg`, "exito");
         } else {
-          mostrarToast(`Lectura confusa: "${raw}". Ingrese manual`, "aviso");
+          mostrarToast("Lectura difusa", "aviso");
         }
       } catch (err) {
-        mostrarToast("Error en el OCR", "error");
-      } finally {
-        btn.innerText = "📸 Capturar Número";
-        btn.disabled = false;
+        mostrarToast("Error en OCR", "error");
       }
     }
+
+    window.onload = () => {
+      aplicarConfiguracionMarca();
+      cargarSelectorCampanas();
+      seleccionarCampana();
+    };
   </script>
 </body>
 </html>
