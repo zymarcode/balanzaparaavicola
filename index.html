@@ -64,7 +64,6 @@
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20 md:pb-6 antialiased selection:bg-amber-500 selection:text-slate-950">
 
-  <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
   <div id="toastContainer" class="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
   <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
@@ -184,7 +183,7 @@
 
           <!-- Selector de Comprador -->
           <div class="space-y-1 pt-2 border-t border-slate-800/80">
-            <label class="block text-[11px] text-slate-400 font-semibold">Comprador:</label>
+            <label class="block text-[11px] text-slate-400 font-semibold">Comprador Activo:</label>
             <div class="flex items-center gap-1.5">
               <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="flex-1 bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-2 outline-none">
                 <option value="COMPRADOR_A">Comprador A</option>
@@ -232,7 +231,7 @@
             </div>
           </div>
 
-          <!-- Fecha y Hora Oficial de la Entrega -->
+          <!-- Fecha y Hora Oficial de la Entrega (Guardado en Caliente) -->
           <div class="space-y-1.5 pt-2 border-t border-slate-800/80">
             <div class="flex items-center justify-between text-xs">
               <label class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora Oficial de Despacho:</label>
@@ -246,18 +245,18 @@
               <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 flex-1 truncate bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span id="txtRelojEnVivo">Cargando fecha...</span>
               </div>
-              <input id="inputFechaManual" type="datetime-local" oninput="actualizarFechaManualEnTicket()" class="hidden flex-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none font-mono">
+              <input id="inputFechaManual" type="datetime-local" onchange="autoGuardarFechaEnCaliente()" oninput="autoGuardarFechaEnCaliente()" class="hidden flex-1 bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-xs text-white outline-none font-mono">
               <button type="button" onclick="guardarFechaManualEnSheets()" id="btnGuardarFecha" class="px-3 py-2 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-xs rounded-xl transition shadow shrink-0">
-                💾 Guardar Fecha
+                💾 Guardar
               </button>
             </div>
           </div>
 
-          <!-- Nota / Observación -->
+          <!-- Nota de Entrega (Guardado en Caliente) -->
           <div class="space-y-1 pt-1">
             <label class="text-[11px] text-slate-400 font-semibold block">📝 Nota de Entrega:</label>
             <div class="flex gap-1.5">
-              <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC, chofer Carlos..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+              <input id="txtNotaGeneral" type="text" oninput="autoGuardarNotaEnCaliente()" placeholder="Ej. Camión placa ABC, chofer Carlos..." class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
               <button type="button" onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 font-bold text-xs rounded-xl transition shrink-0">
                 Guardar
               </button>
@@ -341,7 +340,7 @@
             </button>
           </div>
 
-          <!-- SELECTOR DE FASE (3 BOTONES COMPACTOS) -->
+          <!-- SELECTOR DE FASE -->
           <div class="grid grid-cols-3 gap-1.5">
             <button type="button" onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-2.5 px-1 rounded-xl font-bold text-[10px] sm:text-xs border-2 border-amber-500 bg-amber-500 text-slate-950 shadow transition text-center leading-tight">
               📦 TARA INI
@@ -359,10 +358,10 @@
           </button>
         </div>
 
-        <!-- 3 TABLAS DE PESAJES (EN MÓVIL: PESTAÑAS TÁCTILES | EN DESKTOP: 3 COLUMNAS) -->
+        <!-- 3 TABLAS DE PESAJES -->
         <div class="lg:col-span-7 space-y-3">
 
-          <!-- SELECTOR DE TABLA EN CELULAR -->
+          <!-- Selector táctil en Móvil -->
           <div class="flex sm:hidden bg-slate-900 p-1 rounded-xl border border-slate-800 gap-1 text-xs">
             <button type="button" onclick="cambiarTabTablaMobile('tara')" id="tabMobTara" class="flex-1 py-1.5 rounded-lg font-bold bg-amber-500 text-slate-950 text-[11px] truncate">
               📦 Tara Ini
@@ -499,7 +498,7 @@
           <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
             <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo Cobrable</span>
             <span id="resumenNeto" class="text-base sm:text-lg font-bold text-emerald-400 block my-0.5">0.00 kg</span>
-            <span class="text-[9px] text-slate-500 block font-sans">Bruto - Tara Neta</span>
+            <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">Bruto - Tara Neta</span>
           </div>
           <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
             <span class="text-[10px] text-slate-400 block font-sans">Precio Pactado</span>
@@ -637,9 +636,7 @@
 
   </main>
 
-  <!-- ========================================================================= -->
-  <!-- BARRA DE NAVEGACIÓN INFERIOR PARA DISPOSITIVOS MÓVILES (BOTTOM NAV)        -->
-  <!-- ========================================================================= -->
+  <!-- BARRA DE NAVEGACIÓN INFERIOR PARA MÓVILES (BOTTOM NAV) -->
   <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur border-t border-slate-800 px-2 py-1.5 flex items-center justify-around z-40 no-imprimir shadow-2xl">
     <button type="button" onclick="cambiarModulo('lotes')" id="navMobLotes" class="flex flex-col items-center justify-center p-1 rounded-xl text-amber-400 font-bold transition">
       <span class="text-base">📋</span>
@@ -659,188 +656,20 @@
     </button>
   </nav>
 
-  <!-- MODAL TICKET TÉRMICO -->
-  <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4 no-imprimir">
-    <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5 animate-slide-down">
-      <button type="button" onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
-      <div class="text-center border-b border-dashed border-slate-400 pb-2">
-        <h3 id="tktTituloMarca" class="font-black text-sm uppercase">Granja Avícola</h3>
-        <p class="text-[10px] text-slate-600">Comprobante de Carguío Individual</p>
-        <p id="tktFecha" class="text-[10px] text-slate-800 font-bold mt-0.5 tracking-tight"></p>
-      </div>
-      <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
-        <div class="flex justify-between"><span>Campaña:</span><b id="tktCampana">-</b></div>
-        <div class="flex justify-between"><span>Comprador:</span><b id="tktCliente">-</b></div>
-        <div class="flex justify-between"><span>Entrega:</span><b id="tktJornadaDia">-</b></div>
-        <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
-        <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
-      </div>
-      <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
-        <div class="flex justify-between"><span>Tara Inicial:</span><span id="tktTaraIni">0.00 kg</span></div>
-        <div class="flex justify-between text-rose-700"><span>Tara Sobrante (-):</span><span id="tktTaraSob">-0.00 kg</span></div>
-        <div class="flex justify-between font-bold"><span>Tara Usada:</span><span id="tktTaraUsada">0.00 kg</span></div>
-        <div class="flex justify-between"><span>Peso Bruto:</span><span id="tktBruto">0.00 kg</span></div>
-        <div class="flex justify-between font-black text-xs pt-1 border-t border-slate-300">
-          <span>PESO NETO VIVO:</span><span id="tktNeto">0.00 kg</span>
-        </div>
-      </div>
-      <div class="text-center pt-1">
-        <span class="text-[9px] uppercase font-bold text-slate-500 block">TOTAL A COBRAR</span>
-        <span id="tktMontoPagar" class="text-2xl font-black text-slate-900">S/. 0.00</span>
-      </div>
-      <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
-        <button type="button" onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
-        <button type="button" onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁ Guardar en Drive</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- MODAL: REPORTE DETALLADO COMPLETO EN HOJA A4 PARA IMPRIMIR / PDF SIN CORTES -->
-  <div id="modalReporteDetallado" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-2 sm:p-4 overflow-y-auto">
-    <div class="bg-white text-slate-900 w-full max-w-4xl rounded-2xl p-4 sm:p-8 shadow-2xl relative space-y-4 font-sans max-h-[94vh] overflow-y-auto">
-      
-      <button type="button" onclick="cerrarReporteDetallado()" class="no-imprimir absolute top-4 right-4 text-slate-400 hover:text-black font-black text-xl p-1">✕</button>
-
-      <!-- ÁREA IMPRIMIBLE A4 -->
-      <div id="areaImpresionReporte" class="space-y-4">
-        
-        <div class="border-b-2 border-slate-800 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div>
-            <h2 id="repMarcaTitulo" class="text-xl sm:text-2xl font-black text-slate-900 uppercase">Control Galpón IoT</h2>
-            <p class="text-xs text-slate-600">Hoja Oficial de Liquidación y Detalle de Pesadas</p>
-          </div>
-          <div class="text-left sm:text-right font-mono text-xs text-slate-600">
-            <p><b>Fecha y Hora:</b> <span id="repFechaHora">-</span></p>
-            <p><b>Campaña:</b> <span id="repCampana">-</span></p>
-          </div>
-        </div>
-
-        <div class="bg-slate-100 p-3 rounded-xl border border-slate-300 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-          <div><span class="text-slate-500 block">Comprador:</span><b id="repComprador" class="text-slate-900 text-sm">-</b></div>
-          <div><span class="text-slate-500 block">Entrega / Jornada:</span><b id="repJornada" class="text-slate-900 text-sm">-</b></div>
-          <div><span class="text-slate-500 block">Precio x Kg Pactado:</span><b id="repPrecioKg" class="text-emerald-700 text-sm">-</b></div>
-          <div><span class="text-slate-500 block">Observación / Nota:</span><span id="repNota" class="text-slate-800">-</span></div>
-        </div>
-
-        <!-- TABLAS COMPLETAS EN 3 COLUMNAS SIN ALTURA FIJA EN IMPRESIÓN -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-          
-          <div class="border border-slate-300 rounded-xl overflow-hidden">
-            <div class="bg-amber-100 border-b border-slate-300 p-2 font-black text-amber-900 flex justify-between">
-              <span>📦 1. TARA INICIAL</span>
-              <span id="repCntTara">0 pesadas</span>
-            </div>
-            <div class="tabla-imprimible-contenedor max-h-72 sm:max-h-80 overflow-y-auto">
-              <table class="w-full text-center font-mono text-[11px]">
-                <thead class="bg-slate-50 text-slate-600 border-b">
-                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
-                </thead>
-                <tbody id="repTbodyTara" class="divide-y divide-slate-200"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="border border-slate-300 rounded-xl overflow-hidden">
-            <div class="bg-sky-100 border-b border-slate-300 p-2 font-black text-sky-900 flex justify-between">
-              <span>🍗 2. CON POLLOS</span>
-              <span id="repCntPollos">0 pesadas</span>
-            </div>
-            <div class="tabla-imprimible-contenedor max-h-72 sm:max-h-80 overflow-y-auto">
-              <table class="w-full text-center font-mono text-[11px]">
-                <thead class="bg-slate-50 text-slate-600 border-b">
-                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
-                </thead>
-                <tbody id="repTbodyPollos" class="divide-y divide-slate-200"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="border border-slate-300 rounded-xl overflow-hidden">
-            <div class="bg-rose-100 border-b border-slate-300 p-2 font-black text-rose-900 flex justify-between">
-              <span>🔄 3. SOBRANTE (-)</span>
-              <span id="repCntSobrante">0 pesadas</span>
-            </div>
-            <div class="tabla-imprimible-contenedor max-h-72 sm:max-h-80 overflow-y-auto">
-              <table class="w-full text-center font-mono text-[11px]">
-                <thead class="bg-slate-50 text-slate-600 border-b">
-                  <tr><th class="p-1">N°</th><th class="p-1">PESO (KG)</th></tr>
-                </thead>
-                <tbody id="repTbodySobrante" class="divide-y divide-slate-200"></tbody>
-              </table>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- CUADRO DE RESUMEN Y TOTALES MATEMÁTICOS -->
-        <div class="seccion-totales-reporte border-2 border-slate-800 rounded-2xl p-4 bg-slate-50 space-y-2">
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center text-xs font-mono">
-            <div class="bg-white p-2 rounded-xl border border-slate-300">
-              <span class="text-slate-500 block font-sans text-[10px]">Total Tara Inicial:</span>
-              <b id="repTotTaraIni" class="text-sm text-slate-800">0.00 kg</b>
-            </div>
-            <div class="bg-white p-2 rounded-xl border border-slate-300">
-              <span class="text-slate-500 block font-sans text-[10px]">Tara Sobrante (-):</span>
-              <b id="repTotTaraSob" class="text-sm text-rose-700">-0.00 kg</b>
-            </div>
-            <div class="bg-white p-2 rounded-xl border border-slate-300">
-              <span class="text-slate-500 block font-sans text-[10px]">Tara Real Utilizada:</span>
-              <b id="repTotTaraNeta" class="text-sm text-amber-800">0.00 kg</b>
-            </div>
-            <div class="bg-white p-2 rounded-xl border border-slate-300">
-              <span class="text-slate-500 block font-sans text-[10px]">Peso Bruto Pollos:</span>
-              <b id="repTotBruto" class="text-sm text-sky-800">0.00 kg</b>
-            </div>
-          </div>
-
-          <div class="bg-emerald-100 border border-emerald-400 p-3 rounded-xl flex justify-between items-center">
-            <div>
-              <span class="text-xs font-black text-emerald-900 uppercase block">PESO NETO CARNE VIVA:</span>
-              <span class="text-[10px] text-emerald-700 font-mono">(Peso Bruto Pollos - Tara Real Usada)</span>
-            </div>
-            <div id="repPesoNetoVivo" class="text-xl sm:text-2xl font-black font-mono text-emerald-900">
-              0.00 kg
-            </div>
-          </div>
-
-          <div class="bg-slate-900 text-white p-3.5 rounded-xl flex justify-between items-center">
-            <div>
-              <span class="text-xs sm:text-sm font-black text-amber-400 uppercase tracking-wide block">TOTAL A COBRAR EN SOLES:</span>
-              <span class="text-[10px] text-slate-300">Neto Vivo × Precio por Kg</span>
-            </div>
-            <div id="repTotalSolesFinal" class="text-2xl sm:text-3xl font-black font-mono text-emerald-400">
-              S/. 0.00
-            </div>
-          </div>
-        </div>
-
-      </div>
-
-      <!-- BOTONES DE ACCIÓN PARA EL REPORTE -->
-      <div class="no-imprimir pt-2 flex flex-col sm:flex-row gap-2 border-t border-slate-200">
-        <button type="button" onclick="imprimirReporteCompletoVentana()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5 shadow">
-          🖨️️ Imprimir / Guardar como PDF (Lista Completa)
-        </button>
-        <button type="button" onclick="cerrarReporteDetallado()" class="py-3 px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition">
-          Cerrar
-        </button>
-      </div>
-
-    </div>
-  </div>
-
   <script>
     // ========================================================
     // PEGA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
     // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
-    let moduloActual = 'lotes'; // 'lotes', 'pesaje', 'liquidacion', 'dashboard'
+    let moduloActual = 'lotes';
     let tipoActual = 'TARA';
-    let campanaActiva = 'Campana_1';
-    let clienteActivo = 'COMPRADOR_A';
-    let jornadaActiva = 'Entrega_1';
-    let modoFechaActual = 'auto';
+    
+    // PERSISTENCIA DE SESIÓN: Recordar exactamente en qué campaña, cliente y entrega estaba el usuario
+    let campanaActiva = localStorage.getItem('avicola_campana_activa') || 'Campana_1';
+    let clienteActivo = localStorage.getItem('avicola_cliente_activo') || 'COMPRADOR_A';
+    let jornadaActiva = localStorage.getItem('avicola_jornada_activa') || 'Entrega_1';
+    let modoFechaActual = localStorage.getItem('avicola_modo_fecha') || 'auto';
 
     let chartKilosCampanasInstance = null;
     let chartDineroCampanasInstance = null;
@@ -885,7 +714,7 @@
       return limpia;
     }
 
-    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v27')) || {
+    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v28')) || {
       'Campana_1': {
         'COMPRADOR_A': {
           nombre: 'Comprador A',
@@ -895,22 +724,48 @@
     });
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v27', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v28', JSON.stringify(database));
+      localStorage.setItem('avicola_campana_activa', campanaActiva);
+      localStorage.setItem('avicola_cliente_activo', clienteActivo);
+      localStorage.setItem('avicola_jornada_activa', jornadaActiva);
+      localStorage.setItem('avicola_modo_fecha', modoFechaActual);
     }
 
     // ========================================================
-    // NAVEGACIÓN MODULAR CONSECUTIVA (PASO 1 -> 2 -> 3 -> 4)
+    // AUTO-GUARDADO EN CALIENTE (EVITA QUE SE BORREN NOTAS Y FECHAS)
     // ========================================================
+    function autoGuardarNotaEnCaliente() {
+      const txt = document.getElementById('txtNotaGeneral');
+      if (!txt) return;
+      if (!database[campanaActiva] || !database[campanaActiva][clienteActivo]) return;
+      const diaData = database[campanaActiva][clienteActivo].dias[jornadaActiva];
+      if (diaData) {
+        diaData.nota = txt.value;
+        guardarEnLocalStorage();
+      }
+    }
+
+    function autoGuardarFechaEnCaliente() {
+      const iMan = document.getElementById('inputFechaManual');
+      if (!iMan) return;
+      if (!database[campanaActiva] || !database[campanaActiva][clienteActivo]) return;
+      const diaData = database[campanaActiva][clienteActivo].dias[jornadaActiva];
+      if (diaData) {
+        diaData.fechaHora = iMan.value || obtenerFechaIsoLocalActual();
+        guardarEnLocalStorage();
+        actualizarFechaManualEnTicket();
+      }
+    }
+
+    // NAVEGACIÓN MODULAR
     function cambiarModulo(mod) {
       moduloActual = mod;
 
-      // Ocultar todas las secciones
       document.getElementById('moduloLotes').classList.add('hidden');
       document.getElementById('moduloPesaje').classList.add('hidden');
       document.getElementById('moduloLiquidacion').classList.add('hidden');
       document.getElementById('moduloDashboard').classList.add('hidden');
 
-      // Restablecer estilos Desktop
       const dL = document.getElementById('navDeskLotes');
       const dP = document.getElementById('navDeskPesaje');
       const dQ = document.getElementById('navDeskLiquidacion');
@@ -920,7 +775,6 @@
         if (btn) btn.className = "px-3.5 py-1.5 rounded-xl font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5";
       });
 
-      // Restablecer estilos Mobile
       const mL = document.getElementById('navMobLotes');
       const mP = document.getElementById('navMobPesaje');
       const mQ = document.getElementById('navMobLiquidacion');
@@ -930,7 +784,6 @@
         if (btn) btn.className = "flex flex-col items-center justify-center p-1 rounded-xl text-slate-400 font-bold transition";
       });
 
-      // Activar la sección elegida
       if (mod === 'lotes') {
         document.getElementById('moduloLotes').classList.remove('hidden');
         if (dL) dL.className = "px-3.5 py-1.5 rounded-xl font-bold bg-amber-500 text-slate-950 shadow transition flex items-center gap-1.5";
@@ -955,7 +808,7 @@
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    // ALTERNADOR TÁCTIL DE TABLAS EN MÓVIL (DENTRO DEL MÓDULO PESAJE)
+    // ALTERNADOR TÁCTIL DE TABLAS EN MÓVIL
     function cambiarTabTablaMobile(tab) {
       const cT = document.getElementById('colTablaTara');
       const cP = document.getElementById('colTablaPollos');
@@ -985,7 +838,7 @@
       }
     }
 
-    // SINCRONIZACIÓN DESDE GOOGLE SHEETS
+    // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
         mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
@@ -1024,7 +877,8 @@
 
           guardarEnLocalStorage();
           cargarSelectorCampanas();
-          seleccionarCampana();
+          cargarSelectorClientes();
+          cargarDatosJornadaActiva();
           mostrarToast("✅ Datos sincronizados desde Google Sheets", "exito");
         } else {
           mostrarToast("Sincronizado (sin datos nuevos)", "info");
@@ -1087,6 +941,8 @@
 
     function toggleModoFecha(modo) {
       modoFechaActual = modo;
+      guardarEnLocalStorage();
+
       const bAuto = document.getElementById('btnFechaAuto');
       const bMan = document.getElementById('btnFechaManual');
       const cAuto = document.getElementById('lblFechaAutoCont');
@@ -1166,12 +1022,12 @@
       } catch (e) {
         mostrarToast("Fecha guardada localmente", "info");
       } finally {
-        btn.innerText = "💾 Guardar Fecha";
+        btn.innerText = "💾 Guardar";
         btn.disabled = false;
       }
     }
 
-    // TOASTS Y MODALES
+    // TOASTS Y MODAL
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -1254,7 +1110,7 @@
           const keyUnica = nombreLimpio.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
 
           if (database[campanaActiva][keyUnica]) {
-            mostrarToast(`El comprador "${nombreLimpio}" ya existe en esta campaña`, "aviso");
+            mostrarToast(`El comprador "${nombreLimpio}" ya existe`, "aviso");
             clienteActivo = keyUnica;
             cargarSelectorClientes();
             return;
@@ -1274,9 +1130,9 @@
             }
           };
 
-          guardarEnLocalStorage();
           clienteActivo = keyUnica;
           jornadaActiva = 'Entrega_1';
+          guardarEnLocalStorage();
           
           cargarSelectorClientes();
           mostrarToast(`✅ Comprador "${nombreLimpio}" creado y seleccionado`, 'exito');
@@ -1416,16 +1272,23 @@
         sel.appendChild(opt);
       });
 
-      if (!clientes[clienteActivo]) {
+      // RESPETAR EL CLIENTE PREVIAMENTE SELECCIONADO SIN FORZAR AL PRIMERO
+      if (clientes[clienteActivo]) {
+        sel.value = clienteActivo;
+      } else {
         clienteActivo = claves[0] || 'COMPRADOR_A';
+        sel.value = clienteActivo;
       }
-      sel.value = clienteActivo;
+      guardarEnLocalStorage();
       cargarSelectorDias();
     }
 
     function cambiarClienteActivo() {
       const sel = document.getElementById('selClienteActivo');
-      if (sel) clienteActivo = sel.value;
+      if (sel) {
+        clienteActivo = sel.value;
+        guardarEnLocalStorage();
+      }
       cargarSelectorDias();
     }
 
@@ -1439,29 +1302,38 @@
       if (!c.dias) {
         c.dias = { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } };
       }
-      Object.keys(c.dias).forEach(dKey => {
+      const diasKeys = Object.keys(c.dias);
+      diasKeys.forEach(dKey => {
         const opt = document.createElement('option');
         opt.value = dKey;
         opt.innerText = dKey.replace(/_/g, ' ');
         selD.appendChild(opt);
       });
-      if (!c.dias[jornadaActiva]) {
-        jornadaActiva = Object.keys(c.dias)[0] || 'Entrega_1';
+
+      // RESPETAR LA ENTREGA SELECCIONADA
+      if (c.dias[jornadaActiva]) {
+        selD.value = jornadaActiva;
+      } else {
+        jornadaActiva = diasKeys[0] || 'Entrega_1';
+        selD.value = jornadaActiva;
       }
-      selD.value = jornadaActiva;
+      guardarEnLocalStorage();
       cargarDatosJornadaActiva();
     }
 
     function cambiarJornadaDia() {
       const selD = document.getElementById('selJornadaDia');
-      if (selD) jornadaActiva = selD.value;
+      if (selD) {
+        jornadaActiva = selD.value;
+        guardarEnLocalStorage();
+      }
       cargarDatosJornadaActiva();
     }
 
     function cargarDatosJornadaActiva() {
       const c = database[campanaActiva][clienteActivo];
       if (!c) return;
-      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' };
+      const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() };
       
       const txtP = document.getElementById('txtPrecio');
       const txtN = document.getElementById('txtNotaGeneral');
@@ -1478,6 +1350,7 @@
       if (lblCB) lblCB.innerText = c.nombre || clienteActivo;
       if (lblDB) lblDB.innerText = jornadaActiva.replace(/_/g, ' ');
 
+      // Cargar fecha en input datetime-local sin bloquearlo
       const iMan = document.getElementById('inputFechaManual');
       if (iMan) {
         if (diaData.fechaHora && diaData.fechaHora.includes('T')) {
@@ -1499,7 +1372,7 @@
       abrirCustomModal({
         titulo: 'Agregar Nueva Entrega',
         subtitulo: `Para ${c.nombre}`,
-        htmlBody: `Identifique la nueva entrega para este comprador:`,
+        htmlBody: `Identifique la nueva entrega o lote para este comprador:`,
         esInput: true,
         valorInput: `Entrega ${numDia}`,
         textoBtn: 'Crear Entrega',
@@ -1515,8 +1388,8 @@
             nota: '', 
             fechaHora: obtenerFechaIsoLocalActual()
           };
-          guardarEnLocalStorage();
           jornadaActiva = keyDia;
+          guardarEnLocalStorage();
           cargarSelectorDias();
           mostrarToast(`Entrega agregada para ${c.nombre}`, 'exito');
         }
@@ -1604,7 +1477,7 @@
       }
     }
 
-    // BOTÓN EXCLUSIVO: GUARDAR PRECIO POR KG
+    // GUARDAR PRECIO POR KG
     async function guardarPrecioExclusivoEnSheets() {
       const strPrecio = document.getElementById('txtPrecio').value.replace(',', '.').trim();
       const numPrecio = parseFloat(strPrecio);
@@ -1829,6 +1702,10 @@
       diaData.nota = document.getElementById('txtNotaGeneral').value;
       guardarEnLocalStorage();
 
+      const btn = document.getElementById('btnGuardarNota');
+      btn.innerText = "⏳...";
+      btn.disabled = true;
+
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
@@ -1844,9 +1721,12 @@
             precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
           })
         });
-        mostrarToast("Nota sincronizada con Sheets", "exito");
+        mostrarToast("✅ Nota guardada en Google Sheets", "exito");
       } catch (e) {
-        mostrarToast("Guardada localmente", "aviso");
+        mostrarToast("Nota guardada localmente", "info");
+      } finally {
+        btn.innerText = "Guardar";
+        btn.disabled = false;
       }
     }
 
@@ -1986,7 +1866,6 @@
       document.getElementById('modalReporteDetallado').classList.add('hidden');
     }
 
-    // IMPRESIÓN LIMPIA A4 MULTIPÁGINA
     function imprimirReporteCompletoVentana() {
       const c = database[campanaActiva][clienteActivo];
       if (!c) return;
@@ -2152,7 +2031,7 @@
       }, 350);
     }
 
-    // DASHBOARD: COMPARACIÓN GRÁFICA ENTRE CAMPAÑAS Y DINERO
+    // DASHBOARD
     function renderizarDashboard() {
       let facturacionTotal = 0;
       let kilosNetosGlobal = 0;
@@ -2229,7 +2108,6 @@
     }
 
     function actualizarGraficosCampanas(labels, netos, taras, dinero) {
-      // Gráfica 1: Kilos Netos vs Tara por Campaña
       const ctxK = document.getElementById('chartKilosCampanas').getContext('2d');
       if (chartKilosCampanasInstance) chartKilosCampanasInstance.destroy();
       chartKilosCampanasInstance = new Chart(ctxK, {
@@ -2264,7 +2142,6 @@
         }
       });
 
-      // Gráfica 2: Dinero por Campaña (S/.)
       const ctxD = document.getElementById('chartDineroCampanas').getContext('2d');
       if (chartDineroCampanasInstance) chartDineroCampanasInstance.destroy();
       chartDineroCampanasInstance = new Chart(ctxD, {
@@ -2304,11 +2181,23 @@
         opt.innerText = cId.replace(/_/g, ' ');
         sel.appendChild(opt);
       });
-      sel.value = campanaActiva;
+
+      if (database[campanaActiva]) {
+        sel.value = campanaActiva;
+      } else {
+        campanaActiva = Object.keys(database)[0] || 'Campana_1';
+        sel.value = campanaActiva;
+      }
+      guardarEnLocalStorage();
     }
 
     function seleccionarCampana() {
-      campanaActiva = document.getElementById('selCampana').value;
+      const sel = document.getElementById('selCampana');
+      if (sel) {
+        campanaActiva = sel.value;
+        guardarEnLocalStorage();
+      }
+
       if (!database[campanaActiva]) {
         database[campanaActiva] = {
           'COMPRADOR_A': {
@@ -2317,7 +2206,6 @@
           }
         };
       }
-      clienteActivo = Object.keys(database[campanaActiva])[0];
       cargarSelectorClientes();
     }
 
@@ -2336,10 +2224,13 @@
               dias: { 'Entrega_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fechaHora: obtenerFechaIsoLocalActual() } }
             }
           };
-          guardarEnLocalStorage();
           campanaActiva = id;
+          clienteActivo = 'COMPRADOR_A';
+          jornadaActiva = 'Entrega_1';
+          guardarEnLocalStorage();
+
           cargarSelectorCampanas();
-          seleccionarCampana();
+          cargarSelectorClientes();
         }
       });
     }
@@ -2354,10 +2245,11 @@
           const nuevoId = n.trim().replace(/\s+/g, '_');
           database[nuevoId] = database[campanaActiva];
           delete database[campanaActiva];
-          guardarEnLocalStorage();
           campanaActiva = nuevoId;
+          guardarEnLocalStorage();
+
           cargarSelectorCampanas();
-          seleccionarCampana();
+          cargarSelectorClientes();
         }
       });
     }
@@ -2387,9 +2279,12 @@
             campanaActiva = llaves[0];
           }
 
+          clienteActivo = Object.keys(database[campanaActiva])[0];
+          jornadaActiva = 'Entrega_1';
           guardarEnLocalStorage();
+
           cargarSelectorCampanas();
-          seleccionarCampana();
+          cargarSelectorClientes();
           mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
 
           try {
@@ -2492,8 +2387,9 @@
     window.onload = () => {
       aplicarConfiguracionMarca();
       cargarSelectorCampanas();
-      seleccionarCampana();
-      cambiarModulo('lotes'); // Iniciar ordenadamente en Paso 1
+      cargarSelectorClientes();
+      cargarDatosJornadaActiva();
+      cambiarModulo('lotes');
       sincronizarDesdeGoogleSheets();
     };
   </script>
