@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Sistema de Pesaje y Dashboard Avícola</title>
+  <title id="htmlDocTitle">Sistema de Pesaje y Dashboard Avícola</title>
   
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -13,71 +13,44 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .font-digital {
-      font-family: 'Chakra Petch', monospace;
-      font-variant-numeric: tabular-nums;
-    }
-    .led-glow {
-      text-shadow: 0 0 16px rgba(52, 211, 153, 0.7);
-    }
-    .ticket-paper {
-      background: #faf8eb;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-    }
+    body { font-family: 'Inter', system-ui, sans-serif; -webkit-tap-highlight-color: transparent; }
+    .font-digital { font-family: 'Chakra Petch', monospace; font-variant-numeric: tabular-nums; }
+    .led-glow { text-shadow: 0 0 16px rgba(52, 211, 153, 0.7); }
+    .ticket-paper { background: #faf8eb; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
     input, select, textarea { font-size: 16px !important; }
-
-    /* Animaciones para Modales y Toasts */
-    .modal-backdrop {
-      background-color: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(4px);
-    }
-    @keyframes slideDown {
-      from { transform: translateY(-20px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .animate-slide-down {
-      animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
-    @keyframes toastIn {
-      from { transform: translateY(30px); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
-    }
-    .animate-toast {
-      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-    }
+    .modal-backdrop { background-color: rgba(0, 0, 0, 0.75); backdrop-filter: blur(4px); }
+    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-slide-down { animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    @keyframes toastIn { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    .animate-toast { animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
 
-  <!-- NOTIFICACIÓN TOAST FLOTANTE PERSONALIZADA (REEMPLAZA ALERTS) -->
+  <!-- TOASTS -->
   <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <!-- MODAL DE DIÁLOGO PERSONALIZADO (REEMPLAZA PROMPT Y CONFIRM) -->
+  <!-- MODAL INTERACTIVO -->
   <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
         <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400">
-          ⚠️️
+          ⚙️
         </div>
         <div>
-          <h3 id="modalTitle" class="text-sm font-bold text-white">Mensaje del Sistema</h3>
-          <p id="modalSubtitle" class="text-[11px] text-slate-400">Confirmación de acción</p>
+          <h3 id="modalTitle" class="text-sm font-bold text-white">Gestión del Sistema</h3>
+          <p id="modalSubtitle" class="text-[11px] text-slate-400">Acción interactiva</p>
         </div>
       </div>
       <div id="modalBody" class="text-xs text-slate-300 leading-relaxed"></div>
       
-      <!-- Contenedor opcional para Input (cuando actúa como prompt) -->
       <div id="modalInputCont" class="hidden">
         <input id="modalInput" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
       </div>
 
-      <div class="flex gap-2 pt-2" id="modalActions">
-        <button id="modalBtnCancel" onclick="cerrarCustomModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
+      <div class="flex gap-2 pt-2">
+        <button onclick="cerrarCustomModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
           Cancelar
         </button>
         <button id="modalBtnConfirm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition">
@@ -91,24 +64,27 @@
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 shadow-md">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
       <div class="flex items-center gap-3">
-        <span class="text-2xl sm:text-3xl">⚖️</span>
+        <div id="headerLogoContainer" class="w-9 h-9 rounded-xl overflow-hidden flex items-center justify-center bg-slate-800 border border-slate-700 shrink-0">
+          <img id="imgLogoApp" src="https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80" alt="Logo" class="w-full h-full object-cover">
+        </div>
         <div>
-          <h1 class="text-sm sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
-          <p class="text-[10px] sm:text-xs text-slate-400">Taras, Cargas & Sincronización Automática con Drive</p>
+          <h1 id="txtTituloApp" class="text-sm sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
+          <p id="txtSubtituloApp" class="text-[10px] sm:text-xs text-slate-400">Taras, Cargas & Dashboard Multicampaña</p>
         </div>
       </div>
       
-      <!-- Navegación -->
       <div class="flex items-center gap-2">
         <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow">
           ⚖️ Registro Pesaje
         </button>
         <button onclick="cambiarVista('dashboard')" id="btnTabDashboard" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white">
-          📊 Dashboard & Gráficos
+          📊 Dashboard
+        </button>
+        <button onclick="abrirAjustesMarca()" title="Personalizar Título, Subtítulo y Logo" class="p-2 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700">
+          ⚙️ Marca
         </button>
       </div>
 
-      <!-- Campaña -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-300 font-bold hidden sm:inline">Campaña:</span>
         <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
@@ -125,9 +101,7 @@
   <!-- CONTENEDOR PRINCIPAL -->
   <main class="max-w-7xl w-full mx-auto p-3 sm:p-5 flex-1 space-y-4">
     
-    <!-- ======================================================== -->
-    <!-- VISTA 1: REGISTRO DE PESAJE EN GALPÓN                    -->
-    <!-- ======================================================== -->
+    <!-- VISTA 1: REGISTRO DE PESAJE -->
     <div id="vistaPesaje" class="space-y-4">
       
       <!-- CONFIGURACIÓN DE LOTE Y PRECIO -->
@@ -154,19 +128,15 @@
         </div>
       </section>
 
-      <!-- FECHA/HORA Y NOTA GENERAL -->
+      <!-- FECHA/HORA Y NOTA GENERAL INDEPENDIENTE -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
         <!-- Control Fecha y Hora -->
         <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
           <div class="flex items-center justify-between text-xs">
-            <span class="text-slate-400 font-semibold flex items-center gap-1">🕒 Fecha y Hora:</span>
+            <span class="text-slate-400 font-semibold flex items-center gap-1">🕒 Fecha y Hora de Registro:</span>
             <div class="flex items-center gap-1.5">
-              <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">
-                Automático
-              </button>
-              <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">
-                Manual
-              </button>
+              <button onclick="toggleModoFecha('auto')" id="btnFechaAuto" class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-slate-950">Automático</button>
+              <button onclick="toggleModoFecha('manual')" id="btnFechaManual" class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400">Manual</button>
             </div>
           </div>
           <div id="lblFechaAutoCont" class="text-xs font-mono font-bold text-emerald-400 py-1 px-1">
@@ -178,28 +148,26 @@
         <!-- Nota / Observación General -->
         <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1">
-            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación General del Lote:</label>
+            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación Independiente:</label>
             <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
           </div>
           <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
-            Guardar en Sheets
+            Guardar Nota
           </button>
         </div>
       </section>
 
-      <!-- BARRA DE ACCIONES DE TABLAS: ACTUALIZAR Y LIMPIAR DATOS -->
+      <!-- BARRA DE ACCIONES -->
       <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800 text-xs">
         <span class="text-slate-400 text-[11px] font-semibold pl-1">
-          📌 Campaña actual: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
+          📌 Campaña activa: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
         </span>
         <div class="flex items-center gap-2">
-          <!-- BOTÓN ACTUALIZAR -->
           <button onclick="actualizarSistema()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
             🔄 Actualizar Datos
           </button>
-          <!-- BOTÓN ELIMINAR / LIMPIAR DATOS LOCALES -->
-          <button onclick="confirmarLimpiezaTablas()" class="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-300 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
-            🗑️ Limpiar Tablas de Campaña
+          <button onclick="confirmarLimpiezaTotal()" class="px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
+            ⚠️ Limpiar Tablas de Campaña
           </button>
         </div>
       </section>
@@ -209,7 +177,6 @@
 
         <!-- DISPLAY BALANZA -->
         <div class="lg:col-span-6 bg-slate-900 border-2 border-slate-800 p-4 sm:p-6 rounded-3xl shadow-xl space-y-4">
-          
           <div class="flex items-center justify-between text-xs sm:text-sm border-b border-slate-800 pb-2">
             <span class="flex items-center gap-1.5 text-emerald-400 font-mono font-bold">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow"></span> EN LÍNEA
@@ -219,7 +186,6 @@
             </button>
           </div>
 
-          <!-- VISOR DIGITAL LED GIGANTE -->
           <div class="bg-black py-6 sm:py-10 px-4 rounded-2xl border-4 border-slate-800 text-center relative shadow-inner">
             <span class="absolute top-2 left-3 sm:top-3 sm:left-4 text-[10px] sm:text-xs text-emerald-700 font-mono tracking-widest uppercase">
               Visor Balanza
@@ -232,29 +198,21 @@
             </span>
           </div>
 
-          <!-- ENTRADA MANUAL DEL PESO -->
           <div class="bg-slate-950 p-3.5 rounded-2xl border border-slate-800 space-y-2">
             <div class="flex justify-between items-center text-xs">
-              <label class="text-slate-300 font-bold">⌨ Peso de la Balanza (con decimales exactos):</label>
+              <label class="text-slate-300 font-bold">⌨ Peso de Balanza (con decimales exactos):</label>
               <span class="text-slate-500 text-[11px]">Soporta coma (,) o punto (.)</span>
             </div>
             <div class="flex gap-2">
-              <input 
-                id="inputPesoManual" 
-                type="text" 
-                inputmode="decimal" 
-                placeholder="0.00" 
-                class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl sm:text-3xl px-4 py-2 rounded-xl text-center outline-none">
-              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl text-xs font-bold active:scale-95">
-                Borrar
-              </button>
+              <input id="inputPesoManual" type="text" inputmode="decimal" placeholder="0.00" class="w-full bg-slate-900 border-2 border-slate-700 focus:border-amber-400 text-amber-300 font-digital font-bold text-2xl sm:text-3xl px-4 py-2 rounded-xl text-center outline-none">
+              <button onclick="limpiarCaja()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl text-xs font-bold active:scale-95">Borrar</button>
             </div>
           </div>
 
           <!-- MÓDULO OCR -->
           <div id="panelOCR" class="hidden p-3 bg-black border-2 border-amber-500/60 rounded-2xl space-y-3">
             <div class="flex justify-between items-center text-xs text-amber-300 font-bold">
-              <span>Enfoque los números de la balanza dentro del marco:</span>
+              <span>Enfoque los números dentro del recuadro:</span>
               <button onclick="alternarCamaraOCR()" class="text-slate-400 hover:text-white text-sm font-bold">✕ Cerrar</button>
             </div>
             <div class="relative w-full h-48 sm:h-60 bg-slate-900 rounded-xl overflow-hidden flex items-center justify-center">
@@ -267,10 +225,8 @@
             <button onclick="capturarNumeroFielOCR()" id="btnDispararOCR" class="w-full py-3 bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl active:scale-95 transition shadow-lg">
               📸 Capturar Número
             </button>
-            <p id="ocrStatusMsg" class="text-center text-xs text-slate-400 font-mono"></p>
           </div>
 
-          <!-- SELECTOR DE FASE -->
           <div class="grid grid-cols-2 gap-3">
             <button onclick="seleccionarTipo('TARA')" id="btnTipoTara" class="py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border-2 border-amber-500 bg-amber-500 text-slate-950 shadow-lg active:scale-95 transition text-center">
               📦 1. TARA (JABAS)
@@ -283,27 +239,24 @@
           <button onclick="guardarPesadaActual()" id="btnGuardar" class="w-full py-4 bg-emerald-500 hover:bg-emerald-400 active:scale-[0.98] text-slate-950 font-black text-sm sm:text-base rounded-2xl shadow-xl transition flex items-center justify-center gap-2">
             <span>💾 GUARDAR PESADA EN GOOGLE SHEETS</span>
           </button>
-          <div id="feedbackMsg" class="h-4 text-center text-xs font-bold text-emerald-400"></div>
-
         </div>
 
-        <!-- TABLAS EN PARALELO -->
+        <!-- TABLAS PARALELAS CON CRUD -->
         <div class="lg:col-span-6 space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
-            <!-- TABLA 1: TARA -->
+            <!-- TABLA TARA -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-amber-400">📦 1. TARA</span>
                 <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0.00 kg</span>
               </div>
               
-              <!-- Subir TXT Tara -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
                 <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt a Sheets
+                  📂 Subir .txt
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
                 </label>
               </div>
@@ -312,9 +265,9 @@
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-amber-950/70 text-amber-300 sticky top-0 border-b border-slate-800">
                     <tr>
-                      <th class="p-2 w-12">N°</th>
-                      <th class="p-2">PESO TARA (KG)</th>
-                      <th class="p-2 w-10">✕</th>
+                      <th class="p-2 w-10">N°</th>
+                      <th class="p-2">PESO (KG)</th>
+                      <th class="p-2 w-20">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody id="tablaTaraBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
@@ -322,18 +275,17 @@
               </div>
             </div>
 
-            <!-- TABLA 2: CON POLLOS -->
+            <!-- TABLA CON POLLOS -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-sky-400">🐔 2. CON POLLOS</span>
                 <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0.00 kg</span>
               </div>
 
-              <!-- Subir TXT Con Pollos -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
                 <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt a Sheets
+                  📂 Subir .txt
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
                 </label>
               </div>
@@ -342,9 +294,9 @@
                 <table class="w-full text-xs font-mono text-center">
                   <thead class="bg-sky-950/70 text-sky-300 sticky top-0 border-b border-slate-800">
                     <tr>
-                      <th class="p-2 w-12">N°</th>
-                      <th class="p-2">PESO BRUTO (KG)</th>
-                      <th class="p-2 w-10">✕</th>
+                      <th class="p-2 w-10">N°</th>
+                      <th class="p-2">PESO (KG)</th>
+                      <th class="p-2 w-20">ACCIONES</th>
                     </tr>
                   </thead>
                   <tbody id="tablaPollosBody" class="divide-y divide-slate-800/80 text-slate-200"></tbody>
@@ -373,7 +325,7 @@
                 <span id="cntPesadasPollos" class="text-[9px] text-slate-500 block font-sans">0 pesadas</span>
               </div>
               <div class="bg-slate-950 p-2.5 rounded-2xl border border-slate-800">
-                <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo (Carne)</span>
+                <span class="text-[10px] text-slate-400 block font-sans">Neto Vivo</span>
                 <span id="resumenNeto" class="text-sm sm:text-base font-bold text-emerald-400">0.00</span>
                 <span class="text-[9px] text-slate-500 block font-sans">Bruto - Tara</span>
               </div>
@@ -384,7 +336,6 @@
               </div>
             </div>
 
-            <!-- TOTAL A COBRAR -->
             <div class="bg-emerald-950/40 border border-emerald-500/60 p-3.5 rounded-2xl flex items-center justify-between">
               <div>
                 <span class="text-[11px] text-emerald-300 font-bold uppercase tracking-wider block">TOTAL A COBRAR</span>
@@ -410,80 +361,52 @@
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA -->
+    <!-- VISTA 2: DASHBOARD -->
     <div id="vistaDashboard" class="hidden space-y-5">
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Facturación Global</span>
-            <span class="text-emerald-400 font-bold">TOTAL</span>
+            <span>Facturación Global</span><span class="text-emerald-400 font-bold">TOTAL</span>
           </div>
-          <div id="dashTotalFacturado" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 my-1">
-            S/. 0.00
-          </div>
+          <div id="dashTotalFacturado" class="text-2xl sm:text-3xl font-black font-digital text-emerald-400 my-1">S/. 0.00</div>
           <p class="text-[11px] text-slate-500">Suma total de campañas</p>
         </div>
-
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Carne Neta Total</span>
-            <span class="text-sky-400 font-bold">VIVO</span>
+            <span>Carne Neta Total</span><span class="text-sky-400 font-bold">VIVO</span>
           </div>
-          <div id="dashTotalNetoKg" class="text-2xl sm:text-3xl font-black font-digital text-sky-400 my-1">
-            0.00 kg
-          </div>
+          <div id="dashTotalNetoKg" class="text-2xl sm:text-3xl font-black font-digital text-sky-400 my-1">0.00 kg</div>
           <p class="text-[11px] text-slate-500">Kilos netos despachados</p>
         </div>
-
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>% Merma de Tara</span>
-            <span class="text-amber-400 font-bold">EFICIENCIA</span>
+            <span>% Merma de Tara</span><span class="text-amber-400 font-bold">EFICIENCIA</span>
           </div>
-          <div id="dashPorcentajeTara" class="text-2xl sm:text-3xl font-black font-digital text-amber-400 my-1">
-            0.0 %
-          </div>
+          <div id="dashPorcentajeTara" class="text-2xl sm:text-3xl font-black font-digital text-amber-400 my-1">0.0 %</div>
           <p class="text-[11px] text-slate-500">Peso plástico / peso bruto</p>
         </div>
-
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
-            <span>Campañas Operadas</span>
-            <span class="text-purple-400 font-bold">LOTES</span>
+            <span>Campañas Operadas</span><span class="text-purple-400 font-bold">LOTES</span>
           </div>
-          <div id="dashTotalCampanas" class="text-2xl sm:text-3xl font-black font-digital text-purple-400 my-1">
-            0
-          </div>
+          <div id="dashTotalCampanas" class="text-2xl sm:text-3xl font-black font-digital text-purple-400 my-1">0</div>
           <p class="text-[11px] text-slate-500">Lotes activos con pesadas</p>
         </div>
       </section>
 
-      <!-- GRÁFICOS -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
-          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
-            📊 Kilos Netos vs Tara por Campaña
-          </h3>
-          <div class="h-64 sm:h-72">
-            <canvas id="chartKilos"></canvas>
-          </div>
+          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">📊 Kilos Netos vs Tara por Campaña</h3>
+          <div class="h-64 sm:h-72"><canvas id="chartKilos"></canvas></div>
         </div>
-
         <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
-          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
-            📈 Facturación Total a Cobrar (S/.)
-          </h3>
-          <div class="h-64 sm:h-72">
-            <canvas id="chartSoles"></canvas>
-          </div>
+          <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">📈 Facturación Total a Cobrar (S/.)</h3>
+          <div class="h-64 sm:h-72"><canvas id="chartSoles"></canvas></div>
         </div>
       </section>
 
-      <!-- TABLA COMPARATIVA -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
-        <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">
-          📋 Cuadro Comparativo Multicampaña
-        </h2>
+        <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">📋 Cuadro Comparativo Multicampaña</h2>
         <div class="overflow-x-auto">
           <table class="w-full text-xs sm:text-sm text-left font-mono">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800">
@@ -509,13 +432,11 @@
   <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3.5">
     <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5 animate-slide-down">
       <button onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
-      
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
-        <h3 class="font-black text-sm uppercase">Granja Avícola</h3>
+        <h3 id="tktTituloMarca" class="font-black text-sm uppercase">Granja Avícola</h3>
         <p class="text-[10px] text-slate-600">Comprobante de Pesaje y Liquidación</p>
         <p id="tktFecha" class="text-[9px] text-slate-500 mt-0.5"></p>
       </div>
-
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
         <div class="flex justify-between"><span>Campaña:</span><b id="tktCampana">-</b></div>
         <div class="flex justify-between"><span>Cliente:</span><span id="tktCliente">-</span></div>
@@ -523,7 +444,6 @@
         <div class="flex justify-between"><span>Precio x Kg:</span><span id="tktPrecio">S/. 0.00</span></div>
         <div class="flex justify-between text-[10px] text-slate-600"><span>Nota:</span><span id="tktNota" class="truncate max-w-[150px]">-</span></div>
       </div>
-
       <div class="space-y-1 text-[11px] border-b border-dashed border-slate-400 pb-2">
         <div class="flex justify-between"><span>Total con Pollos:</span><span id="tktBruto">0.00 kg</span></div>
         <div class="flex justify-between"><span>Total Tara (Jabas):</span><span id="tktTara">-0.00 kg</span></div>
@@ -531,19 +451,13 @@
           <span>PESO NETO VIVO:</span><span id="tktNeto">0.00 kg</span>
         </div>
       </div>
-
       <div class="text-center pt-1">
         <span class="text-[9px] uppercase font-bold text-slate-500 block">TOTAL A COBRAR</span>
         <span id="tktMontoPagar" class="text-2xl font-black text-slate-900">S/. 0.00</span>
       </div>
-
       <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
-        <button onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">
-          🖨️ Imprimir Ticket
-        </button>
-        <button onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">
-          ☁️ Guardar Copia en Drive
-        </button>
+        <button onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
+        <button onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁️ Guardar Copia en Drive</button>
       </div>
     </div>
   </div>
@@ -561,22 +475,69 @@
     let chartKilosInstance = null;
     let chartSolesInstance = null;
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v5')) || {
+    let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
+      titulo: 'Control Galpón IoT',
+      subtitulo: 'Taras, Cargas & Dashboard Multicampaña',
+      logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
+    };
+
+    let database = JSON.parse(localStorage.getItem('avicola_db_v7')) || {
       'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
       'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v5', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v7', JSON.stringify(database));
     }
 
-    // ========================================================
-    // SISTEMA DE POP-UP / MODALES Y NOTIFICACIONES TOAST PRO
-    // ========================================================
+    function aplicarConfiguracionMarca() {
+      document.getElementById('txtTituloApp').innerText = brandConfig.titulo;
+      document.getElementById('txtSubtituloApp').innerText = brandConfig.subtitulo;
+      document.getElementById('htmlDocTitle').innerText = brandConfig.titulo;
+      document.getElementById('imgLogoApp').src = brandConfig.logoUrl;
+      const tktTit = document.getElementById('tktTituloMarca');
+      if (tktTit) tktTit.innerText = brandConfig.titulo;
+    }
+
+    function abrirAjustesMarca() {
+      abrirCustomModal({
+        titulo: 'Personalizar Identidad de Marca',
+        subtitulo: 'Ajustes Visuales',
+        htmlBody: `
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[11px] text-slate-400 font-semibold mb-1">Título del Sistema:</label>
+              <input id="cfgTitulo" type="text" value="${brandConfig.titulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 font-semibold mb-1">Subtítulo / Eslogan:</label>
+              <input id="cfgSubtitulo" type="text" value="${brandConfig.subtitulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-400 font-semibold mb-1">URL del Icono / Logo (Web):</label>
+              <input id="cfgLogoUrl" type="url" value="${brandConfig.logoUrl}" placeholder="https://..." class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
+            </div>
+          </div>
+        `,
+        textoBtn: 'Guardar Ajustes',
+        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        onConfirm: () => {
+          const tit = document.getElementById('cfgTitulo').value.trim();
+          const sub = document.getElementById('cfgSubtitulo').value.trim();
+          const logo = document.getElementById('cfgLogoUrl').value.trim();
+          if (tit) brandConfig.titulo = tit;
+          if (sub) brandConfig.subtitulo = sub;
+          if (logo) brandConfig.logoUrl = logo;
+          localStorage.setItem('avicola_brand', JSON.stringify(brandConfig));
+          aplicarConfiguracionMarca();
+          mostrarToast('Marca actualizada con éxito', 'exito');
+        }
+      });
+    }
+
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
-      
       const config = {
         exito: { bg: 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200', icon: '✅' },
         error: { bg: 'bg-rose-950/90 border-rose-500/50 text-rose-200', icon: '❌' },
@@ -586,7 +547,6 @@
 
       toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl text-xs font-semibold backdrop-blur-md pointer-events-auto animate-toast ${config.bg}`;
       toast.innerHTML = `<span>${config.icon}</span><span>${mensaje}</span>`;
-
       cont.appendChild(toast);
       setTimeout(() => {
         toast.style.opacity = '0';
@@ -631,13 +591,104 @@
       cerrarCustomModal();
     });
 
-    // Modal para Crear Nueva Campaña (reemplaza prompt)
+    // CRUD: EDITAR PESADA
+    function editarItem(tipo, index) {
+      const cData = database[campanaActiva];
+      const lista = (tipo === 'TARA') ? cData.tara : cData.pollos;
+      const valorActual = lista[index];
+
+      abrirCustomModal({
+        titulo: `Editar Pesada #${index + 1}`,
+        subtitulo: `Modificar valor de ${tipo === 'TARA' ? 'Tara' : 'Con Pollos'}`,
+        htmlBody: `Ingrese el nuevo peso corregido en kilogramos:`,
+        esInput: true,
+        valorInput: valorActual.toString(),
+        textoBtn: 'Guardar Corrección',
+        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        onConfirm: async (val) => {
+          const num = parseFloat(val.replace(',', '.'));
+          if (isNaN(num) || num <= 0) {
+            mostrarToast("El peso ingresado no es válido", "error");
+            return;
+          }
+          lista[index] = num;
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast(`Pesada #${index + 1} actualizada a ${num} kg`, "exito");
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'ACTUALIZAR_PESADA', campana: campanaActiva, tipo: tipo, index: index, nuevoPeso: num })
+            });
+          } catch(e){}
+        }
+      });
+    }
+
+    // CRUD: ELIMINAR PESADA INDIVIDUAL
+    function eliminarItem(tipo, index) {
+      const cData = database[campanaActiva];
+      abrirCustomModal({
+        titulo: '¿Eliminar Pesada?',
+        subtitulo: 'Confirmar Eliminación',
+        htmlBody: `¿Está seguro de eliminar la pesada #${index + 1} de la lista de ${tipo === 'TARA' ? 'Tara' : 'Con Pollos'}?`,
+        textoBtn: 'Eliminar',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: async () => {
+          if (tipo === 'TARA') cData.tara.splice(index, 1);
+          else cData.pollos.splice(index, 1);
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast(`Pesada #${index + 1} eliminada`, "info");
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'ELIMINAR_PESADA', campana: campanaActiva, tipo: tipo, index: index })
+            });
+          } catch(e){}
+        }
+      });
+    }
+
+    // LIMPIEZA DE TABLAS DE LA CAMPAÑA
+    function confirmarLimpiezaTotal() {
+      abrirCustomModal({
+        titulo: '⚠️ Limpiar Tablas de Campaña',
+        subtitulo: 'Reinicio de Filas en Pantalla y Sheets',
+        htmlBody: `Esta acción vaciará las pesadas de <b>${campanaActiva.replace('_', ' ')}</b>.<br><br><span class="text-rose-400 font-bold">¿Desea proceder?</span>`,
+        textoBtn: 'Sí, Limpiar',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: async () => {
+          database[campanaActiva].pollos = [];
+          database[campanaActiva].tara = [];
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast('Tablas de la campaña limpiadas', 'aviso');
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ action: 'LIMPIAR_TODO_CAMPANA', campana: campanaActiva })
+            });
+          } catch(e){}
+        }
+      });
+    }
+
     function abrirModalNuevaCampana() {
       const num = Object.keys(database).length + 1;
       abrirCustomModal({
         titulo: 'Crear Nueva Campaña',
         subtitulo: 'Gestión de Lotes',
-        htmlBody: 'Ingrese el identificador para la nueva saca de galpón:',
+        htmlBody: 'Ingrese el nombre de la nueva campaña:',
         esInput: true,
         valorInput: `Campaña ${num}`,
         textoBtn: 'Crear Campaña',
@@ -650,62 +701,31 @@
             campanaActiva = id;
             cargarSelectorCampanas();
             seleccionarCampana();
-            mostrarToast(`Campaña "${nombre.trim()}" creada con éxito`, 'exito');
+            mostrarToast(`Campaña "${nombre.trim()}" creada`, 'exito');
           }
         }
       });
     }
 
-    // Modal de Confirmación para Limpieza de Datos (reemplaza confirm)
-    function confirmarLimpiezaTablas() {
-      const nombreC = campanaActiva.replace('_', ' ');
-      abrirCustomModal({
-        titulo: '¿Limpiar Tablas de la Campaña?',
-        subtitulo: 'Reinicio de Pantalla',
-        htmlBody: `Se vaciarán las pesadas locales de <b>${nombreC}</b> para reiniciar la lista en limpio.<br><br><span class="text-slate-400 text-[11px]">* No modifica la estructura de cálculo de Google Sheets.</span>`,
-        esInput: false,
-        textoBtn: 'Sí, Vaciar Tablas',
-        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
-        onConfirm: () => {
-          const cData = database[campanaActiva];
-          cData.pollos = [];
-          cData.tara = [];
-          guardarEnLocalStorage();
-          renderizarTablas();
-          mostrarToast(`Tablas de ${nombreC} vaciadas correctamente`, 'aviso');
-        }
-      });
-    }
-
-    // Botón Actualizar Sistema y Sincronizar
     async function actualizarSistema() {
       mostrarToast('Sincronizando y recalculando datos...', 'info');
       recalcularTotales();
       renderizarTablas();
       document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
-      
-      // Opcional: Reenvío de confirmación a Google Sheets si hay conexión
       try {
         const cData = database[campanaActiva];
-        const payload = {
-          action: 'GUARDAR_NOTA',
-          campana: campanaActiva,
-          nota: cData.nota || '',
-          precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-        };
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({ action: 'GUARDAR_NOTA', campana: campanaActiva, nota: cData.nota || '', precioKg: document.getElementById('txtPrecio').value.replace(',', '.') })
         });
-        mostrarToast('Datos sincronizados correctamente con Google Sheets', 'exito');
+        mostrarToast('Datos sincronizados con Google Sheets', 'exito');
       } catch (e) {
-        mostrarToast('Valores recalculados en pantalla', 'exito');
+        mostrarToast('Datos locales recalculados', 'exito');
       }
     }
 
-    // Reloj en Vivo para Modo Automático
     setInterval(() => {
       if (modoFechaActual === 'auto') {
         const d = new Date();
@@ -730,23 +750,26 @@
         btnAuto.className = "px-2 py-0.5 rounded text-[10px] font-bold bg-slate-800 text-slate-400";
         contAuto.classList.add('hidden');
         inputMan.classList.remove('hidden');
-
         const now = new Date();
-        const offset = now.getTimezoneOffset() * 60000;
-        inputMan.value = (new Date(now - offset)).toISOString().slice(0, 16);
+        inputMan.value = (new Date(now - now.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
       }
     }
 
+    // CAPTURA ESTRICTA DE FECHA/HORA (AUTOMÁTICA O MANUAL)
     function obtenerFechaHoraSeleccionada() {
       if (modoFechaActual === 'auto') {
         return new Date().toLocaleString('es-PE');
       } else {
         const val = document.getElementById('inputFechaManual').value;
-        return val ? val.replace('T', ' ') : new Date().toLocaleString('es-PE');
+        if (!val) return new Date().toLocaleString('es-PE');
+        // Convertir formato input datetime-local a string legible
+        const d = new Date(val);
+        return isNaN(d.getTime()) ? val.replace('T', ' ') : d.toLocaleString('es-PE');
       }
     }
 
     window.onload = () => {
+      aplicarConfiguracionMarca();
       document.getElementById('txtRelojEnVivo').innerText = new Date().toLocaleString('es-PE');
       cargarSelectorCampanas();
       seleccionarCampana();
@@ -789,7 +812,6 @@
       if (!database[campanaActiva]) {
         database[campanaActiva] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
       }
-      
       const cData = database[campanaActiva];
       document.getElementById('txtCliente').value = cData.cliente || '';
       document.getElementById('txtGalpon').value = cData.galpon || '';
@@ -797,7 +819,6 @@
       document.getElementById('txtNotaGeneral').value = cData.nota || '';
       document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace('_', ' ');
       document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
-
       renderizarTablas();
     }
 
@@ -811,35 +832,36 @@
       guardarNotaGeneralEnSheets();
     }
 
+    // GUARDAR NOTA CON FECHA Y HORA EN COLUMNAS INDEPENDIENTES (L Y M)
     async function guardarNotaGeneralEnSheets() {
       const cData = database[campanaActiva];
       cData.nota = document.getElementById('txtNotaGeneral').value;
-      cData.fechaHora = obtenerFechaHoraSeleccionada();
+      const fechaHoraNota = obtenerFechaHoraSeleccionada();
+      cData.fechaHora = fechaHoraNota;
       guardarEnLocalStorage();
 
       const btn = document.getElementById('btnGuardarNota');
-      btn.innerText = "⏳ Guardando...";
+      btn.innerText = "⏳...";
       btn.disabled = true;
-
-      const payload = {
-        action: 'GUARDAR_NOTA',
-        campana: campanaActiva,
-        nota: cData.nota,
-        precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
-      };
 
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            action: 'GUARDAR_NOTA',
+            campana: campanaActiva,
+            nota: cData.nota,
+            fecha: fechaHoraNota,
+            precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+          })
         });
-        mostrarToast(`Nota del lote guardada en Google Sheets`, 'exito');
+        mostrarToast('Nota guardada en columna independiente de Sheets', 'exito');
       } catch (e) {
         mostrarToast('Nota guardada localmente', 'aviso');
       } finally {
-        btn.innerText = "Guardar en Sheets";
+        btn.innerText = "Guardar Nota";
         btn.disabled = false;
       }
     }
@@ -848,7 +870,6 @@
       tipoActual = tipo;
       const btnT = document.getElementById('btnTipoTara');
       const btnP = document.getElementById('btnTipoPollos');
-
       if (tipo === 'TARA') {
         btnT.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border-2 border-amber-500 bg-amber-500 text-slate-950 shadow-lg active:scale-95 transition text-center";
         btnP.className = "py-3.5 px-3 rounded-2xl font-black text-xs sm:text-sm border border-slate-700 bg-slate-900 text-slate-400 active:scale-95 transition text-center";
@@ -860,7 +881,6 @@
 
     const inputPesoManual = document.getElementById('inputPesoManual');
     const visorDisplay = document.getElementById('visorDisplay');
-
     inputPesoManual.addEventListener('input', (e) => {
       let v = e.target.value.replace(',', '.').trim();
       visorDisplay.innerText = v === '' ? '0.00' : v;
@@ -874,54 +894,45 @@
     async function guardarPesadaActual() {
       let strVal = inputPesoManual.value.replace(',', '.').trim();
       let peso = parseFloat(strVal);
-      const feedback = document.getElementById('feedbackMsg');
       const btn = document.getElementById('btnGuardar');
 
       if (!strVal || isNaN(peso) || peso <= 0) {
-        mostrarToast("Ingrese o capture un peso mayor a 0 kg", "aviso");
+        mostrarToast("Ingrese un peso válido mayor a 0", "aviso");
         return;
       }
 
       btn.disabled = true;
-      btn.innerText = "⏳ ENVIANDO A SHEETS...";
+      btn.innerText = "⏳ GUARDANDO...";
 
       const cData = database[campanaActiva];
-      if (tipoActual === 'TARA') {
-        cData.tara.push(peso);
-      } else {
-        cData.pollos.push(peso);
-      }
+      if (tipoActual === 'TARA') cData.tara.push(peso);
+      else cData.pollos.push(peso);
 
       guardarEnLocalStorage();
       renderizarTablas();
-
-      const payload = {
-        action: 'REGISTRAR_PESADA',
-        campana: campanaActiva,
-        tipo: tipoActual,
-        peso: peso,
-        precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-        fecha: obtenerFechaHoraSeleccionada(),
-        nota: document.getElementById('txtNotaGeneral').value
-      };
 
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            action: 'REGISTRAR_PESADA',
+            campana: campanaActiva,
+            tipo: tipoActual,
+            peso: peso,
+            precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+            fecha: obtenerFechaHoraSeleccionada(),
+            nota: document.getElementById('txtNotaGeneral').value
+          })
         });
-        feedback.innerText = `✅ ¡Pesada (${strVal} kg) guardada en Google Sheets!`;
-        mostrarToast(`Pesada de ${strVal} kg registrada con éxito`, 'exito');
+        mostrarToast(`Pesada de ${strVal} kg registrada`, 'exito');
       } catch (err) {
-        feedback.innerText = "⚠️ Guardado localmente (sin internet)";
-        mostrarToast("Guardado local (sin conexión)", "aviso");
+        mostrarToast("Guardado localmente", "aviso");
       } finally {
         limpiarCaja();
         btn.disabled = false;
         btn.innerText = "💾 GUARDAR PESADA EN GOOGLE SHEETS";
-        setTimeout(() => feedback.innerText = '', 3500);
       }
     }
 
@@ -931,73 +942,50 @@
 
       const reader = new FileReader();
       reader.onload = async function(e) {
-        const contenido = e.target.result;
-        const lineas = contenido.split(/\r?\n/);
+        const lineas = e.target.result.split(/\r?\n/);
         const cData = database[campanaActiva];
-        let numerosAEnviar = [];
+        let nums = [];
 
         lineas.forEach(lin => {
-          let textoLimpio = lin.trim();
-          if (!textoLimpio) return;
-
-          let valorNormalizado = textoLimpio.replace(',', '.');
-          let num = parseFloat(valorNormalizado);
-
-          if (!isNaN(num) && num > 0) {
-            numerosAEnviar.push(num);
-            if (destino === 'TARA') {
-              cData.tara.push(num);
-            } else {
-              cData.pollos.push(num);
-            }
+          let t = lin.trim().replace(',', '.');
+          let n = parseFloat(t);
+          if (!isNaN(n) && n > 0) {
+            nums.push(n);
+            if (destino === 'TARA') cData.tara.push(n);
+            else cData.pollos.push(n);
           }
         });
 
         guardarEnLocalStorage();
         renderizarTablas();
 
-        if (numerosAEnviar.length === 0) {
-          mostrarToast("No se encontraron números válidos en el archivo TXT", "error");
+        if (nums.length === 0) {
+          mostrarToast("No hay números válidos en el archivo TXT", "error");
           return;
         }
 
-        const payload = {
-          action: 'REGISTRAR_LOTE_TXT',
-          campana: campanaActiva,
-          tipo: destino,
-          pesos: numerosAEnviar,
-          precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
-          fecha: obtenerFechaHoraSeleccionada()
-        };
-
         try {
-          mostrarToast(`Enviando ${numerosAEnviar.length} pesadas a Google Sheets...`, "info");
+          mostrarToast(`Enviando ${nums.length} pesadas a Google Sheets...`, "info");
           await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify({
+              action: 'REGISTRAR_LOTE_TXT',
+              campana: campanaActiva,
+              tipo: destino,
+              pesos: nums,
+              precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+              fecha: obtenerFechaHoraSeleccionada()
+            })
           });
-          mostrarToast(`¡Éxito! ${numerosAEnviar.length} pesadas guardadas en Google Sheets`, "exito");
+          mostrarToast(`¡Éxito! ${nums.length} pesadas importadas en Sheets`, "exito");
         } catch (err) {
-          mostrarToast("Guardado en la app, error de enlace con Sheets", "aviso");
+          mostrarToast("Guardado en la app", "aviso");
         }
-
         event.target.value = '';
       };
       reader.readAsText(file);
-    }
-
-    function eliminarItem(tipo, index) {
-      const cData = database[campanaActiva];
-      if (tipo === 'TARA') {
-        cData.tara.splice(index, 1);
-      } else {
-        cData.pollos.splice(index, 1);
-      }
-      guardarEnLocalStorage();
-      renderizarTablas();
-      mostrarToast("Registro eliminado de la tabla", "info");
     }
 
     function renderizarTablas() {
@@ -1012,7 +1000,10 @@
         tr.innerHTML = `
           <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
           <td class="p-2 text-amber-300 font-semibold">${numVal.toFixed(2)}</td>
-          <td class="p-2"><button onclick="eliminarItem('TARA', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
+          <td class="p-2 flex items-center justify-center gap-1.5">
+            <button onclick="editarItem('TARA', ${i})" title="Editar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold rounded text-[10px]">✏️</button>
+            <button onclick="eliminarItem('TARA', ${i})" title="Eliminar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-rose-900 text-rose-400 font-bold rounded text-[10px]">✕</button>
+          </td>
         `;
         tTara.appendChild(tr);
       });
@@ -1026,7 +1017,10 @@
         tr.innerHTML = `
           <td class="p-2 text-slate-500 font-bold">${i + 1}</td>
           <td class="p-2 text-sky-300 font-semibold">${numVal.toFixed(2)}</td>
-          <td class="p-2"><button onclick="eliminarItem('CON_POLLOS', ${i})" class="text-rose-400 hover:text-rose-300 font-bold">✕</button></td>
+          <td class="p-2 flex items-center justify-center gap-1.5">
+            <button onclick="editarItem('CON_POLLOS', ${i})" title="Editar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-slate-700 text-sky-400 font-bold rounded text-[10px]">✏️</button>
+            <button onclick="eliminarItem('CON_POLLOS', ${i})" title="Eliminar Pesada" class="px-1.5 py-0.5 bg-slate-800 hover:bg-rose-900 text-rose-400 font-bold rounded text-[10px]">✕</button>
+          </td>
         `;
         tPollos.appendChild(tr);
       });
@@ -1036,23 +1030,18 @@
 
     function recalcularTotales() {
       const cData = database[campanaActiva];
-      
       const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
       const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      
       const pesoNeto = Math.max(0, sumBruto - sumTara);
       const precioKg = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
       const totalSoles = pesoNeto * precioKg;
 
       document.getElementById('badgeSubtotalTara').innerText = `${sumTara.toFixed(2)} kg`;
       document.getElementById('badgeSubtotalPollos').innerText = `${sumBruto.toFixed(2)} kg`;
-
       document.getElementById('resumenBruto').innerText = sumBruto.toFixed(2);
       document.getElementById('cntPesadasPollos').innerText = `${cData.pollos.length} pesadas`;
-
       document.getElementById('resumenTara').innerText = sumTara.toFixed(2);
       document.getElementById('cntPesadasTara').innerText = `${cData.tara.length} pesadas`;
-
       document.getElementById('resumenNeto').innerText = pesoNeto.toFixed(2);
       document.getElementById('resumenPrecio').innerText = `S/. ${precioKg.toFixed(2)}`;
       document.getElementById('resumenTotalSoles').innerText = `S/. ${totalSoles.toFixed(2)}`;
@@ -1070,33 +1059,31 @@
       const feedback = document.getElementById('driveTicketFeedback');
       btn.innerText = "⏳ Creando PDF...";
       btn.disabled = true;
-      feedback.innerText = "Generando PDF en la subcarpeta 'PDFs_Tickets' de Drive...";
-
-      const payload = {
-        action: 'GUARDAR_TICKET_DRIVE',
-        campana: campanaActiva,
-        cliente: document.getElementById('txtCliente').value || '-',
-        galpon: document.getElementById('txtGalpon').value || '-',
-        nota: document.getElementById('txtNotaGeneral').value || '-',
-        fecha: obtenerFechaHoraSeleccionada(),
-        pesadasBruto: cData.pollos.length,
-        brutoTotal: sumBruto.toFixed(2),
-        pesadasTara: cData.tara.length,
-        taraTotal: sumTara.toFixed(2),
-        netoTotal: neto.toFixed(2),
-        precioKg: precio.toFixed(2),
-        totalPagar: soles.toFixed(2)
-      };
+      feedback.innerText = "Generando PDF en la subcarpeta 'PDFs_Tickets'...";
 
       try {
         await fetch(APPS_SCRIPT_URL, {
           method: 'POST',
           mode: 'no-cors',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
+          body: JSON.stringify({
+            action: 'GUARDAR_TICKET_DRIVE',
+            campana: campanaActiva,
+            cliente: document.getElementById('txtCliente').value || '-',
+            galpon: document.getElementById('txtGalpon').value || '-',
+            nota: document.getElementById('txtNotaGeneral').value || '-',
+            fecha: obtenerFechaHoraSeleccionada(),
+            pesadasBruto: cData.pollos.length,
+            brutoTotal: sumBruto.toFixed(2),
+            pesadasTara: cData.tara.length,
+            taraTotal: sumTara.toFixed(2),
+            netoTotal: neto.toFixed(2),
+            precioKg: precio.toFixed(2),
+            totalPagar: soles.toFixed(2)
+          })
         });
-        feedback.innerText = "✅ ¡Ticket PDF guardado en la subcarpeta 'PDFs_Tickets'!";
-        mostrarToast("PDF guardado en Google Drive en la carpeta 'PDFs_Tickets'", "exito");
+        feedback.innerText = "✅ ¡Ticket PDF guardado en 'PDFs_Tickets' de Drive!";
+        mostrarToast("PDF guardado en Google Drive", "exito");
       } catch (err) {
         feedback.innerText = "⚠️ Error al conectar con Drive";
         mostrarToast("Error al conectar con Drive", "error");
@@ -1121,12 +1108,10 @@
       document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
       document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
       document.getElementById('tktNota').innerText = document.getElementById('txtNotaGeneral').value || '-';
-      
       document.getElementById('tktBruto').innerText = `${sumBruto.toFixed(2)} kg`;
       document.getElementById('tktTara').innerText = `-${sumTara.toFixed(2)} kg`;
       document.getElementById('tktNeto').innerText = `${neto.toFixed(2)} kg`;
       document.getElementById('tktMontoPagar').innerText = `S/. ${soles.toFixed(2)}`;
-
       document.getElementById('modalTicket').classList.remove('hidden');
     }
 
@@ -1134,19 +1119,9 @@
       document.getElementById('modalTicket').classList.add('hidden');
     }
 
-    // DASHBOARD
     function renderizarDashboard() {
-      let facturacionTotal = 0;
-      let kilosNetosGlobal = 0;
-      let totalTaraGlobal = 0;
-      let totalBrutoGlobal = 0;
-      let campanasConDatos = 0;
-
-      const labels = [];
-      const dataNetos = [];
-      const dataTaras = [];
-      const dataSoles = [];
-
+      let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraGlobal = 0, totalBrutoGlobal = 0, campanasConDatos = 0;
+      const labels = [], dataNetos = [], dataTaras = [], dataSoles = [];
       const tbody = document.getElementById('cuerpoTablaDashboard');
       tbody.innerHTML = '';
 
@@ -1160,10 +1135,7 @@
 
         if (c.tara.length > 0 || c.pollos.length > 0) campanasConDatos++;
 
-        facturacionTotal += total;
-        kilosNetosGlobal += sNeto;
-        totalTaraGlobal += sTara;
-        totalBrutoGlobal += sBruto;
+        facturacionTotal += total; kilosNetosGlobal += sNeto; totalTaraGlobal += sTara; totalBrutoGlobal += sBruto;
 
         const nombreCampana = cId.replace('_', ' ');
         labels.push(nombreCampana);
@@ -1185,7 +1157,6 @@
       });
 
       const porcentajeTara = totalBrutoGlobal > 0 ? ((totalTaraGlobal / totalBrutoGlobal) * 100).toFixed(1) : 0;
-
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
       document.getElementById('dashPorcentajeTara').innerText = `${porcentajeTara} %`;
@@ -1202,32 +1173,14 @@
         data: {
           labels: labels,
           datasets: [
-            {
-              label: 'Carne Neta (kg)',
-              data: netos,
-              backgroundColor: 'rgba(52, 211, 153, 0.8)',
-              borderColor: 'rgb(52, 211, 153)',
-              borderWidth: 1,
-              borderRadius: 6
-            },
-            {
-              label: 'Tara Jabas (kg)',
-              data: taras,
-              backgroundColor: 'rgba(251, 191, 36, 0.8)',
-              borderColor: 'rgb(251, 191, 36)',
-              borderWidth: 1,
-              borderRadius: 6
-            }
+            { label: 'Carne Neta (kg)', data: netos, backgroundColor: 'rgba(52, 211, 153, 0.8)', borderRadius: 6 },
+            { label: 'Tara Jabas (kg)', data: taras, backgroundColor: 'rgba(251, 191, 36, 0.8)', borderRadius: 6 }
           ]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: { legend: { labels: { color: '#cbd5e1' } } },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-          }
+          scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } }
         }
       });
 
@@ -1237,30 +1190,17 @@
         type: 'line',
         data: {
           labels: labels,
-          datasets: [{
-            label: 'Total a Cobrar (S/.)',
-            data: soles,
-            borderColor: '#10b981',
-            backgroundColor: 'rgba(16, 185, 129, 0.2)',
-            fill: true,
-            tension: 0.3,
-            pointBackgroundColor: '#34d399',
-            pointRadius: 5
-          }]
+          datasets: [{ label: 'Total a Cobrar (S/.)', data: soles, borderColor: '#10b981', backgroundColor: 'rgba(16, 185, 129, 0.2)', fill: true, tension: 0.3 }]
         },
         options: {
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, maintainAspectRatio: false,
           plugins: { legend: { labels: { color: '#cbd5e1' } } },
-          scales: {
-            x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
-            y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
-          }
+          scales: { x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } } }
         }
       });
     }
 
-    // Cámara y OCR
+    // CÁMARA Y OCR
     let streamVideo = null;
     async function alternarCamaraOCR() {
       const panel = document.getElementById('panelOCR');
@@ -1287,35 +1227,27 @@
       const canvas = document.getElementById('canvasPreprocesador');
       const ctx = canvas.getContext('2d');
 
-      btn.innerText = "⏳ Extrayendo números...";
+      btn.innerText = "⏳ Leyendo...";
       btn.disabled = true;
 
-      const vw = video.videoWidth || 640;
-      const vh = video.videoHeight || 480;
-      const cropW = Math.floor(vw * 0.8);
-      const cropH = Math.floor(vh * 0.4);
-      const cropX = Math.floor((vw - cropW) / 2);
-      const cropY = Math.floor((vh - cropH) / 2);
+      const vw = video.videoWidth || 640, vh = video.videoHeight || 480;
+      const cropW = Math.floor(vw * 0.8), cropH = Math.floor(vh * 0.4);
+      const cropX = Math.floor((vw - cropW) / 2), cropY = Math.floor((vh - cropH) / 2);
 
-      canvas.width = cropW;
-      canvas.height = cropH;
+      canvas.width = cropW; canvas.height = cropH;
       ctx.drawImage(video, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
 
       const imgData = ctx.getImageData(0, 0, cropW, cropH);
       const d = imgData.data;
       let totalLuma = 0;
-      for (let i = 0; i < d.length; i += 4) {
-        totalLuma += 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
-      }
+      for (let i = 0; i < d.length; i += 4) totalLuma += 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
       let avg = totalLuma / (d.length / 4);
       let threshold = avg * 1.05;
 
       for (let i = 0; i < d.length; i += 4) {
         let luma = 0.299 * d[i] + 0.587 * d[i+1] + 0.114 * d[i+2];
         let val = luma > threshold ? 0 : 255;
-        d[i] = val;
-        d[i+1] = val;
-        d[i+2] = val;
+        d[i] = val; d[i+1] = val; d[i+2] = val;
       }
       ctx.putImageData(imgData, 0, 0);
 
@@ -1323,7 +1255,6 @@
         const res = await Tesseract.recognize(canvas, 'eng', { tessedit_char_whitelist: '0123456789.,' });
         let raw = res.data.text.replace(/\s+/g, '').replace(',', '.');
         let match = raw.match(/\d+(\.\d+)?/);
-
         if (match) {
           let lectura = match[0];
           inputPesoManual.value = lectura;
@@ -1331,10 +1262,10 @@
           alternarCamaraOCR();
           mostrarToast(`Lectura OCR capturada: ${lectura} kg`, "exito");
         } else {
-          mostrarToast(`No se detectó un número claro. Intentó: "${raw}"`, "aviso");
+          mostrarToast(`Lectura confusa: "${raw}". Ingrese manual`, "aviso");
         }
       } catch (err) {
-        mostrarToast("Error en motor OCR", "error");
+        mostrarToast("Error en el OCR", "error");
       } finally {
         btn.innerText = "📸 Capturar Número";
         btn.disabled = false;
