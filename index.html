@@ -5,18 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Sistema de Pesaje y Dashboard Avícola</title>
   
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  
-  <!-- Tipografía Industrial -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@600;700;900&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-  
-  <!-- Motor OCR Tesseract.js -->
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-
-  <!-- Gráficos Estadísticos Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -48,11 +41,11 @@
         <span class="text-2xl sm:text-3xl">⚖️</span>
         <div>
           <h1 class="text-sm sm:text-base font-black uppercase tracking-wider text-amber-400">Control Galpón IoT</h1>
-          <p class="text-[10px] sm:text-xs text-slate-400">Taras, Cargas & Dashboard Multicampaña</p>
+          <p class="text-[10px] sm:text-xs text-slate-400">Taras, Cargas & Sincronización Automática con Drive</p>
         </div>
       </div>
       
-      <!-- Navegación de Vistas -->
+      <!-- Navegación -->
       <div class="flex items-center gap-2">
         <button onclick="cambiarVista('pesaje')" id="btnTabPesaje" class="px-3 py-1.5 rounded-xl text-xs font-black bg-amber-500 text-slate-950 shadow">
           ⚖️ Registro Pesaje
@@ -62,7 +55,7 @@
         </button>
       </div>
 
-      <!-- Campañas -->
+      <!-- Campaña -->
       <div class="flex items-center gap-2">
         <span class="text-xs text-slate-300 font-bold hidden sm:inline">Campaña:</span>
         <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs sm:text-sm rounded-xl px-3 py-1.5 outline-none">
@@ -84,7 +77,7 @@
     <!-- ======================================================== -->
     <div id="vistaPesaje" class="space-y-4">
       
-      <!-- CONFIGURACIÓN DE LOTE Y PRECIO -->
+      <!-- DATOS DE LOTE Y PRECIO -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         <div class="sm:col-span-4">
           <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador / Cliente:</label>
@@ -108,7 +101,7 @@
         </div>
       </section>
 
-      <!-- FECHA / HORA (AUTO O MANUAL) Y NOTA GENERAL -->
+      <!-- FECHA/HORA Y NOTA GENERAL -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
         <!-- Control Fecha y Hora -->
         <div class="sm:col-span-5 bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
@@ -129,14 +122,14 @@
           <input id="inputFechaManual" type="datetime-local" class="hidden w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none focus:border-amber-400 font-mono">
         </div>
 
-        <!-- Nota / Observación General -->
+        <!-- Nota / Observación Opcional -->
         <div class="sm:col-span-7 bg-slate-950 p-2.5 rounded-xl border border-slate-800 flex gap-2 items-center">
           <div class="flex-1">
-            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación Opcional del Lote:</label>
+            <label class="text-[11px] text-slate-400 font-semibold block mb-0.5">📝 Nota / Observación General del Lote:</label>
             <input id="txtNotaGeneral" type="text" placeholder="Ej. Camión placa ABC-123, chofer Juan..." class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white outline-none focus:border-amber-400">
           </div>
-          <button onclick="guardarNotaGeneral()" class="self-end px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-amber-300 font-bold text-xs rounded-lg active:scale-95 transition">
-            Guardar Nota
+          <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
+            Guardar en Sheets
           </button>
         </div>
       </section>
@@ -224,23 +217,23 @@
 
         </div>
 
-        <!-- TABLAS LIMPIAS EN PARALELO (SIN FECHA NI HORA EN CADA FILA) -->
+        <!-- TABLAS EN PARALELO (CON SUBIDA A GOOGLE SHEETS EN TIEMPO REAL) -->
         <div class="lg:col-span-6 space-y-4">
 
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
             
-            <!-- TABLA 1: TARA (LIMPIA) -->
+            <!-- TABLA 1: TARA -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-amber-400">📦 1. TARA</span>
                 <span id="badgeSubtotalTara" class="text-xs font-mono font-bold text-white">0.00 kg</span>
               </div>
               
-              <!-- Subir TXT Tara -->
+              <!-- Subir TXT Tara con sincronización inmediata a Drive -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
                 <label class="cursor-pointer bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
+                  📂 Subir .txt a Sheets
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'TARA')">
                 </label>
               </div>
@@ -259,18 +252,18 @@
               </div>
             </div>
 
-            <!-- TABLA 2: CON POLLOS (LIMPIA) -->
+            <!-- TABLA 2: CON POLLOS -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow space-y-2">
               <div class="flex justify-between items-center pb-1.5 border-b border-slate-800">
                 <span class="text-xs font-black uppercase text-sky-400">🐔 2. CON POLLOS</span>
                 <span id="badgeSubtotalPollos" class="text-xs font-mono font-bold text-white">0.00 kg</span>
               </div>
 
-              <!-- Subir TXT Con Pollos -->
+              <!-- Subir TXT Con Pollos con sincronización inmediata a Drive -->
               <div class="flex items-center justify-between bg-slate-950 p-2 rounded-xl border border-slate-800">
                 <span class="text-[10px] text-slate-400 font-semibold">Importar TXT:</span>
                 <label class="cursor-pointer bg-sky-500/20 hover:bg-sky-500/30 text-sky-300 border border-sky-500/40 px-2.5 py-1 rounded-lg text-[10px] font-bold">
-                  📂 Subir .txt
+                  📂 Subir .txt a Sheets
                   <input type="file" accept=".txt" class="hidden" onchange="importarArchivoTXTRobusto(event, 'CON_POLLOS')">
                 </label>
               </div>
@@ -291,7 +284,7 @@
 
           </div>
 
-          <!-- PANEL DE TOTALES: CON POLLOS MENOS TARA (SIEMPRE POSITIVO) -->
+          <!-- PANEL DE TOTALES -->
           <section class="bg-slate-900 border-2 border-emerald-500/50 p-4 rounded-3xl space-y-3.5 shadow-xl">
             <div class="flex justify-between items-center pb-2 border-b border-slate-800 text-xs sm:text-sm">
               <span class="font-bold text-slate-300 uppercase tracking-wider text-[11px] sm:text-xs">Liquidación del Lote</span>
@@ -332,26 +325,24 @@
               </div>
             </div>
 
+            <!-- Botones: Ver Ticket y Guardar Automático en Google Drive -->
             <div class="grid grid-cols-2 gap-2 pt-1">
               <button onclick="abrirTicketTermico()" class="py-2.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200 active:scale-95 transition">
-                🧾 Imprimir Ticket
+                🧾 Ver / Imprimir Ticket
               </button>
-              <button onclick="compartirWhatsApp()" class="py-2.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs sm:text-sm font-bold text-white active:scale-95 transition">
-                📲 Enviar WhatsApp
+              <button onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-2.5 bg-sky-600 hover:bg-sky-500 rounded-xl text-xs sm:text-sm font-bold text-white active:scale-95 transition">
+                ☁️ Guardar PDF en Drive
               </button>
             </div>
+            <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 h-4"></div>
           </section>
 
         </div>
       </div>
     </div>
 
-    <!-- ======================================================== -->
-    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y GRÁFICOS               -->
-    <!-- ======================================================== -->
+    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA -->
     <div id="vistaDashboard" class="hidden space-y-5">
-      
-      <!-- KPIs GLOBALES -->
       <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl shadow">
           <div class="flex justify-between items-center text-xs text-slate-400 mb-1">
@@ -398,7 +389,7 @@
         </div>
       </section>
 
-      <!-- GRÁFICOS ESTADÍSTICOS -->
+      <!-- GRÁFICOS -->
       <section class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <div class="bg-slate-900 border border-slate-800 p-4 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
@@ -419,7 +410,7 @@
         </div>
       </section>
 
-      <!-- TABLA COMPARATIVA -->
+      <!-- TABLA -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-4 sm:p-6 shadow-xl space-y-4">
         <h2 class="text-sm sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-3">
           📋 Cuadro Comparativo Multicampaña
@@ -477,9 +468,12 @@
         <span id="tktMontoPagar" class="text-2xl font-black text-slate-900">S/. 0.00</span>
       </div>
 
-      <div class="pt-2 border-t border-dashed border-slate-400 flex gap-2">
+      <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
         <button onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">
-          Imprimir Comprobante
+          🖨️ Imprimir Ticket
+        </button>
+        <button onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">
+          ☁️ Guardar Copia en Drive
         </button>
       </div>
     </div>
@@ -487,28 +481,26 @@
 
   <script>
     // ========================================================
-    // COLOCA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE (/exec)
+    // COLOCA AQUÍ TU URL IMPLEMENTADA DE GOOGLE APPS SCRIPT (/exec)
     // ========================================================
     const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxpsAJWzL1OPzAv52gEjaC294JA7DHwL_pYkp4cK7_PLVh-UmWBl23CQJNYykYk2Rik/exec";
 
     let tipoActual = 'TARA';
     let campanaActiva = 'Campana_1';
-    let modoFechaActual = 'auto'; // 'auto' o 'manual'
+    let modoFechaActual = 'auto';
 
     let chartKilosInstance = null;
     let chartSolesInstance = null;
 
-    // Base de Datos Local Limpia
-    let database = JSON.parse(localStorage.getItem('avicola_db_v3')) || {
+    let database = JSON.parse(localStorage.getItem('avicola_db_v4')) || {
       'Campana_1': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' },
       'Campana_2': { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' }
     };
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v3', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v4', JSON.stringify(database));
     }
 
-    // Reloj en Vivo para Modo Automático
     setInterval(() => {
       if (modoFechaActual === 'auto') {
         const d = new Date();
@@ -623,15 +615,41 @@
       cData.precio = document.getElementById('txtPrecio').value.replace(',', '.');
       guardarEnLocalStorage();
       recalcularTotales();
-      alert(`Datos de ${campanaActiva.replace('_', ' ')} actualizados.`);
+      guardarNotaGeneralEnSheets();
     }
 
-    function guardarNotaGeneral() {
+    // Guardar Nota y Precio en Google Sheets
+    async function guardarNotaGeneralEnSheets() {
       const cData = database[campanaActiva];
       cData.nota = document.getElementById('txtNotaGeneral').value;
       cData.fechaHora = obtenerFechaHoraSeleccionada();
       guardarEnLocalStorage();
-      alert("Nota general guardada para " + campanaActiva.replace('_', ' '));
+
+      const btn = document.getElementById('btnGuardarNota');
+      btn.innerText = "⏳ Guardando...";
+      btn.disabled = true;
+
+      const payload = {
+        action: 'GUARDAR_NOTA',
+        campana: campanaActiva,
+        nota: cData.nota,
+        precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+      };
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        alert(`✅ Nota y lote guardados en Google Sheets para ${campanaActiva.replace('_', ' ')}`);
+      } catch (e) {
+        alert("Guardado localmente en memoria");
+      } finally {
+        btn.innerText = "Guardar en Sheets";
+        btn.disabled = false;
+      }
     }
 
     function seleccionarTipo(tipo) {
@@ -713,17 +731,19 @@
       }
     }
 
-    // Importar TXT línea por línea sin romper comas decimales
+    // ========================================================
+    // IMPORTADOR TXT CON TRANSMISIÓN DIRECTA A GOOGLE SHEETS
+    // ========================================================
     function importarArchivoTXTRobusto(event, destino) {
       const file = event.target.files[0];
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(e) {
+      reader.onload = async function(e) {
         const contenido = e.target.result;
         const lineas = contenido.split(/\r?\n/);
-        let importados = 0;
         const cData = database[campanaActiva];
+        let numerosAEnviar = [];
 
         lineas.forEach(lin => {
           let textoLimpio = lin.trim();
@@ -733,18 +753,46 @@
           let num = parseFloat(valorNormalizado);
 
           if (!isNaN(num) && num > 0) {
+            numerosAEnviar.push(num);
             if (destino === 'TARA') {
               cData.tara.push(num);
             } else {
               cData.pollos.push(num);
             }
-            importados++;
           }
         });
 
         guardarEnLocalStorage();
         renderizarTablas();
-        alert(`¡Completado! Se importaron ${importados} pesadas exactas a la lista de ${destino === 'TARA' ? 'TARA' : 'CON POLLOS'}.`);
+
+        if (numerosAEnviar.length === 0) {
+          alert("No se encontraron números válidos en el archivo TXT.");
+          return;
+        }
+
+        // Transmisión inmediata a Google Sheets
+        const payload = {
+          action: 'REGISTRAR_LOTE_TXT',
+          campana: campanaActiva,
+          tipo: destino,
+          pesos: numerosAEnviar,
+          precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+          fecha: obtenerFechaHoraSeleccionada()
+        };
+
+        try {
+          alert(`Enviando ${numerosAEnviar.length} pesadas a Google Sheets... Espere un momento.`);
+          await fetch(APPS_SCRIPT_URL, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+          alert(`✅ ¡ÉXITO! Se importaron y guardaron ${numerosAEnviar.length} pesadas de ${destino} en tu Google Sheets.`);
+        } catch (err) {
+          alert("⚠️ Guardado en la app, pero hubo un error de conexión con Sheets.");
+        }
+
         event.target.value = '';
       };
       reader.readAsText(file);
@@ -819,6 +867,85 @@
       document.getElementById('resumenTotalSoles').innerText = `S/. ${totalSoles.toFixed(2)}`;
     }
 
+    // ========================================================
+    // GUARDAR COMPROBANTE / PDF EN DRIVE AUTOMÁTICAMENTE
+    // ========================================================
+    async function guardarTicketEnGoogleDrive() {
+      const cData = database[campanaActiva];
+      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
+      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
+      const neto = Math.max(0, sumBruto - sumTara);
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
+      const soles = neto * precio;
+
+      const btn = document.getElementById('btnGuardarDriveTicket');
+      const feedback = document.getElementById('driveTicketFeedback');
+      btn.innerText = "⏳ Creando PDF en Drive...";
+      btn.disabled = true;
+      feedback.innerText = "Generando PDF en la carpeta 'Tickets Avícolas' de Drive...";
+
+      const payload = {
+        action: 'GUARDAR_TICKET_DRIVE',
+        campana: campanaActiva,
+        cliente: document.getElementById('txtCliente').value || '-',
+        galpon: document.getElementById('txtGalpon').value || '-',
+        nota: document.getElementById('txtNotaGeneral').value || '-',
+        fecha: obtenerFechaHoraSeleccionada(),
+        pesadasBruto: cData.pollos.length,
+        brutoTotal: sumBruto.toFixed(2),
+        pesadasTara: cData.tara.length,
+        taraTotal: sumTara.toFixed(2),
+        netoTotal: neto.toFixed(2),
+        precioKg: precio.toFixed(2),
+        totalPagar: soles.toFixed(2)
+      };
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        feedback.innerText = "✅ ¡Ticket PDF guardado en la carpeta 'Tickets Avícolas' de tu Drive!";
+        alert("✅ El ticket se guardó como archivo PDF en la carpeta 'Tickets Avícolas' de tu Google Drive y el registro se añadió a la hoja 'Historial_Tickets'.");
+      } catch (err) {
+        feedback.innerText = "⚠️ Error al conectar con Drive";
+      } finally {
+        btn.innerText = "☁️ Guardar PDF en Drive";
+        btn.disabled = false;
+        setTimeout(() => feedback.innerText = '', 6000);
+      }
+    }
+
+    function abrirTicketTermico() {
+      const cData = database[campanaActiva];
+      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
+      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
+      const neto = Math.max(0, sumBruto - sumTara);
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
+      const soles = neto * precio;
+
+      document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
+      document.getElementById('tktCampana').innerText = campanaActiva.replace('_', ' ');
+      document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
+      document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
+      document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
+      document.getElementById('tktNota').innerText = document.getElementById('txtNotaGeneral').value || '-';
+      
+      document.getElementById('tktBruto').innerText = `${sumBruto.toFixed(2)} kg`;
+      document.getElementById('tktTara').innerText = `-${sumTara.toFixed(2)} kg`;
+      document.getElementById('tktNeto').innerText = `${neto.toFixed(2)} kg`;
+      document.getElementById('tktMontoPagar').innerText = `S/. ${soles.toFixed(2)}`;
+
+      document.getElementById('modalTicket').classList.remove('hidden');
+    }
+
+    function cerrarTicket() {
+      document.getElementById('modalTicket').classList.add('hidden');
+    }
+
+    // DASHBOARD
     function renderizarDashboard() {
       let facturacionTotal = 0;
       let kilosNetosGlobal = 0;
@@ -842,9 +969,7 @@
         const pKg = parseFloat(c.precio) || 0;
         const total = sNeto * pKg;
 
-        if (c.tara.length > 0 || c.pollos.length > 0) {
-          campanasConDatos++;
-        }
+        if (c.tara.length > 0 || c.pollos.length > 0) campanasConDatos++;
 
         facturacionTotal += total;
         kilosNetosGlobal += sNeto;
@@ -946,7 +1071,7 @@
       });
     }
 
-    // Cámara y OCR
+    // OCR
     let streamVideo = null;
     async function alternarCamaraOCR() {
       const panel = document.getElementById('panelOCR');
@@ -1024,57 +1149,6 @@
         btn.innerText = "📸 Capturar Número";
         btn.disabled = false;
       }
-    }
-
-    // Ticket Térmico y WhatsApp
-    function abrirTicketTermico() {
-      const cData = database[campanaActiva];
-      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const neto = Math.max(0, sumBruto - sumTara);
-      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
-      const soles = neto * precio;
-
-      document.getElementById('tktFecha').innerText = obtenerFechaHoraSeleccionada();
-      document.getElementById('tktCampana').innerText = campanaActiva.replace('_', ' ');
-      document.getElementById('tktCliente').innerText = document.getElementById('txtCliente').value || '-';
-      document.getElementById('tktGalpon').innerText = document.getElementById('txtGalpon').value || '-';
-      document.getElementById('tktPrecio').innerText = `S/. ${precio.toFixed(2)}`;
-      document.getElementById('tktNota').innerText = cData.nota || '-';
-      
-      document.getElementById('tktBruto').innerText = `${sumBruto.toFixed(2)} kg`;
-      document.getElementById('tktTara').innerText = `-${sumTara.toFixed(2)} kg`;
-      document.getElementById('tktNeto').innerText = `${neto.toFixed(2)} kg`;
-      document.getElementById('tktMontoPagar').innerText = `S/. ${soles.toFixed(2)}`;
-
-      document.getElementById('modalTicket').classList.remove('hidden');
-    }
-
-    function cerrarTicket() {
-      document.getElementById('modalTicket').classList.add('hidden');
-    }
-
-    function compartirWhatsApp() {
-      const cData = database[campanaActiva];
-      const sumBruto = cData.pollos.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const sumTara = cData.tara.reduce((a, b) => a + (typeof b === 'object' ? b.peso : b), 0);
-      const neto = Math.max(0, sumBruto - sumTara);
-      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
-      const soles = neto * precio;
-      const cliente = document.getElementById('txtCliente').value || 'Cliente';
-      const fecha = obtenerFechaHoraSeleccionada();
-
-      const msg = `*LIQUIDACIÓN DE PESAJE EN GALPÓN*%0A`
-        + `📅 *${campanaActiva.replace('_', ' ')}* (${fecha})%0A`
-        + `👤 *Comprador:* ${cliente}%0A`
-        + (cData.nota ? `📝 *Nota:* ${cData.nota}%0A` : '')
-        + `🗑️ *Total Tara (${cData.tara.length} pesadas):* ${sumTara.toFixed(2)} kg%0A`
-        + `⚖️ *Total con Pollos (${cData.pollos.length} pesadas):* ${sumBruto.toFixed(2)} kg%0A`
-        + `🐔 *PESO NETO VIVO:* ${neto.toFixed(2)} kg%0A`
-        + `💵 *Precio x Kg:* S/. ${precio.toFixed(2)}%0A`
-        + `💰 *TOTAL A COBRAR: S/. ${soles.toFixed(2)}*`;
-
-      window.open(`https://api.whatsapp.com/send?text=${msg}`, '_blank');
     }
   </script>
 </body>
