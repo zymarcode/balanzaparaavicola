@@ -29,10 +29,63 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
     input, select, textarea { font-size: 16px !important; }
+
+    /* Animaciones para Modales y Toasts */
+    .modal-backdrop {
+      background-color: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-slide-down {
+      animation: slideDown 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    @keyframes toastIn {
+      from { transform: translateY(30px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .animate-toast {
+      animation: toastIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col antialiased">
+
+  <!-- NOTIFICACIÓN TOAST FLOTANTE PERSONALIZADA (REEMPLAZA ALERTS) -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- MODAL DE DIÁLOGO PERSONALIZADO (REEMPLAZA PROMPT Y CONFIRM) -->
+  <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-5 shadow-2xl animate-slide-down space-y-4">
+      <div class="flex items-center gap-3">
+        <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400">
+          ⚠️️
+        </div>
+        <div>
+          <h3 id="modalTitle" class="text-sm font-bold text-white">Mensaje del Sistema</h3>
+          <p id="modalSubtitle" class="text-[11px] text-slate-400">Confirmación de acción</p>
+        </div>
+      </div>
+      <div id="modalBody" class="text-xs text-slate-300 leading-relaxed"></div>
+      
+      <!-- Contenedor opcional para Input (cuando actúa como prompt) -->
+      <div id="modalInputCont" class="hidden">
+        <input id="modalInput" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400">
+      </div>
+
+      <div class="flex gap-2 pt-2" id="modalActions">
+        <button id="modalBtnCancel" onclick="cerrarCustomModal()" class="flex-1 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold rounded-xl transition">
+          Cancelar
+        </button>
+        <button id="modalBtnConfirm" class="flex-1 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-black rounded-xl transition">
+          Confirmar
+        </button>
+      </div>
+    </div>
+  </div>
 
   <!-- CABECERA -->
   <header class="bg-slate-900 border-b border-slate-800 px-4 py-3 sticky top-0 z-40 shadow-md">
@@ -62,7 +115,7 @@
           <option value="Campana_1">Campaña 1</option>
           <option value="Campana_2">Campaña 2</option>
         </select>
-        <button onclick="crearNuevaCampana()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2.5 py-1.5 rounded-xl text-xs font-black shadow transition">
+        <button onclick="abrirModalNuevaCampana()" class="bg-amber-500 hover:bg-amber-400 active:scale-95 text-slate-950 px-2.5 py-1.5 rounded-xl text-xs font-black shadow transition">
           + Nueva
         </button>
       </div>
@@ -77,7 +130,7 @@
     <!-- ======================================================== -->
     <div id="vistaPesaje" class="space-y-4">
       
-      <!-- DATOS DE LOTE Y PRECIO -->
+      <!-- CONFIGURACIÓN DE LOTE Y PRECIO -->
       <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-3 items-end">
         <div class="sm:col-span-4">
           <label class="text-[11px] sm:text-xs text-slate-400 font-semibold block mb-1">Comprador / Cliente:</label>
@@ -130,6 +183,23 @@
           </div>
           <button onclick="guardarNotaGeneralEnSheets()" id="btnGuardarNota" class="self-end px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg active:scale-95 transition">
             Guardar en Sheets
+          </button>
+        </div>
+      </section>
+
+      <!-- BARRA DE ACCIONES DE TABLAS: ACTUALIZAR Y LIMPIAR DATOS -->
+      <section class="flex flex-wrap items-center justify-between gap-2 bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800 text-xs">
+        <span class="text-slate-400 text-[11px] font-semibold pl-1">
+          📌 Campaña actual: <b id="lblCampanaBarra" class="text-amber-400">Campaña 1</b>
+        </span>
+        <div class="flex items-center gap-2">
+          <!-- BOTÓN ACTUALIZAR -->
+          <button onclick="actualizarSistema()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-emerald-400 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
+            🔄 Actualizar Datos
+          </button>
+          <!-- BOTÓN ELIMINAR / LIMPIAR DATOS LOCALES -->
+          <button onclick="confirmarLimpiezaTablas()" class="px-3 py-1.5 bg-rose-950/60 hover:bg-rose-900/80 border border-rose-800/80 text-rose-300 font-bold rounded-xl active:scale-95 transition flex items-center gap-1.5">
+            🗑️ Limpiar Tablas de Campaña
           </button>
         </div>
       </section>
@@ -436,8 +506,8 @@
   </main>
 
   <!-- MODAL TICKET TÉRMICO -->
-  <div id="modalTicket" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-3.5">
-    <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5">
+  <div id="modalTicket" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3.5">
+    <div class="ticket-paper text-slate-950 w-full max-w-xs rounded-2xl p-4 font-mono text-xs shadow-2xl relative space-y-2.5 animate-slide-down">
       <button onclick="cerrarTicket()" class="absolute top-2.5 right-3 text-slate-400 hover:text-black font-bold text-base">✕</button>
       
       <div class="text-center border-b border-dashed border-slate-400 pb-2">
@@ -500,6 +570,142 @@
       localStorage.setItem('avicola_db_v5', JSON.stringify(database));
     }
 
+    // ========================================================
+    // SISTEMA DE POP-UP / MODALES Y NOTIFICACIONES TOAST PRO
+    // ========================================================
+    function mostrarToast(mensaje, tipo = 'exito') {
+      const cont = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      
+      const config = {
+        exito: { bg: 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200', icon: '✅' },
+        error: { bg: 'bg-rose-950/90 border-rose-500/50 text-rose-200', icon: '❌' },
+        aviso: { bg: 'bg-amber-950/90 border-amber-500/50 text-amber-200', icon: '⚠️' },
+        info: { bg: 'bg-sky-950/90 border-sky-500/50 text-sky-200', icon: 'ℹ️' }
+      }[tipo] || { bg: 'bg-slate-900 border-slate-700 text-white', icon: '🔔' };
+
+      toast.className = `flex items-center gap-2.5 px-4 py-3 rounded-2xl border shadow-2xl text-xs font-semibold backdrop-blur-md pointer-events-auto animate-toast ${config.bg}`;
+      toast.innerHTML = `<span>${config.icon}</span><span>${mensaje}</span>`;
+
+      cont.appendChild(toast);
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(15px)';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 4000);
+    }
+
+    let modalCallback = null;
+    function abrirCustomModal({ titulo, subtitulo, htmlBody, esInput = false, valorInput = '', textoBtn = 'Confirmar', colorBtn = 'bg-amber-500 text-slate-950', onConfirm }) {
+      document.getElementById('modalTitle').innerText = titulo;
+      document.getElementById('modalSubtitle').innerText = subtitulo || 'Aviso';
+      document.getElementById('modalBody').innerHTML = htmlBody || '';
+      
+      const inputCont = document.getElementById('modalInputCont');
+      const input = document.getElementById('modalInput');
+      if (esInput) {
+        inputCont.classList.remove('hidden');
+        input.value = valorInput;
+        setTimeout(() => input.focus(), 100);
+      } else {
+        inputCont.classList.add('hidden');
+      }
+
+      const btnConfirm = document.getElementById('modalBtnConfirm');
+      btnConfirm.innerText = textoBtn;
+      btnConfirm.className = `flex-1 py-2.5 text-xs font-black rounded-xl transition ${colorBtn}`;
+
+      modalCallback = onConfirm;
+      document.getElementById('customModal').classList.remove('hidden');
+    }
+
+    function cerrarCustomModal() {
+      document.getElementById('customModal').classList.add('hidden');
+      modalCallback = null;
+    }
+
+    document.getElementById('modalBtnConfirm').addEventListener('click', () => {
+      const inputVal = document.getElementById('modalInput').value;
+      if (modalCallback) modalCallback(inputVal);
+      cerrarCustomModal();
+    });
+
+    // Modal para Crear Nueva Campaña (reemplaza prompt)
+    function abrirModalNuevaCampana() {
+      const num = Object.keys(database).length + 1;
+      abrirCustomModal({
+        titulo: 'Crear Nueva Campaña',
+        subtitulo: 'Gestión de Lotes',
+        htmlBody: 'Ingrese el identificador para la nueva saca de galpón:',
+        esInput: true,
+        valorInput: `Campaña ${num}`,
+        textoBtn: 'Crear Campaña',
+        colorBtn: 'bg-emerald-500 hover:bg-emerald-400 text-slate-950',
+        onConfirm: (nombre) => {
+          if (nombre && nombre.trim() !== '') {
+            const id = nombre.trim().replace(/\s+/g, '_');
+            database[id] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
+            guardarEnLocalStorage();
+            campanaActiva = id;
+            cargarSelectorCampanas();
+            seleccionarCampana();
+            mostrarToast(`Campaña "${nombre.trim()}" creada con éxito`, 'exito');
+          }
+        }
+      });
+    }
+
+    // Modal de Confirmación para Limpieza de Datos (reemplaza confirm)
+    function confirmarLimpiezaTablas() {
+      const nombreC = campanaActiva.replace('_', ' ');
+      abrirCustomModal({
+        titulo: '¿Limpiar Tablas de la Campaña?',
+        subtitulo: 'Reinicio de Pantalla',
+        htmlBody: `Se vaciarán las pesadas locales de <b>${nombreC}</b> para reiniciar la lista en limpio.<br><br><span class="text-slate-400 text-[11px]">* No modifica la estructura de cálculo de Google Sheets.</span>`,
+        esInput: false,
+        textoBtn: 'Sí, Vaciar Tablas',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: () => {
+          const cData = database[campanaActiva];
+          cData.pollos = [];
+          cData.tara = [];
+          guardarEnLocalStorage();
+          renderizarTablas();
+          mostrarToast(`Tablas de ${nombreC} vaciadas correctamente`, 'aviso');
+        }
+      });
+    }
+
+    // Botón Actualizar Sistema y Sincronizar
+    async function actualizarSistema() {
+      mostrarToast('Sincronizando y recalculando datos...', 'info');
+      recalcularTotales();
+      renderizarTablas();
+      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
+      
+      // Opcional: Reenvío de confirmación a Google Sheets si hay conexión
+      try {
+        const cData = database[campanaActiva];
+        const payload = {
+          action: 'GUARDAR_NOTA',
+          campana: campanaActiva,
+          nota: cData.nota || '',
+          precioKg: document.getElementById('txtPrecio').value.replace(',', '.')
+        };
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        mostrarToast('Datos sincronizados correctamente con Google Sheets', 'exito');
+      } catch (e) {
+        mostrarToast('Valores recalculados en pantalla', 'exito');
+      }
+    }
+
+    // Reloj en Vivo para Modo Automático
     setInterval(() => {
       if (modoFechaActual === 'auto') {
         const d = new Date();
@@ -590,21 +796,9 @@
       document.getElementById('txtPrecio').value = cData.precio || '4.10';
       document.getElementById('txtNotaGeneral').value = cData.nota || '';
       document.getElementById('lblCampanaActualBadge').innerText = campanaActiva.replace('_', ' ');
+      document.getElementById('lblCampanaBarra').innerText = campanaActiva.replace('_', ' ');
 
       renderizarTablas();
-    }
-
-    function crearNuevaCampana() {
-      const num = Object.keys(database).length + 1;
-      const nombre = prompt(`Nombre de la campaña:`, `Campaña ${num}`);
-      if (nombre && nombre.trim() !== '') {
-        const id = nombre.trim().replace(/\s+/g, '_');
-        database[id] = { pollos: [], tara: [], cliente: '', galpon: '', precio: '4.10', nota: '', fechaHora: '' };
-        guardarEnLocalStorage();
-        campanaActiva = id;
-        cargarSelectorCampanas();
-        seleccionarCampana();
-      }
     }
 
     function guardarDatosLote() {
@@ -641,9 +835,9 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        alert(`✅ Nota y lote guardados en Google Sheets para ${campanaActiva.replace('_', ' ')}`);
+        mostrarToast(`Nota del lote guardada en Google Sheets`, 'exito');
       } catch (e) {
-        alert("Guardado localmente en memoria");
+        mostrarToast('Nota guardada localmente', 'aviso');
       } finally {
         btn.innerText = "Guardar en Sheets";
         btn.disabled = false;
@@ -684,7 +878,7 @@
       const btn = document.getElementById('btnGuardar');
 
       if (!strVal || isNaN(peso) || peso <= 0) {
-        alert("Por favor ingrese o capture el peso que muestra la balanza (ej. 69.70 o 137.00).");
+        mostrarToast("Ingrese o capture un peso mayor a 0 kg", "aviso");
         return;
       }
 
@@ -719,8 +913,10 @@
           body: JSON.stringify(payload)
         });
         feedback.innerText = `✅ ¡Pesada (${strVal} kg) guardada en Google Sheets!`;
+        mostrarToast(`Pesada de ${strVal} kg registrada con éxito`, 'exito');
       } catch (err) {
         feedback.innerText = "⚠️ Guardado localmente (sin internet)";
+        mostrarToast("Guardado local (sin conexión)", "aviso");
       } finally {
         limpiarCaja();
         btn.disabled = false;
@@ -761,7 +957,7 @@
         renderizarTablas();
 
         if (numerosAEnviar.length === 0) {
-          alert("No se encontraron números válidos en el archivo TXT.");
+          mostrarToast("No se encontraron números válidos en el archivo TXT", "error");
           return;
         }
 
@@ -775,16 +971,16 @@
         };
 
         try {
-          alert(`Enviando ${numerosAEnviar.length} pesadas a Google Sheets...`);
+          mostrarToast(`Enviando ${numerosAEnviar.length} pesadas a Google Sheets...`, "info");
           await fetch(APPS_SCRIPT_URL, {
             method: 'POST',
             mode: 'no-cors',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
           });
-          alert(`✅ ¡ÉXITO! Se guardaron ${numerosAEnviar.length} pesadas de ${destino} en tu Google Sheets.`);
+          mostrarToast(`¡Éxito! ${numerosAEnviar.length} pesadas guardadas en Google Sheets`, "exito");
         } catch (err) {
-          alert("⚠️ Guardado en la app, pero hubo un error de conexión con Sheets.");
+          mostrarToast("Guardado en la app, error de enlace con Sheets", "aviso");
         }
 
         event.target.value = '';
@@ -801,6 +997,7 @@
       }
       guardarEnLocalStorage();
       renderizarTablas();
+      mostrarToast("Registro eliminado de la tabla", "info");
     }
 
     function renderizarTablas() {
@@ -871,9 +1068,9 @@
 
       const btn = document.getElementById('btnGuardarDriveTicket');
       const feedback = document.getElementById('driveTicketFeedback');
-      btn.innerText = "⏳ Creando PDF en Drive...";
+      btn.innerText = "⏳ Creando PDF...";
       btn.disabled = true;
-      feedback.innerText = "Generando PDF en la carpeta 'PDFs_Tickets' de Drive...";
+      feedback.innerText = "Generando PDF en la subcarpeta 'PDFs_Tickets' de Drive...";
 
       const payload = {
         action: 'GUARDAR_TICKET_DRIVE',
@@ -898,10 +1095,11 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(payload)
         });
-        feedback.innerText = "✅ ¡Ticket PDF guardado en la subcarpeta 'PDFs_Tickets' de tu Drive!";
-        alert("✅ El ticket se guardó en PDF dentro de la carpeta 'PDFs_Tickets' en Google Drive.");
+        feedback.innerText = "✅ ¡Ticket PDF guardado en la subcarpeta 'PDFs_Tickets'!";
+        mostrarToast("PDF guardado en Google Drive en la carpeta 'PDFs_Tickets'", "exito");
       } catch (err) {
         feedback.innerText = "⚠️ Error al conectar con Drive";
+        mostrarToast("Error al conectar con Drive", "error");
       } finally {
         btn.innerText = "☁️ Guardar PDF en Drive";
         btn.disabled = false;
@@ -1062,7 +1260,7 @@
       });
     }
 
-    // OCR
+    // Cámara y OCR
     let streamVideo = null;
     async function alternarCamaraOCR() {
       const panel = document.getElementById('panelOCR');
@@ -1074,7 +1272,7 @@
           });
           document.getElementById('videoCamara').srcObject = streamVideo;
         } catch (e) {
-          alert("No se pudo iniciar la cámara: " + e.message);
+          mostrarToast("No se pudo acceder a la cámara", "error");
           panel.classList.add('hidden');
         }
       } else {
@@ -1131,11 +1329,12 @@
           inputPesoManual.value = lectura;
           visorDisplay.innerText = lectura;
           alternarCamaraOCR();
+          mostrarToast(`Lectura OCR capturada: ${lectura} kg`, "exito");
         } else {
-          alert(`No se detectó un número claro. Intentó leer: "${raw}". Ingréselo en la caja manual.`);
+          mostrarToast(`No se detectó un número claro. Intentó: "${raw}"`, "aviso");
         }
       } catch (err) {
-        alert("Error OCR: " + err.message);
+        mostrarToast("Error en motor OCR", "error");
       } finally {
         btn.innerText = "📸 Capturar Número";
         btn.disabled = false;
