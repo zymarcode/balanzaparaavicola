@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <!-- CABECERA -->
+  <!-- CABECERA PRINCIPAL -->
   <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-40 shadow-lg">
     <div class="w-full max-w-[1920px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
       
@@ -85,7 +85,7 @@
           <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
           <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Cargar de Sheets">🔄</button>
-          <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️️</button>
+          <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
         </div>
       </div>
       
@@ -105,7 +105,6 @@
           </button>
         </div>
 
-        <!-- Selector de Campaña -->
         <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
           <span class="text-[10px] sm:text-xs text-slate-400 font-bold pl-1.5 shrink-0">Campaña:</span>
           <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-lg px-2 py-1 outline-none min-w-0 flex-1 sm:flex-initial">
@@ -122,10 +121,10 @@
 
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA DUAL: COMPRADOR ÚNICO + SELECTOR DE DÍA / JORNADA -->
+    <!-- BARRA DUAL: COMPRADOR ÚNICO + SELECTOR DE DÍA / JORNADA + BOTÓN GUARDAR PRECIO -->
     <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
       
-      <!-- LADO 1: COMPRADOR ÚNICO -->
+      <!-- COMPRADOR ÚNICO -->
       <div class="flex flex-wrap items-center gap-2">
         <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
         <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
@@ -139,8 +138,8 @@
         </button>
       </div>
 
-      <!-- LADO 2: SELECTOR DE JORNADA / DÍA DE ENTREGA DEL MISMO COMPRADOR -->
-      <div class="flex flex-wrap items-center justify-between md:justify-end gap-2">
+      <!-- SELECTOR DE JORNADA + CAJA DE PRECIO + BOTÓN DEDICADO "GUARDAR PRECIO" -->
+      <div class="flex flex-wrap items-center justify-between md:justify-end gap-2.5">
         <div class="flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 rounded-xl border border-slate-800">
           <span class="text-[11px] font-bold text-sky-400 shrink-0">📅 Día / Jornada:</span>
           <select id="selJornadaDia" onchange="cambiarJornadaDia()" class="bg-slate-900 border border-sky-500/60 text-sky-300 font-bold text-xs rounded-lg px-2 py-1 outline-none">
@@ -151,13 +150,18 @@
           </button>
         </div>
 
-        <div class="flex items-center gap-1.5">
-          <label class="text-[11px] text-slate-400 font-semibold shrink-0">Precio x Kg:</label>
+        <!-- MÓDULO EXCLUSIVO DE PRECIO POR KG CON BOTÓN DE GUARDADO -->
+        <div class="flex items-center gap-1.5 bg-slate-950 p-1 rounded-xl border border-emerald-500/40">
+          <label class="text-[11px] text-slate-300 font-bold pl-1.5 shrink-0">Precio x Kg:</label>
           <div class="relative w-20">
             <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">S/</span>
-            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-950 border border-slate-700 rounded-xl pl-5 pr-1.5 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
+            <input id="txtPrecio" type="text" inputmode="decimal" value="4.10" oninput="recalcularTotales()" class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-5 pr-1.5 py-1 text-xs font-bold text-emerald-400 outline-none text-right">
           </div>
+          <button onclick="guardarPrecioExclusivoEnSheets()" id="btnGuardarPrecioExclusivo" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-black text-xs rounded-lg transition shadow shrink-0 flex items-center gap-1" title="Asegurar y guardar este precio en Google Sheets">
+            💾 Guardar Precio
+          </button>
         </div>
+
       </div>
     </section>
 
@@ -402,57 +406,110 @@
       </div>
     </div>
 
-    <!-- VISTA 2: DASHBOARD MULTICAMPAÑA Y RESUMEN GENERAL -->
+    <!-- ======================================================== -->
+    <!-- VISTA 2: DASHBOARD CON FILTROS DINÁMICOS Y COMPARATIVAS -->
+    <!-- ======================================================== -->
     <div id="vistaDashboard" class="hidden space-y-4">
+      
+      <!-- BARRA DE FILTROS VINCULADOS A ESTADÍSTICAS Y GRÁFICOS -->
+      <section class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow space-y-2.5">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2">
+          <span class="text-xs sm:text-sm font-bold text-amber-400 flex items-center gap-1.5">
+            🔍 Filtros Analíticos en Tiempo Real:
+          </span>
+          <button onclick="limpiarFiltrosDashboard()" class="text-[11px] text-slate-400 hover:text-white font-bold underline">
+            Restablecer Filtros
+          </button>
+        </div>
+
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <!-- Filtro 1: Campaña -->
+          <div>
+            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Campaña:</label>
+            <select id="filtroCampana" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
+              <option value="TODAS">⭐ Todas las Campañas</option>
+            </select>
+          </div>
+
+          <!-- Filtro 2: Comprador -->
+          <div>
+            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Comprador:</label>
+            <select id="filtroComprador" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
+              <option value="TODOS">👥 Todos los Compradores</option>
+            </select>
+          </div>
+
+          <!-- Filtro 3: Mes / Año -->
+          <div>
+            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Mes / Año:</label>
+            <select id="filtroMes" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
+              <option value="TODOS">📅 Todos los Meses</option>
+            </select>
+          </div>
+
+          <!-- Filtro 4: Jornada / Día -->
+          <div>
+            <label class="block text-[10px] text-slate-400 font-semibold mb-1">Jornada / Día:</label>
+            <select id="filtroDia" onchange="aplicarFiltrosDashboard()" class="w-full bg-slate-950 border border-slate-700 text-slate-200 font-bold rounded-xl px-2.5 py-1.5 outline-none focus:border-amber-400">
+              <option value="TODOS">🌞 Todos los Días</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- KPIS DINÁMICOS FILTRADOS -->
       <section class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Facturación Global</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
+            <span class="truncate">Facturación Filtrada</span><span class="text-emerald-400 font-bold shrink-0">TOTAL</span>
           </div>
           <div id="dashTotalFacturado" class="text-lg sm:text-2xl font-black font-digital text-emerald-400 my-0.5 truncate">S/. 0.00</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Suma todos los compradores</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate" id="subDashFacturado">Según filtros aplicados</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Carne Neta Total</span><span class="text-sky-400 font-bold shrink-0">VIVO</span>
+            <span class="truncate">Carne Neta Viva</span><span class="text-sky-400 font-bold shrink-0">VIVO</span>
           </div>
           <div id="dashTotalNetoKg" class="text-lg sm:text-2xl font-black font-digital text-sky-400 my-0.5 truncate">0.00 kg</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Kilos totales despachados</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Kilos netos cobrables</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Compradores Únicos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
+            <span class="truncate">Compradores Activos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
           </div>
           <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Sin repetir clientes</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Clientes en el periodo</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
-            <span class="truncate">Tara Neta Global</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
+            <span class="truncate">Tara Neta Utilizada</span><span class="text-amber-400 font-bold shrink-0">PLÁSTICO</span>
           </div>
           <div id="dashTotalTaraKg" class="text-lg sm:text-2xl font-black font-digital text-amber-400 my-0.5 truncate">0.00 kg</div>
           <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Descontando sobrantes</p>
         </div>
       </section>
 
-      <!-- GRÁFICOS CHART.JS -->
-      <section class="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-        <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
+      <!-- 3 GRÁFICOS COMPARATIVOS VINCULADOS A LOS FILTROS -->
+      <section class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+        
+        <!-- Gráfico 1: Comparativa Kilos Netos vs Tara Usada -->
+        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-slate-300">
-              📊 Kilos Netos vs Tara por Comprador (Consolidado)
+              📊 Comparativo: Kilos Netos vs Tara Usada
             </h3>
-            <span class="text-[10px] font-mono text-emerald-400 font-semibold">EN VIVO</span>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold" id="tagGraficoKilos">FILTRADO</span>
           </div>
           <div class="h-60 sm:h-72 w-full relative">
             <canvas id="chartKilos"></canvas>
           </div>
         </div>
 
-        <div class="bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
+        <!-- Gráfico 2: Evolución de Facturación en Soles -->
+        <div class="lg:col-span-6 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
           <div class="flex items-center justify-between pb-1 border-b border-slate-800">
             <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-emerald-400">
-              📈 Facturación Acumulada por Comprador (S/.)
+              📈 Facturación en Soles (S/.)
             </h3>
             <span class="text-[10px] font-mono text-emerald-400 font-semibold">SOLES</span>
           </div>
@@ -460,25 +517,40 @@
             <canvas id="chartSoles"></canvas>
           </div>
         </div>
+
+        <!-- Gráfico 3: Participación por Comprador (Dona) -->
+        <div class="lg:col-span-12 bg-slate-900 border border-slate-800 p-3.5 sm:p-5 rounded-3xl shadow-xl space-y-2">
+          <div class="flex items-center justify-between pb-1 border-b border-slate-800">
+            <h3 class="text-xs sm:text-sm font-bold uppercase tracking-wider text-amber-400">
+              🍩 Participación y Cuota de Compra por Cliente (%)
+            </h3>
+            <span class="text-[10px] font-mono text-slate-400">DISTRIBUCIÓN</span>
+          </div>
+          <div class="h-60 sm:h-64 w-full relative">
+            <canvas id="chartDona"></canvas>
+          </div>
+        </div>
+
       </section>
 
-      <!-- TABLA RESUMEN -->
+      <!-- TABLA RESUMEN VINCULADA -->
       <section class="bg-slate-900 border border-slate-800 rounded-3xl p-3 sm:p-6 shadow-xl space-y-3">
         <h2 class="text-xs sm:text-base font-black uppercase text-amber-400 tracking-wide border-b border-slate-800 pb-2.5">
-          👥 Resumen Consolidado por Comprador (Todos sus Días Sumados)
+          📋 Cuadro Comparativo Detallado Según Filtros
         </h2>
         <div class="overflow-x-auto w-full">
           <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
               <tr>
+                <th class="p-2 sm:p-3">CAMPAÑA</th>
                 <th class="p-2 sm:p-3">COMPRADOR</th>
-                <th class="p-2 sm:p-3 text-center">DÍAS DE COMPRA</th>
+                <th class="p-2 sm:p-3 text-center">JORNADA / DÍA</th>
                 <th class="p-2 sm:p-3 text-center">TARA INI</th>
                 <th class="p-2 sm:p-3 text-center">SOBRANTE (-)</th>
                 <th class="p-2 sm:p-3 text-center">TARA USADA</th>
                 <th class="p-2 sm:p-3 text-center">BRUTO</th>
                 <th class="p-2 sm:p-3 text-center">NETO VIVO</th>
-                <th class="p-2 sm:p-3 text-right">TOTAL ACUMULADO (S/.)</th>
+                <th class="p-2 sm:p-3 text-right">TOTAL (S/.)</th>
               </tr>
             </thead>
             <tbody id="cuerpoTablaDashboard" class="divide-y divide-slate-800 text-slate-200"></tbody>
@@ -537,8 +609,10 @@
     let jornadaActiva = 'Dia_1';
     let modoFechaActual = 'auto';
 
+    // Instancias de Chart.js
     let chartKilosInstance = null;
     let chartSolesInstance = null;
+    let chartDonaInstance = null;
 
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
@@ -546,9 +620,8 @@
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    // Estructura Jerárquica: Campaña -> Comprador Único -> Múltiples Días/Jornadas
     function migrarBaseDatos() {
-      const claves = ['avicola_db_v14', 'avicola_db_v13', 'avicola_db_v12', 'avicola_db_v11', 'avicola_db_v10', 'avicola_db_v9', 'avicola_db_v8', 'avicola_db_v7', 'avicola_db_v6', 'avicola_db_v5', 'avicola_db_v4', 'avicola_db_v3'];
+      const claves = ['avicola_db_v16', 'avicola_db_v15', 'avicola_db_v14', 'avicola_db_v13', 'avicola_db_v12', 'avicola_db_v11', 'avicola_db_v10', 'avicola_db_v9', 'avicola_db_v8', 'avicola_db_v7', 'avicola_db_v6', 'avicola_db_v5', 'avicola_db_v4', 'avicola_db_v3'];
       let baseVieja = null;
       for (let k of claves) {
         let raw = localStorage.getItem(k);
@@ -567,11 +640,9 @@
           const obj = baseVieja[cId];
           Object.keys(obj).forEach(cliKey => {
             const dataCli = obj[cliKey];
-            // Si ya tiene estructura de días
             if (dataCli.dias) {
               nueva[cId][cliKey] = dataCli;
             } else {
-              // Convertir formato plano a estructura de días
               nueva[cId][cliKey] = {
                 nombre: dataCli.nombre || cliKey,
                 dias: {
@@ -580,7 +651,8 @@
                     sobrante: dataCli.sobrante || [],
                     pollos: dataCli.pollos || [],
                     precio: dataCli.precio || '4.10',
-                    nota: dataCli.nota || ''
+                    nota: dataCli.nota || '',
+                    fecha: dataCli.fecha || new Date().toISOString().slice(0, 10)
                   }
                 }
               };
@@ -592,7 +664,7 @@
           'Cliente_A': {
             nombre: 'Comprador A',
             dias: {
-              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) }
             }
           }
         };
@@ -600,10 +672,10 @@
       return nueva;
     }
 
-    let database = JSON.parse(localStorage.getItem('avicola_db_v15')) || migrarBaseDatos();
+    let database = JSON.parse(localStorage.getItem('avicola_db_v17')) || migrarBaseDatos();
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v15', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v17', JSON.stringify(database));
     }
 
     // SINCRONIZACIÓN CON GOOGLE SHEETS
@@ -629,7 +701,6 @@
               } else {
                 database[cId][cliKey].nombre = cliSheet.nombre || database[cId][cliKey].nombre;
                 if (!database[cId][cliKey].dias) database[cId][cliKey].dias = {};
-                // Fusionar días
                 Object.keys(cliSheet.dias || {}).forEach(dKey => {
                   database[cId][cliKey].dias[dKey] = cliSheet.dias[dKey];
                 });
@@ -640,12 +711,13 @@
           guardarEnLocalStorage();
           cargarSelectorCampanas();
           seleccionarCampana();
+          poblarOpcionesFiltrosDashboard();
           mostrarToast("✅ ¡Datos sincronizados desde Google Sheets!", "exito");
         } else {
           mostrarToast("Sincronizado (sin datos nuevos)", "info");
         }
       } catch (err) {
-        mostrarToast("No se pudo conectar a Sheets. Mostrando datos locales", "aviso");
+        mostrarToast("Modo sin conexión. Mostrando datos locales", "aviso");
       }
     }
 
@@ -738,7 +810,7 @@
       if (tktF) tktF.innerText = obtenerFechaHoraSeleccionada();
     }
 
-    // TOASTS Y MODAL
+    // TOASTS Y MODALES
     function mostrarToast(mensaje, tipo = 'exito') {
       const cont = document.getElementById('toastContainer');
       const toast = document.createElement('div');
@@ -795,9 +867,7 @@
       cerrarCustomModal();
     });
 
-    // ========================================================
-    // GESTIÓN JERÁRQUICA: CLIENTES Y DÍAS
-    // ========================================================
+    // CLIENTES Y DÍAS
     function cargarSelectorClientes() {
       const sel = document.getElementById('selClienteActivo');
       sel.innerHTML = '';
@@ -825,7 +895,7 @@
       selD.innerHTML = '';
       const c = database[campanaActiva][clienteActivo];
       if (!c.dias) {
-        c.dias = { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } };
+        c.dias = { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } };
       }
       Object.keys(c.dias).forEach(dKey => {
         const opt = document.createElement('option');
@@ -867,7 +937,7 @@
       abrirCustomModal({
         titulo: 'Agregar Día de Compra',
         subtitulo: `Para ${c.nombre}`,
-        htmlBody: `Identifique la nueva jornada para este cliente (ej. Día ${numDia} o fecha):`,
+        htmlBody: `Identifique la nueva jornada para este cliente (ej. Día ${numDia}):`,
         esInput: true,
         valorInput: `Día ${numDia} - ${fechaHoy}`,
         textoBtn: 'Crear Día',
@@ -875,11 +945,19 @@
         onConfirm: (nombreDia) => {
           if (!nombreDia || nombreDia.trim() === '') return;
           const keyDia = nombreDia.trim().replace(/\s+/g, '_');
-          c.dias[keyDia] = { tara: [], sobrante: [], pollos: [], precio: document.getElementById('txtPrecio').value, nota: '' };
+          c.dias[keyDia] = { 
+            tara: [], 
+            sobrante: [], 
+            pollos: [], 
+            precio: document.getElementById('txtPrecio').value, 
+            nota: '',
+            fecha: new Date().toISOString().slice(0, 10)
+          };
           guardarEnLocalStorage();
           jornadaActiva = keyDia;
           cargarSelectorDias();
-          mostrarToast(`Jornada "${nombreDia.trim()}" agregada para ${c.nombre}`, 'exito');
+          poblarOpcionesFiltrosDashboard();
+          mostrarToast(`Jornada agregada para ${c.nombre}`, 'exito');
         }
       });
     }
@@ -900,13 +978,14 @@
           database[campanaActiva][key] = {
             nombre: nombre.trim(),
             dias: {
-              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' }
+              'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) }
             }
           };
           guardarEnLocalStorage();
           clienteActivo = key;
           jornadaActiva = 'Dia_1';
           cargarSelectorClientes();
+          poblarOpcionesFiltrosDashboard();
           mostrarToast(`Comprador "${nombre.trim()}" agregado`, 'exito');
         }
       });
@@ -926,6 +1005,7 @@
           c.nombre = nombre.trim();
           guardarEnLocalStorage();
           cargarSelectorClientes();
+          poblarOpcionesFiltrosDashboard();
           mostrarToast('Nombre actualizado', 'exito');
         }
       });
@@ -1002,13 +1082,54 @@
             fecha: obtenerFechaHoraSeleccionada()
           })
         });
-        mostrarToast(`Pesada de ${strVal} kg guardada en ${jornadaActiva.replace(/_/g, ' ')}`, 'exito');
+        mostrarToast(`Pesada de ${strVal} kg guardada`, 'exito');
       } catch (e) {
         mostrarToast("Guardado localmente", "aviso");
       } finally {
         limpiarCaja();
         btn.disabled = false;
         btn.innerText = "💾 GUARDAR PESADA";
+      }
+    }
+
+    // BOTÓN EXCLUSIVO: GUARDAR PRECIO POR KG
+    async function guardarPrecioExclusivoEnSheets() {
+      const strPrecio = document.getElementById('txtPrecio').value.replace(',', '.').trim();
+      const numPrecio = parseFloat(strPrecio);
+
+      if (isNaN(numPrecio) || numPrecio <= 0) {
+        mostrarToast("Ingrese un precio válido mayor a 0", "aviso");
+        return;
+      }
+
+      const c = database[campanaActiva][clienteActivo];
+      const diaData = c.dias[jornadaActiva];
+      diaData.precio = numPrecio.toFixed(2);
+      guardarEnLocalStorage();
+      recalcularTotales();
+
+      const btn = document.getElementById('btnGuardarPrecioExclusivo');
+      btn.innerText = "⏳ Guardando...";
+      btn.disabled = true;
+
+      try {
+        await fetch(APPS_SCRIPT_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'FIJAR_PRECIO',
+            campana: campanaActiva,
+            cliente: c.nombre || clienteActivo,
+            precioKg: numPrecio.toFixed(2)
+          })
+        });
+        mostrarToast(`✅ Precio de S/. ${numPrecio.toFixed(2)} guardado en Google Sheets`, "exito");
+      } catch (e) {
+        mostrarToast("Precio fijado localmente", "info");
+      } finally {
+        btn.innerText = "💾 Guardar Precio";
+        btn.disabled = false;
       }
     }
 
@@ -1152,7 +1273,7 @@
           <td class="p-1 text-slate-500">${i+1}</td>
           <td class="p-1 text-rose-300 font-semibold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
-            <button onclick="editarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✏️</button>
+            <button onclick="editarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✏️️</button>
             <button onclick="eliminarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300">✕</button>
           </td>
         </tr>`;
@@ -1161,7 +1282,6 @@
       recalcularTotales();
     }
 
-    // CÁLCULO DE LIQUIDACIÓN DEL DÍA ACTIVO
     function recalcularTotales() {
       const c = database[campanaActiva][clienteActivo];
       const diaData = c.dias[jornadaActiva] || { tara: [], sobrante: [], pollos: [] };
@@ -1295,98 +1415,176 @@
     }
 
     // ========================================================
-    // DASHBOARD: CONSOLIDA TODOS LOS DÍAS DEL MISMO COMPRADOR
+    // MOTOR DE FILTROS Y DASHBOARD ESTADÍSTICO REACTIVO
     // ========================================================
-    function renderizarDashboard() {
-      let facturacionTotal = 0, kilosNetosGlobal = 0, totalTaraUsadaGlobal = 0;
-      const clientes = database[campanaActiva] || {};
+    function poblarOpcionesFiltrosDashboard() {
+      const fCamp = document.getElementById('filtroCampana');
+      const fCli = document.getElementById('filtroComprador');
+      const fMes = document.getElementById('filtroMes');
+      const fDia = document.getElementById('filtroDia');
+
+      const campanas = Object.keys(database);
+      const clientesUnicos = new Set();
+      const mesesUnicos = new Set();
+      const diasUnicos = new Set();
+
+      campanas.forEach(cId => {
+        const objCli = database[cId];
+        Object.keys(objCli).forEach(cliKey => {
+          const cli = objCli[cliKey];
+          clientesUnicos.add(cli.nombre || cliKey);
+          Object.keys(cli.dias || {}).forEach(dKey => {
+            diasUnicos.add(dKey);
+            const fechaStr = cli.dias[dKey].fecha || '';
+            if (fechaStr.length >= 7) {
+              mesesUnicos.add(fechaStr.slice(0, 7)); // Formato YYYY-MM
+            }
+          });
+        });
+      });
+
+      // Poblar Campañas
+      fCamp.innerHTML = '<option value="TODAS">⭐ Todas las Campañas</option>';
+      campanas.forEach(c => {
+        fCamp.innerHTML += `<option value="${c}">${c.replace(/_/g, ' ')}</option>`;
+      });
+
+      // Poblar Compradores
+      fCli.innerHTML = '<option value="TODOS">👥 Todos los Compradores</option>';
+      clientesUnicos.forEach(nombre => {
+        fCli.innerHTML += `<option value="${nombre}">${nombre}</option>`;
+      });
+
+      // Poblar Meses
+      fMes.innerHTML = '<option value="TODOS">📅 Todos los Meses</option>';
+      mesesUnicos.forEach(m => {
+        fMes.innerHTML += `<option value="${m}">${m}</option>`;
+      });
+
+      // Poblar Días
+      fDia.innerHTML = '<option value="TODOS">🌞 Todos los Días</option>';
+      diasUnicos.forEach(d => {
+        fDia.innerHTML += `<option value="${d}">${d.replace(/_/g, ' ')}</option>`;
+      });
+    }
+
+    function limpiarFiltrosDashboard() {
+      document.getElementById('filtroCampana').value = 'TODAS';
+      document.getElementById('filtroComprador').value = 'TODOS';
+      document.getElementById('filtroMes').value = 'TODOS';
+      document.getElementById('filtroDia').value = 'TODOS';
+      aplicarFiltrosDashboard();
+    }
+
+    function aplicarFiltrosDashboard() {
+      const selCamp = document.getElementById('filtroCampana').value;
+      const selCli = document.getElementById('filtroComprador').value;
+      const selMes = document.getElementById('filtroMes').value;
+      const selDia = document.getElementById('filtroDia').value;
+
+      let facturacionTotal = 0;
+      let kilosNetosGlobal = 0;
+      let totalTaraUsadaGlobal = 0;
+      const compradoresUnicosFiltrados = new Set();
+
       const tbody = document.getElementById('cuerpoTablaDashboard');
       tbody.innerHTML = '';
 
-      const labels = [];
-      const dataNetos = [];
-      const dataTaras = [];
-      const dataSoles = [];
+      // Datos para Gráficos
+      const mapaAgrupado = {}; // { 'Nombre': { netos: X, taras: Y, soles: Z } }
 
-      Object.keys(clientes).forEach(cliKey => {
-        const c = clientes[cliKey];
-        let totIni = 0, totSob = 0, totBruto = 0, totNeto = 0, totSoles = 0;
-        const diasObj = c.dias || {};
-        const cantDias = Object.keys(diasObj).length;
+      Object.keys(database).forEach(cId => {
+        if (selCamp !== 'TODAS' && cId !== selCamp) return;
 
-        // Sumar todas las jornadas del cliente
-        Object.keys(diasObj).forEach(dKey => {
-          const d = diasObj[dKey];
-          const sIni = d.tara.reduce((a, b) => a + b, 0);
-          const sSob = (d.sobrante || []).reduce((a, b) => a + b, 0);
-          const sTaraUsada = Math.max(0, sIni - sSob);
-          const sBruto = d.pollos.reduce((a, b) => a + b, 0);
-          const sNeto = Math.max(0, sBruto - sTaraUsada);
-          const pKg = parseFloat(d.precio) || 0;
-          const sTotal = sNeto * pKg;
+        const objCli = database[cId];
+        Object.keys(objCli).forEach(cliKey => {
+          const cli = objCli[cliKey];
+          const nombreCliente = cli.nombre || cliKey;
+          if (selCli !== 'TODOS' && nombreCliente !== selCli) return;
 
-          totIni += sIni;
-          totSob += sSob;
-          totBruto += sBruto;
-          totNeto += sNeto;
-          totSoles += sTotal;
+          Object.keys(cli.dias || {}).forEach(dKey => {
+            if (selDia !== 'TODOS' && dKey !== selDia) return;
+
+            const dData = cli.dias[dKey];
+            const fechaD = dData.fecha || '';
+            if (selMes !== 'TODOS' && !fechaD.startsWith(selMes)) return;
+
+            // Pasa todos los filtros
+            const sIni = dData.tara.reduce((a, b) => a + b, 0);
+            const sSob = (dData.sobrante || []).reduce((a, b) => a + b, 0);
+            const sTaraUsada = Math.max(0, sIni - sSob);
+            const sBruto = dData.pollos.reduce((a, b) => a + b, 0);
+            const sNeto = Math.max(0, sBruto - sTaraUsada);
+            const pKg = parseFloat(dData.precio) || 0;
+            const sTotal = sNeto * pKg;
+
+            facturacionTotal += sTotal;
+            kilosNetosGlobal += sNeto;
+            totalTaraUsadaGlobal += sTaraUsada;
+            compradoresUnicosFiltrados.add(nombreCliente);
+
+            // Agrupar para los gráficos comparativos
+            const claveAgrupacion = (selCamp === 'TODAS') ? `${cId.replace(/_/g, ' ')} - ${nombreCliente}` : nombreCliente;
+            if (!mapaAgrupado[claveAgrupacion]) {
+              mapaAgrupado[claveAgrupacion] = { netos: 0, taras: 0, soles: 0 };
+            }
+            mapaAgrupado[claveAgrupacion].netos += sNeto;
+            mapaAgrupado[claveAgrupacion].taras += sTaraUsada;
+            mapaAgrupado[claveAgrupacion].soles += sTotal;
+
+            // Fila detallada en tabla
+            tbody.innerHTML += `
+              <tr>
+                <td class="p-2 sm:p-3 font-bold text-amber-400">${cId.replace(/_/g, ' ')}</td>
+                <td class="p-2 sm:p-3 text-slate-200 font-semibold">${nombreCliente}</td>
+                <td class="p-2 sm:p-3 text-center text-sky-400 font-bold">${dKey.replace(/_/g, ' ')}</td>
+                <td class="p-2 sm:p-3 text-center text-slate-300">${sIni.toFixed(2)}</td>
+                <td class="p-2 sm:p-3 text-center text-rose-400">-${sSob.toFixed(2)}</td>
+                <td class="p-2 sm:p-3 text-center font-bold text-amber-300">${sTaraUsada.toFixed(2)}</td>
+                <td class="p-2 sm:p-3 text-center text-sky-300">${sBruto.toFixed(2)}</td>
+                <td class="p-2 sm:p-3 text-center font-bold text-emerald-400">${sNeto.toFixed(2)}</td>
+                <td class="p-2 sm:p-3 text-right font-black text-emerald-400">S/. ${sTotal.toFixed(2)}</td>
+              </tr>
+            `;
+          });
         });
-
-        const totTaraUsada = Math.max(0, totIni - totSob);
-        facturacionTotal += totSoles;
-        kilosNetosGlobal += totNeto;
-        totalTaraUsadaGlobal += totTaraUsada;
-
-        const nombreCliente = c.nombre || cliKey;
-        labels.push(nombreCliente);
-        dataNetos.push(parseFloat(totNeto.toFixed(2)));
-        dataTaras.push(parseFloat(totTaraUsada.toFixed(2)));
-        dataSoles.push(parseFloat(totSoles.toFixed(2)));
-
-        tbody.innerHTML += `
-          <tr>
-            <td class="p-2 sm:p-3 font-bold text-amber-400">${nombreCliente}</td>
-            <td class="p-2 sm:p-3 text-center text-sky-400 font-bold">${cantDias} día(s)</td>
-            <td class="p-2 sm:p-3 text-center text-slate-300">${totIni.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center text-rose-400">-${totSob.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center font-bold text-amber-300">${totTaraUsada.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center text-sky-300">${totBruto.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-center font-bold text-emerald-400">${totNeto.toFixed(2)}</td>
-            <td class="p-2 sm:p-3 text-right font-black text-emerald-400">S/. ${totSoles.toFixed(2)}</td>
-          </tr>
-        `;
       });
 
+      // Actualizar KPIs superiores
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
-      document.getElementById('dashTotalClientes').innerText = Object.keys(clientes).length; // Clientes reales únicos
+      document.getElementById('dashTotalClientes').innerText = compradoresUnicosFiltrados.size;
       document.getElementById('dashTotalTaraKg').innerText = `${totalTaraUsadaGlobal.toFixed(2)} kg`;
 
-      actualizarGraficos(labels, dataNetos, dataTaras, dataSoles);
+      const labels = Object.keys(mapaAgrupado);
+      const dataNetos = labels.map(k => parseFloat(mapaAgrupado[k].netos.toFixed(2)));
+      const dataTaras = labels.map(k => parseFloat(mapaAgrupado[k].taras.toFixed(2)));
+      const dataSoles = labels.map(k => parseFloat(mapaAgrupado[k].soles.toFixed(2)));
+
+      actualizarGraficosAvanzados(labels, dataNetos, dataTaras, dataSoles);
     }
 
-    function actualizarGraficos(labels, netos, taras, soles) {
-      const ctxKilos = document.getElementById('chartKilos').getContext('2d');
+    function actualizarGraficosAvanzados(labels, netos, taras, soles) {
+      // 1. Gráfico de Barras: Kilos Netos vs Tara
+      const ctxK = document.getElementById('chartKilos').getContext('2d');
       if (chartKilosInstance) chartKilosInstance.destroy();
-      chartKilosInstance = new Chart(ctxKilos, {
+      chartKilosInstance = new Chart(ctxK, {
         type: 'bar',
         data: {
-          labels: labels,
+          labels: labels.length ? labels : ['Sin datos'],
           datasets: [
             {
-              label: 'Carne Neta Acumulada (kg)',
-              data: netos,
+              label: 'Carne Neta (kg)',
+              data: netos.length ? netos : [0],
               backgroundColor: 'rgba(52, 211, 153, 0.85)',
               borderColor: 'rgb(52, 211, 153)',
-              borderWidth: 1,
               borderRadius: 6
             },
             {
-              label: 'Tara Usada Total (kg)',
-              data: taras,
+              label: 'Tara Usada (kg)',
+              data: taras.length ? taras : [0],
               backgroundColor: 'rgba(251, 191, 36, 0.85)',
               borderColor: 'rgb(251, 191, 36)',
-              borderWidth: 1,
               borderRadius: 6
             }
           ]
@@ -1394,7 +1592,7 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } } },
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
@@ -1402,19 +1600,20 @@
         }
       });
 
-      const ctxSoles = document.getElementById('chartSoles').getContext('2d');
+      // 2. Gráfico de Línea: Facturación en Soles
+      const ctxS = document.getElementById('chartSoles').getContext('2d');
       if (chartSolesInstance) chartSolesInstance.destroy();
-      chartSolesInstance = new Chart(ctxSoles, {
+      chartSolesInstance = new Chart(ctxS, {
         type: 'line',
         data: {
-          labels: labels,
+          labels: labels.length ? labels : ['Sin datos'],
           datasets: [{
-            label: 'Total Facturado Acumulado (S/.)',
-            data: soles,
+            label: 'Facturación (S/.)',
+            data: soles.length ? soles : [0],
             borderColor: '#10b981',
             backgroundColor: 'rgba(16, 185, 129, 0.2)',
             fill: true,
-            tension: 0.3,
+            tension: 0.35,
             pointBackgroundColor: '#34d399',
             pointRadius: 5
           }]
@@ -1422,16 +1621,40 @@
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { labels: { color: '#cbd5e1', font: { family: 'Inter' } } } },
+          plugins: { legend: { labels: { color: '#cbd5e1' } } },
           scales: {
             x: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } },
             y: { ticks: { color: '#94a3b8' }, grid: { color: '#334155' } }
           }
         }
       });
+
+      // 3. Gráfico de Dona: Participación de Compradores
+      const ctxD = document.getElementById('chartDona').getContext('2d');
+      if (chartDonaInstance) chartDonaInstance.destroy();
+      chartDonaInstance = new Chart(ctxD, {
+        type: 'doughnut',
+        data: {
+          labels: labels.length ? labels : ['Sin datos'],
+          datasets: [{
+            label: 'Ingresos (S/.)',
+            data: soles.length ? soles : [1],
+            backgroundColor: [
+              '#10b981', '#f59e0b', '#38bdf8', '#a855f7', '#ec4899', '#6366f1', '#14b8a6'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right', labels: { color: '#cbd5e1' } }
+          }
+        }
+      });
     }
 
-    // CAMPAÑAS
+    // GESTIÓN DE VISTAS Y CAMPAÑAS
     function cargarSelectorCampanas() {
       const sel = document.getElementById('selCampana');
       sel.innerHTML = '';
@@ -1450,7 +1673,7 @@
         database[campanaActiva] = {
           'Cliente_A': {
             nombre: 'Comprador A',
-            dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+            dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
           }
         };
       }
@@ -1470,13 +1693,14 @@
           database[id] = {
             'Cliente_A': {
               nombre: 'Comprador A',
-              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
             }
           };
           guardarEnLocalStorage();
           campanaActiva = id;
           cargarSelectorCampanas();
           seleccionarCampana();
+          poblarOpcionesFiltrosDashboard();
         }
       });
     }
@@ -1495,6 +1719,7 @@
           campanaActiva = nuevoId;
           cargarSelectorCampanas();
           seleccionarCampana();
+          poblarOpcionesFiltrosDashboard();
         }
       });
     }
@@ -1516,7 +1741,7 @@
             database['Campana_1'] = {
               'Cliente_A': {
                 nombre: 'Comprador A',
-                dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '' } }
+                dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
               }
             };
             campanaActiva = 'Campana_1';
@@ -1527,6 +1752,7 @@
           guardarEnLocalStorage();
           cargarSelectorCampanas();
           seleccionarCampana();
+          poblarOpcionesFiltrosDashboard();
           mostrarToast(`Campaña ${nombreC} eliminada`, 'aviso');
 
           try {
@@ -1563,7 +1789,8 @@
         if (bPesDesk) bPesDesk.className = "px-3.5 py-1.5 rounded-xl text-xs font-bold bg-slate-800 text-slate-300 hover:text-white transition";
         if (bDashMob) bDashMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950";
         if (bPesMob) bPesMob.className = "px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300";
-        renderizarDashboard();
+        poblarOpcionesFiltrosDashboard();
+        aplicarFiltrosDashboard();
       }
     }
 
@@ -1647,10 +1874,17 @@
       });
     }
 
+    function actualizarSistema() {
+      recalcularTotales();
+      renderizarTablas();
+      mostrarToast('Datos recalculados', 'exito');
+    }
+
     window.onload = () => {
       aplicarConfiguracionMarca();
       cargarSelectorCampanas();
       seleccionarCampana();
+      poblarOpcionesFiltrosDashboard();
       sincronizarDesdeGoogleSheets();
     };
   </script>
