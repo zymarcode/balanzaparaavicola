@@ -66,7 +66,7 @@
     </div>
   </div>
 
-  <!-- CABECERA -->
+  <!-- CABECERA PRINCIPAL -->
   <header class="bg-slate-900/95 backdrop-blur border-b border-slate-800 px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-40 shadow-lg">
     <div class="w-full max-w-[1920px] mx-auto flex flex-col md:flex-row md:items-center justify-between gap-2.5">
       
@@ -82,7 +82,7 @@
         </div>
 
         <div class="flex md:hidden items-center gap-1.5 shrink-0">
-          <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️</button>
+          <button onclick="cambiarVista('pesaje')" id="btnTabPesajeMob" class="px-2.5 py-1 rounded-lg text-[11px] font-black bg-amber-500 text-slate-950">⚖️️</button>
           <button onclick="cambiarVista('dashboard')" id="btnTabDashboardMob" class="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-slate-300">📊</button>
           <button onclick="sincronizarDesdeGoogleSheets()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-emerald-400" title="Cargar de Sheets">🔄</button>
           <button onclick="abrirAjustesMarca()" class="p-1 rounded-lg text-[11px] bg-slate-800 text-amber-300">⚙️</button>
@@ -105,6 +105,7 @@
           </button>
         </div>
 
+        <!-- Selector de Campaña -->
         <div class="flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800 w-full sm:w-auto justify-between sm:justify-start">
           <span class="text-[10px] sm:text-xs text-slate-400 font-bold pl-1.5 shrink-0">Campaña:</span>
           <select id="selCampana" onchange="seleccionarCampana()" class="bg-slate-900 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-lg px-2 py-1 outline-none min-w-0 flex-1 sm:flex-initial">
@@ -121,11 +122,11 @@
 
   <main class="w-full max-w-[1920px] mx-auto p-2.5 sm:p-4 lg:p-6 flex-1 space-y-3 sm:space-y-4">
     
-    <!-- BARRA DUAL: COMPRADOR ÚNICO (SIN DUPLICADOS) + SELECTOR DE DÍA / JORNADA -->
+    <!-- BARRA DUAL: COMPRADOR ÚNICO (CON BOTÓN DE BORRAR COMPRADOR) + SELECTOR DE DÍA / JORNADA -->
     <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3.5 rounded-2xl shadow flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3">
       
-      <!-- COMPRADOR ÚNICO -->
-      <div class="flex flex-wrap items-center gap-2">
+      <!-- COMPRADOR ÚNICO CON BOTÓN PARA BORRARLO -->
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
         <span class="text-xs font-bold text-amber-400 shrink-0">👤 Comprador:</span>
         <select id="selClienteActivo" onchange="cambiarClienteActivo()" class="bg-slate-950 border border-emerald-500/60 text-emerald-300 font-bold text-xs sm:text-sm rounded-xl px-2.5 py-1.5 outline-none flex-1 sm:flex-initial min-w-[140px]">
           <option value="COMPRADOR_A">Comprador A</option>
@@ -135,6 +136,10 @@
         </button>
         <button onclick="abrirModalRenombrarCliente()" class="p-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-xl border border-slate-700 shrink-0" title="Renombrar comprador">
           ✏️
+        </button>
+        <!-- BOTÓN IMPLEMENTADO PARA ELIMINAR EL COMPRADOR PUNTUAL -->
+        <button onclick="confirmarEliminarComprador()" class="p-1.5 bg-rose-950/80 hover:bg-rose-900 border border-rose-700 text-rose-300 font-bold text-xs rounded-xl active:scale-95 transition shrink-0" title="Eliminar este comprador con todas sus pesadas">
+          🗑️
         </button>
       </div>
 
@@ -170,7 +175,6 @@
       <!-- FECHA/HORA CON BOTÓN DEDICADO "GUARDAR FECHA" Y NOTA -->
       <section class="bg-slate-900 border border-slate-800 p-2.5 sm:p-3 rounded-2xl shadow-sm grid grid-cols-1 sm:grid-cols-12 gap-2.5 items-center">
         
-        <!-- CONTROL FECHA Y HORA CON BOTÓN DE GUARDAR -->
         <div class="sm:col-span-6 bg-slate-950 p-2 rounded-xl border border-slate-800 space-y-1.5">
           <div class="flex items-center justify-between text-xs">
             <span class="text-slate-400 font-semibold text-[11px]">🕒 Fecha / Hora del Ticket y Pesaje:</span>
@@ -186,7 +190,6 @@
             </div>
             <input id="inputFechaManual" type="datetime-local" onchange="actualizarFechaManualEnTicket()" class="hidden flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-white outline-none font-mono">
             
-            <!-- BOTÓN IMPLEMENTADO PARA GUARDAR Y FIJAR LA FECHA -->
             <button onclick="guardarFechaManualEnSheets()" id="btnGuardarFecha" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-500 active:scale-95 text-white font-bold text-xs rounded-lg transition shadow shrink-0 flex items-center gap-1" title="Fijar esta fecha en Google Sheets y en el ticket">
               💾 Guardar Fecha
             </button>
@@ -481,7 +484,7 @@
             <span class="truncate">Compradores Únicos</span><span class="text-purple-400 font-bold shrink-0">REAL</span>
           </div>
           <div id="dashTotalClientes" class="text-lg sm:text-2xl font-black font-digital text-purple-400 my-0.5 truncate">0</div>
-          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Clientes en el periodo</p>
+          <p class="text-[9px] sm:text-[11px] text-slate-500 truncate">Sin repetir clientes</p>
         </div>
         <div class="bg-slate-900 border border-slate-800 p-3 sm:p-4 rounded-2xl shadow min-w-0">
           <div class="flex justify-between items-center text-[10px] sm:text-xs text-slate-400 mb-1">
@@ -619,7 +622,6 @@
       logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
     };
 
-    // Función que limpia duplicados y normaliza la base de datos local
     function normalizarBaseDatos(rawObj) {
       const limpia = {};
       Object.keys(rawObj).forEach(cId => {
@@ -638,7 +640,6 @@
               }
             };
           } else {
-            // Si ya existe por nombre repetido, fusionar sus días en lugar de duplicar al comprador
             Object.keys(cli.dias || {}).forEach(dKey => {
               limpia[cId][keyUnica].dias[dKey] = cli.dias[dKey];
             });
@@ -648,7 +649,7 @@
       return limpia;
     }
 
-    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v18')) || {
+    let database = normalizarBaseDatos(JSON.parse(localStorage.getItem('avicola_db_v19')) || {
       'Campana_1': {
         'COMPRADOR_A': {
           nombre: 'Comprador A',
@@ -658,10 +659,10 @@
     });
 
     function guardarEnLocalStorage() {
-      localStorage.setItem('avicola_db_v18', JSON.stringify(database));
+      localStorage.setItem('avicola_db_v19', JSON.stringify(database));
     }
 
-    // SINCRONIZACIÓN DESDE GOOGLE SHEETS SIN DUPLICAR COMPRADORES
+    // SINCRONIZACIÓN DESDE GOOGLE SHEETS SIN DUPLICADOS
     async function sincronizarDesdeGoogleSheets() {
       if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("TU_URL_AQUI")) {
         mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
@@ -683,7 +684,6 @@
               const nombreNormalizado = (cliSheet.nombre || sheetCliKey).trim();
               const keyUnica = nombreNormalizado.toUpperCase().replace(/[^a-zA-Z0-9]/g, '_');
 
-              // Si ya existe por nombre, no crea un duplicado: actualiza sus días
               if (!database[cId][keyUnica]) {
                 database[cId][keyUnica] = {
                   nombre: nombreNormalizado,
@@ -809,7 +809,6 @@
       const c = database[campanaActiva][clienteActivo];
       const diaData = c.dias[jornadaActiva];
       
-      // Guardar en la jornada de la base local
       diaData.fecha = fechaExacta;
       guardarEnLocalStorage();
       actualizarFechaManualEnTicket();
@@ -840,66 +839,60 @@
       }
     }
 
-    // TOASTS Y MODALES
-    function mostrarToast(mensaje, tipo = 'exito') {
-      const cont = document.getElementById('toastContainer');
-      const toast = document.createElement('div');
-      const config = {
-        exito: { bg: 'bg-emerald-950/90 border-emerald-500/50 text-emerald-200', icon: '✅' },
-        error: { bg: 'bg-rose-950/90 border-rose-500/50 text-rose-200', icon: '❌' },
-        aviso: { bg: 'bg-amber-950/90 border-amber-500/50 text-amber-200', icon: '⚠️' },
-        info: { bg: 'bg-sky-950/90 border-sky-500/50 text-sky-200', icon: 'ℹ' }
-      }[tipo] || { bg: 'bg-slate-900 border-slate-700 text-white', icon: '🔔' };
-
-      toast.className = `flex items-center gap-2 px-3.5 py-2.5 rounded-2xl border shadow-2xl text-xs font-semibold backdrop-blur-md pointer-events-auto animate-toast ${config.bg}`;
-      toast.innerHTML = `<span>${config.icon}</span><span class="truncate">${mensaje}</span>`;
-      cont.appendChild(toast);
-      setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateY(10px)';
-        toast.style.transition = 'all 0.25s ease';
-        setTimeout(() => toast.remove(), 250);
-      }, 3500);
-    }
-
-    let modalCallback = null;
-    function abrirCustomModal({ titulo, subtitulo, htmlBody, esInput = false, valorInput = '', textoBtn = 'Confirmar', colorBtn = 'bg-amber-500 text-slate-950', onConfirm }) {
-      document.getElementById('modalTitle').innerText = titulo;
-      document.getElementById('modalSubtitle').innerText = subtitulo || 'Aviso';
-      document.getElementById('modalBody').innerHTML = htmlBody || '';
-      
-      const inputCont = document.getElementById('modalInputCont');
-      const input = document.getElementById('modalInput');
-      if (esInput) {
-        inputCont.classList.remove('hidden');
-        input.value = valorInput;
-        setTimeout(() => input.focus(), 100);
-      } else {
-        inputCont.classList.add('hidden');
-      }
-
-      const btnConfirm = document.getElementById('modalBtnConfirm');
-      btnConfirm.innerText = textoBtn;
-      btnConfirm.className = `flex-1 py-2.5 text-xs font-black rounded-xl transition ${colorBtn}`;
-
-      modalCallback = onConfirm;
-      document.getElementById('customModal').classList.remove('hidden');
-    }
-
-    function cerrarCustomModal() {
-      document.getElementById('customModal').classList.add('hidden');
-      modalCallback = null;
-    }
-
-    document.getElementById('modalBtnConfirm').addEventListener('click', () => {
-      const inputVal = document.getElementById('modalInput').value;
-      if (modalCallback) modalCallback(inputVal);
-      cerrarCustomModal();
-    });
-
     // ========================================================
-    // GESTIÓN DE CLIENTES ÚNICOS (SIN DUPLICADOS)
+    // BORRAR COMPRADOR PUNTUAL CON SUS PESADAS (IMPLEMENTADO)
     // ========================================================
+    function confirmarEliminarComprador() {
+      const c = database[campanaActiva][clienteActivo];
+      const nombreCliente = c.nombre;
+
+      abrirCustomModal({
+        titulo: '⚠️ ¿Eliminar Comprador?',
+        subtitulo: `Eliminación de ${nombreCliente}`,
+        htmlBody: `Se eliminarán <b>todas las compras, pesadas y jornadas</b> de <b>${nombreCliente}</b> en esta campaña.<br><br><span class="text-rose-400 font-bold">* Se eliminará también su pestaña de Google Sheets.</span>`,
+        textoBtn: 'Sí, Eliminar Comprador',
+        colorBtn: 'bg-rose-600 hover:bg-rose-500 text-white',
+        onConfirm: async () => {
+          const clienteABorrarKey = clienteActivo;
+          delete database[campanaActiva][clienteABorrarKey];
+
+          const clavesRestantes = Object.keys(database[campanaActiva]);
+          if (clavesRestantes.length === 0) {
+            database[campanaActiva]['COMPRADOR_A'] = {
+              nombre: 'Comprador A',
+              dias: { 'Dia_1': { tara: [], sobrante: [], pollos: [], precio: '4.10', nota: '', fecha: new Date().toISOString().slice(0, 10) } }
+            };
+            clienteActivo = 'COMPRADOR_A';
+          } else {
+            clienteActivo = clavesRestantes[0];
+          }
+
+          jornadaActiva = 'Dia_1';
+          guardarEnLocalStorage();
+          cargarSelectorClientes();
+          poblarOpcionesFiltrosDashboard();
+          mostrarToast(`Comprador "${nombreCliente}" eliminado`, 'aviso');
+
+          try {
+            await fetch(APPS_SCRIPT_URL, {
+              method: 'POST',
+              mode: 'no-cors',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'ELIMINAR_COMPRADOR',
+                campana: campanaActiva,
+                cliente: nombreCliente
+              })
+            });
+            mostrarToast("Pestaña del comprador eliminada de Sheets", "exito");
+          } catch (e) {
+            mostrarToast("Eliminado en modo local", "info");
+          }
+        }
+      });
+    }
+
+    // GESTIÓN DE CLIENTES Y DÍAS
     function cargarSelectorClientes() {
       const sel = document.getElementById('selClienteActivo');
       sel.innerHTML = '';
@@ -998,7 +991,6 @@
       });
     }
 
-    // CREAR COMPRADOR CON CLAVE NORMALIZADA (IMPIDE DUPLICADOS)
     function abrirModalNuevoCliente() {
       const num = Object.keys(database[campanaActiva] || {}).length + 1;
       abrirCustomModal({
@@ -1696,7 +1688,7 @@
       });
     }
 
-    // GESTIÓN DE VISTAS Y CAMPAÑAS
+    // CAMPAÑAS
     function cargarSelectorCampanas() {
       const sel = document.getElementById('selCampana');
       sel.innerHTML = '';
