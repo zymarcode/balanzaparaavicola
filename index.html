@@ -59,16 +59,184 @@
       tr { page-break-inside: avoid !important; }
       .seccion-totales-reporte { page-break-inside: avoid !important; }
     }
+
+    /* ===== AJUSTES MÓVIL + LOGIN ===== */
+    main, section, .grid > *, .flex > * { min-width: 0; }
+    button { white-space: nowrap; line-height: 1.2; touch-action: manipulation; }
+    select { text-overflow: ellipsis; min-width: 0; }
+    img, canvas, svg { max-width: 100%; }
+    @media (max-width: 768px) {
+      html { font-size: 14px; }
+      input, select, textarea { font-size: 14px !important; }
+      .text-5xl { font-size: 2rem !important; line-height: 1.1 !important; }
+      .text-4xl { font-size: 1.75rem !important; line-height: 1.1 !important; }
+      .text-3xl { font-size: 1.5rem !important; line-height: 1.15 !important; }
+      .text-2xl { font-size: 1.25rem !important; line-height: 1.2 !important; }
+      main button { min-height: 34px; }
+      header h1 { max-width: 46vw; }
+    }
+    /* Pantallas pequeñas (celulares): letra más chica */
+    @media (max-width: 640px) {
+      html { font-size: 13px; }
+      input, select, textarea, .auth-input { font-size: 13px !important; }
+      .text-5xl { font-size: 1.75rem !important; }
+      .text-4xl { font-size: 1.5rem !important; }
+      .text-3xl { font-size: 1.3rem !important; }
+      .text-2xl { font-size: 1.15rem !important; }
+      .text-\[11px\] { font-size: 10px !important; }
+      .text-\[10px\], .text-\[9px\] { font-size: 9px !important; }
+    }
+    @media (max-width: 360px) {
+      html { font-size: 12px; }
+    }
+    #authScreen { background: radial-gradient(ellipse at top, #1e293b 0%, #020617 70%); }
+    .auth-input { width: 100%; background: #020617; border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; color: #fff; outline: none; font-size: 14px !important; }
+    .auth-input:focus { border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.15); }
+    .auth-label { display: block; font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; }
+    .auth-btn { width: 100%; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 13px; background: #f59e0b; color: #020617; transition: .15s; }
+    .auth-btn:active { transform: scale(.97); }
+    .auth-btn.sec { background: #1e293b; color: #cbd5e1; font-weight: 700; }
+    #authScreen { background: #020617; }
+    #authBg { position: fixed; inset: -48px; background-size: cover; background-position: center; z-index: 0; }
+    #authBg:not(.con-img) { background-image: radial-gradient(circle at 18% 14%, rgba(245,158,11,.45), transparent 42%), radial-gradient(circle at 86% 82%, rgba(56,189,248,.35), transparent 44%), radial-gradient(circle at 72% 8%, rgba(16,185,129,.28), transparent 40%); }
+    #authBg::after { content: ""; position: absolute; inset: 0; background: linear-gradient(rgba(2,6,23,.35), rgba(2,6,23,.75)); }
+    #authScreen .auth-card { background: rgba(15,23,42,.55); border: 1px solid rgba(255,255,255,.14); -webkit-backdrop-filter: blur(22px) saturate(1.3); backdrop-filter: blur(22px) saturate(1.3); box-shadow: 0 24px 60px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.08); }
+    #authScreen .auth-input { background: rgba(2,6,23,.55); border-color: rgba(255,255,255,.14); }
+    #authScreen .auth-btn:not(.sec) { background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 8px 20px rgba(245,158,11,.3); }
+    #authScreen .auth-btn:disabled { opacity: .6; }
+    @media print {
+      body.print-ticket #modalTicket:not(.hidden), body.print-ticket #modalTicket:not(.hidden) * { visibility: visible !important; }
+      body.print-ticket #modalTicket:not(.hidden).no-imprimir { display: block !important; }
+      body.print-ticket #modalTicket:not(.hidden) { position: absolute !important; left: 0; top: 0; width: 100%; padding: 0 !important; background: none !important; backdrop-filter: none !important; }
+      body.print-ticket #modalTicket:not(.hidden) > div { max-width: 80mm !important; margin: 0 auto; box-shadow: none !important; background: #fff !important; border-radius: 0 !important; animation: none !important; }
+      body.print-ticket #modalTicket button { display: none !important; }
+      body.print-ticket #modalReporteDetallado, body.print-ticket #modalReporteDetallado * { display: none !important; visibility: hidden !important; }
+    }
+  
+    /* ARRASTRAR PESADAS ENTRE COLUMNAS */
+    .drag-handle { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .drag-handle:hover { color: #fbbf24; }
+    .drag-ghost { position: fixed; z-index: 9999; pointer-events: none; padding: 4px 12px; border-radius: 10px;
+      font: 700 13px ui-monospace, monospace; color: #0f172a; background: #fbbf24; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      transform: translate(-50%, -120%); opacity: .95; }
+    .drag-origen { opacity: .35; }
+    .col-drop-ok { outline: 2px dashed #38bdf8; outline-offset: -2px; background-color: rgba(56,189,248,.08) !important; }
+    body.arrastrando, body.arrastrando * { cursor: grabbing !important; user-select: none !important; }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20 md:pb-6 antialiased selection:bg-amber-500 selection:text-slate-950">
 
+  
+  <!-- ===== LOGIN ===== -->
+  <div id="authScreen" class="fixed inset-0 z-[60] hidden overflow-y-auto no-imprimir">
+    <div id="authBg"></div>
+    <div class="min-h-full flex items-center justify-center p-4 relative z-10">
+      <div class="auth-card w-full max-w-sm rounded-3xl p-6 space-y-4">
+        <div class="text-center space-y-1">
+          <div class="w-14 h-14 mx-auto rounded-2xl overflow-hidden bg-slate-800 border border-amber-500/40 flex items-center justify-center"><img id="authLogo" alt="Logo" class="w-full h-full object-cover"></div>
+          <h2 id="authTitulo" class="text-base font-black text-white">Control Galpón</h2>
+          <p id="authSub" class="text-[11px] text-slate-400">Inicia sesión para continuar</p>
+        </div>
+        <div><label class="auth-label" for="authUser">Usuario</label>
+          <input id="authUser" class="auth-input" autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()"></div>
+        <div><label class="auth-label" for="authPass">Contraseña</label>
+          <div class="relative">
+            <input id="authPass" type="password" class="auth-input pr-11" autocomplete="current-password" onkeydown="if(event.key==='Enter')authLogin()">
+            <button type="button" onclick="const i=document.getElementById('authPass');i.type=i.type==='password'?'text':'password'" class="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 text-sm" aria-label="Mostrar contraseña">👁</button>
+          </div></div>
+        <p id="authError" class="hidden text-[11px] font-semibold text-rose-300 bg-rose-950/60 border border-rose-700/50 rounded-xl px-3 py-2"></p>
+        <button type="button" id="authBtn" class="auth-btn" onclick="authLogin()">Iniciar sesión</button>
+        <p id="authHint" class="hidden text-[10px] text-center text-slate-500"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CRUD USUARIOS ===== -->
+  <div id="usersModal" class="fixed inset-0 z-[55] hidden modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4 no-imprimir">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-down">
+      <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800">
+        <div class="min-w-0"><h3 class="text-sm font-bold text-white truncate">Usuarios</h3>
+          <p class="text-[11px] text-slate-400 truncate">Crear, editar y eliminar accesos</p></div>
+        <button type="button" onclick="cerrarUsuarios()" class="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-300 shrink-0">Cerrar</button>
+      </div>
+      <div class="overflow-y-auto p-4 space-y-4">
+        <div id="usersList" class="space-y-2"></div>
+        <div class="border-t border-slate-800 pt-3 space-y-3">
+          <h4 id="userFormTitulo" class="text-xs font-bold text-amber-400">Nuevo usuario</h4>
+          <input type="hidden" id="uEditId">
+          <div><label class="auth-label" for="uNombre">Nombre completo</label><input id="uNombre" class="auth-input"></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="auth-label" for="uUser">Usuario</label><input id="uUser" class="auth-input" autocapitalize="none"></div>
+            <div><label class="auth-label" for="uRol">Rol</label>
+              <select id="uRol" class="auth-input"><option value="operador">Operador</option><option value="admin">Administrador</option></select></div>
+          </div>
+          <div><label class="auth-label" for="uPass" id="uPassLabel">Contraseña</label><input id="uPass" type="password" class="auth-input" autocomplete="new-password"></div>
+          <div class="flex gap-2">
+            <button type="button" class="auth-btn sec" onclick="limpiarFormUsuario()">Limpiar</button>
+            <button type="button" class="auth-btn" onclick="guardarUsuario()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ===== AJUSTES DE MARCA (ADMIN) ===== -->
+  <div id="brandModal" class="fixed inset-0 z-[55] hidden modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4 no-imprimir">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-down">
+      <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800">
+        <div class="min-w-0"><h3 class="text-sm font-bold text-white truncate">Personalizar sistema</h3>
+          <p class="text-[11px] text-slate-400 truncate">Marca, login y redes sociales</p></div>
+        <button type="button" onclick="cerrarAjustesMarca()" class="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-300 shrink-0">Cerrar</button>
+      </div>
+      <div class="overflow-y-auto p-4 space-y-5">
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-amber-400">Marca</h4>
+          <div><label class="auth-label" for="cfgTitulo">Título del sistema</label><input id="cfgTitulo" class="auth-input" maxlength="40"></div>
+          <div><label class="auth-label" for="cfgSubtitulo">Subtítulo de la cabecera</label><input id="cfgSubtitulo" class="auth-input" maxlength="60"></div>
+          <div><label class="auth-label" for="cfgLoginSub">Subtítulo del login</label><input id="cfgLoginSub" class="auth-input" maxlength="60"></div>
+          <div>
+            <label class="auth-label" for="cfgLogoUrl">Logo (URL o archivo)</label>
+            <div class="flex items-center gap-2">
+              <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 shrink-0"><img id="cfgLogoPrev" alt="" class="w-full h-full object-cover"></div>
+              <input id="cfgLogoUrl" class="auth-input" placeholder="https://..." oninput="marcaSt.logoUrl=this.value.trim();prevMarca()">
+            </div>
+            <label class="auth-btn sec mt-2 block text-center cursor-pointer">Subir logo<input type="file" accept="image/*" class="hidden" onchange="elegirImagenMarca(this,'logoUrl',256)"></label>
+          </div>
+        </div>
+        <div class="space-y-3 border-t border-slate-800 pt-4">
+          <h4 class="text-xs font-bold text-amber-400">Fondo del login</h4>
+          <div class="h-20 rounded-xl border border-slate-700 bg-slate-950 overflow-hidden"><div id="cfgBgPrev" class="h-full w-full bg-cover bg-center" style="transform:scale(1.2)"></div></div>
+          <input id="cfgBgUrl" class="auth-input" placeholder="https://... (imagen)" oninput="marcaSt.loginBg=this.value.trim();prevMarca()">
+          <div><label class="auth-label" for="cfgBlur">Desenfoque del fondo: <span id="cfgBlurVal">14</span> px</label><input id="cfgBlur" type="range" min="0" max="30" value="14" class="w-full accent-amber-500" oninput="marcaSt.loginBlur=+this.value;prevMarca()"></div>
+          <div class="flex gap-2">
+            <label class="auth-btn sec text-center cursor-pointer">Subir imagen<input type="file" accept="image/*" class="hidden" onchange="elegirImagenMarca(this,'loginBg',960)"></label>
+            <button type="button" class="auth-btn sec" onclick="marcaSt.loginBg='';document.getElementById('cfgBgUrl').value='';prevMarca()">Quitar fondo</button>
+          </div>
+        </div>
+        <div class="space-y-3 border-t border-slate-800 pt-4">
+          <h4 class="text-xs font-bold text-amber-400">Redes sociales</h4>
+          <p class="text-[11px] text-slate-500">Deja vacío para ocultar una red. En WhatsApp puedes escribir solo el número con código de país.</p>
+          <div><label class="auth-label" for="cfgRed_whatsapp">WhatsApp</label><input id="cfgRed_whatsapp" class="auth-input" placeholder="51999999999"></div>
+          <div><label class="auth-label" for="cfgRed_youtube">YouTube</label><input id="cfgRed_youtube" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_tiktok">TikTok</label><input id="cfgRed_tiktok" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_instagram">Instagram</label><input id="cfgRed_instagram" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_telegram">Telegram</label><input id="cfgRed_telegram" class="auth-input" placeholder="https://..."></div>
+        </div>
+        <div class="flex gap-2 pb-1">
+          <button type="button" class="auth-btn sec" onclick="restablecerMarca()">Restablecer</button>
+          <button type="button" class="auth-btn" onclick="guardarAjustesMarca()">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
-  <div id="toastContainer" class="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
+  <div id="toastContainer" class="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 z-[70] flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
   <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
-  <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4 no-imprimir">
+  <div id="customModal" class="fixed inset-0 modal-backdrop z-[65] hidden flex items-center justify-center p-3 sm:p-4 no-imprimir">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
         <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400 shrink-0">
@@ -135,6 +303,8 @@
         <button type="button" onclick="abrirAjustesMarca()" title="Personalizar Marca (Título, Subtítulo y Logo URL)" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1">
           <span>⚙️</span> <span class="hidden sm:inline">Marca</span>
         </button>
+        <button type="button" id="btnUsuarios" onclick="abrirUsuarios()" title="Usuarios" class="hidden p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition items-center gap-1"><span>👥</span> <span class="hidden sm:inline">Usuarios</span></button>
+        <button type="button" onclick="authLogout()" title="Cerrar sesión" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 transition flex items-center gap-1"><span>⎋</span> <span class="hidden sm:inline">Salir</span></button>
       </div>
 
     </div>
@@ -509,19 +679,15 @@
           </div>
         </div>
 
-        <!-- BOTONES DE COMPROBANTES Y DRIVE -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+        <!-- BOTONES DE COMPROBANTES -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
           <button type="button" onclick="abrirTicketTermico()" class="py-3 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200 transition text-center flex items-center justify-center gap-1.5 shadow">
             🧾 Ver Ticket de Caja
           </button>
           <button type="button" onclick="abrirReporteDetalladoPDF()" class="py-3 bg-purple-700 hover:bg-purple-600 active:scale-95 rounded-xl text-xs sm:text-sm font-bold text-white transition text-center flex items-center justify-center gap-1.5 shadow">
             📄 Reporte Detallado PDF
           </button>
-          <button type="button" onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-3 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs sm:text-sm font-bold text-white transition text-center flex items-center justify-center gap-1.5 shadow">
-            ☁️ Guardar en Drive
-          </button>
         </div>
-        <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 min-h-[1rem] truncate"></div>
 
       </div>
 
@@ -601,7 +767,12 @@
           </h2>
           <span class="text-[11px] text-slate-400 font-mono">Desglose exacto sin agrupaciones ficticias</span>
         </div>
-        
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select id="selFiltroCamp" onchange="filtrarTablaVentas()" class="sm:w-56 bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-xl px-3 py-2 outline-none" aria-label="Filtrar por campaña"><option value="">Todas las campañas</option></select>
+          <input id="buscarVentas" type="search" oninput="filtrarTablaVentas()" placeholder="Buscar comprador, fecha, entrega..." autocomplete="off" class="flex-1 min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" aria-label="Buscar en ventas">
+        </div>
+        <p id="resumenVentas" class="text-[11px] text-slate-400 font-mono"></p>
+
         <div class="overflow-x-auto w-full">
           <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
@@ -693,8 +864,7 @@
         <span id="tktMontoPagar" class="text-2xl font-black text-slate-900">S/. 0.00</span>
       </div>
       <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
-        <button type="button" onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
-        <button type="button" onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁ Guardar en Drive</button>
+        <button type="button" onclick="imprimirTicket()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
       </div>
     </div>
   </div>
@@ -849,11 +1019,13 @@
       instagram: "https://www.instagram.com/tuusuario",
       telegram: "https://t.me/tuusuario"
     };
+    const REDES_BASE = Object.assign({}, REDES_SOCIALES);
+    try { Object.assign(REDES_SOCIALES, JSON.parse(localStorage.getItem('avicola_redes') || '{}')); } catch (e) {}
 
     function aplicarRedesSociales() {
       document.querySelectorAll('[data-red]').forEach(a => {
         const url = REDES_SOCIALES[a.dataset.red];
-        if (url) a.href = url;
+        if (url) { a.href = url; a.classList.remove('hidden'); }
         else a.classList.add('hidden');
       });
       const fa = document.getElementById('footerAnio');
@@ -874,8 +1046,13 @@
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
       subtitulo: 'Pesaje & Liquidación por Campaña',
-      logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
+      logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80',
+      loginSubtitulo: 'Inicia sesión para continuar',
+      loginBg: ''
     };
+    const BRAND_BASE = { titulo: 'Control Galpón IoT', subtitulo: 'Pesaje & Liquidación por Campaña', logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80', loginSubtitulo: 'Inicia sesión para continuar', loginBg: '' };
+    BRAND_BASE.loginBlur = 14;
+    if (brandConfig.loginBlur == null) brandConfig.loginBlur = 14;
 
     function obtenerFechaIsoLocalActual() {
       const now = new Date();
@@ -1084,7 +1261,7 @@
 
     // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://docs.google.com/spreadsheets/d/1TvNyLhVZyhqcaf3aLJFn3jgWfr9ZXz4MaXDTY5jFGaQ/edit?gid=1238784953#gid=1238784953")) {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://docs.google.com/spreadsheets/d/1TvNyLhVZyhqcaf3aLJFn3jgWfr9ZXz4MaXDTY5jFGaQ/edit?gid=561278225#gid=561278225")) {
         mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
         return;
       }
@@ -1153,32 +1330,116 @@
       if (footMarca) footMarca.innerText = brandConfig.titulo;
     }
 
+    let marcaSt = {};
+    function urlMarcaOk(u) { return !u || /^(https?:\/\/|data:image\/)/i.test(u); }
+    function urlRedOk(k, u) {
+      if (!u) return '';
+      if (k === 'whatsapp' && /^\+?\d{8,15}$/.test(u)) return 'https://wa.me/' + u.replace('+', '');
+      return /^https?:\/\//i.test(u) ? u : null;
+    }
+    function aplicarMarcaLogin() {
+      const bc = brandConfig;
+      document.getElementById('authTitulo').innerText = bc.titulo || 'Control Galpón';
+      document.getElementById('authSub').innerText = bc.loginSubtitulo || 'Inicia sesión para continuar';
+      document.getElementById('authLogo').src = bc.logoUrl || BRAND_BASE.logoUrl;
+      const bg = document.getElementById('authBg');
+      bg.style.filter = 'blur(' + (bc.loginBlur == null ? 14 : bc.loginBlur) + 'px)';
+      bg.style.backgroundImage = bc.loginBg ? `url("${bc.loginBg.replace(/"/g, '%22')}")` : '';
+      bg.classList.toggle('con-img', !!bc.loginBg);
+    }
+    function prevMarca() {
+      document.getElementById('cfgLogoPrev').src = marcaSt.logoUrl || BRAND_BASE.logoUrl;
+      const bg = document.getElementById('cfgBgPrev');
+      bg.style.backgroundImage = marcaSt.loginBg ? `url("${marcaSt.loginBg.replace(/"/g, '%22')}")` : 'none';
+      const bl = marcaSt.loginBlur == null ? 14 : marcaSt.loginBlur;
+      bg.style.filter = 'blur(' + (bl / 3) + 'px)';
+      document.getElementById('cfgBlurVal').innerText = bl;
+    }
+    function archivoADataUrl(file, maxLado) {
+      return new Promise((ok, fail) => {
+        const r = new FileReader();
+        r.onerror = () => fail();
+        r.onload = () => {
+          const img = new Image();
+          img.onerror = () => fail();
+          img.onload = () => {
+            const k = Math.min(1, maxLado / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            ok(c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.7));
+          };
+          img.src = r.result;
+        };
+        r.readAsDataURL(file);
+      });
+    }
+    async function elegirImagenMarca(input, clave, maxLado) {
+      const f = input.files && input.files[0];
+      input.value = '';
+      if (!f) return;
+      if (!/^image\//.test(f.type)) return mostrarToast('Elige un archivo de imagen', 'aviso');
+      try {
+        marcaSt[clave] = await archivoADataUrl(f, maxLado);
+        document.getElementById(clave === 'logoUrl' ? 'cfgLogoUrl' : 'cfgBgUrl').value = '';
+        prevMarca();
+      } catch (e) { mostrarToast('No se pudo leer la imagen', 'error'); }
+    }
     function abrirAjustesMarca() {
+      const u = sesionActual();
+      if (!u || u.rol !== 'admin') return mostrarToast('Solo el administrador puede personalizar', 'aviso');
+      marcaSt = { logoUrl: brandConfig.logoUrl, loginBg: brandConfig.loginBg || '', loginBlur: brandConfig.loginBlur == null ? 14 : brandConfig.loginBlur };
+      document.getElementById('cfgBlur').value = marcaSt.loginBlur;
+      const esUrl = v => v && !/^data:/i.test(v) ? v : '';
+      document.getElementById('cfgTitulo').value = brandConfig.titulo || '';
+      document.getElementById('cfgSubtitulo').value = brandConfig.subtitulo || '';
+      document.getElementById('cfgLoginSub').value = brandConfig.loginSubtitulo || '';
+      document.getElementById('cfgLogoUrl').value = esUrl(brandConfig.logoUrl);
+      document.getElementById('cfgBgUrl').value = esUrl(brandConfig.loginBg);
+      Object.keys(REDES_SOCIALES).forEach(k => { const e = document.getElementById('cfgRed_' + k); if (e) e.value = REDES_SOCIALES[k] || ''; });
+      prevMarca();
+      document.getElementById('brandModal').classList.remove('hidden');
+    }
+    function cerrarAjustesMarca() { document.getElementById('brandModal').classList.add('hidden'); }
+    function guardarAjustesMarca() {
+      const titulo = document.getElementById('cfgTitulo').value.trim();
+      if (!titulo) return mostrarToast('El título no puede estar vacío', 'aviso');
+      if (!urlMarcaOk(marcaSt.logoUrl) || !urlMarcaOk(marcaSt.loginBg)) return mostrarToast('Las imágenes deben empezar con https://', 'error');
+      const redes = {};
+      for (const k of Object.keys(REDES_BASE)) {
+        const v = urlRedOk(k, document.getElementById('cfgRed_' + k).value.trim());
+        if (v === null) return mostrarToast('Enlace de ' + k + ' no válido (usa https://)', 'error');
+        redes[k] = v;
+      }
+      const nuevo = {
+        titulo,
+        subtitulo: document.getElementById('cfgSubtitulo').value.trim(),
+        loginSubtitulo: document.getElementById('cfgLoginSub').value.trim() || BRAND_BASE.loginSubtitulo,
+        logoUrl: marcaSt.logoUrl || BRAND_BASE.logoUrl,
+        loginBg: marcaSt.loginBg || '',
+        loginBlur: marcaSt.loginBlur
+      };
+      try {
+        localStorage.setItem('avicola_brand', JSON.stringify(nuevo));
+        localStorage.setItem('avicola_redes', JSON.stringify(redes));
+      } catch (e) { return mostrarToast('Imagen demasiado pesada, usa una más pequeña', 'error'); }
+      brandConfig = nuevo;
+      Object.assign(REDES_SOCIALES, redes);
+      aplicarConfiguracionMarca(); aplicarMarcaLogin(); aplicarRedesSociales();
+      cerrarAjustesMarca();
+      sincronizarConfigRemota(nuevo, redes);
+    }
+    function restablecerMarca() {
       abrirCustomModal({
-        titulo: 'Personalizar Marca',
-        subtitulo: 'Ajustes Visuales',
-        htmlBody: `
-          <div class="space-y-3">
-            <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">Título del Sistema:</label>
-              <input id="cfgTitulo" type="text" value="${brandConfig.titulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-            </div>
-            <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">URL del Logo (Web):</label>
-              <input id="cfgLogoUrl" type="url" value="${brandConfig.logoUrl}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-            </div>
-          </div>
-        `,
-        textoBtn: 'Guardar',
-        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        titulo: 'Restablecer', subtitulo: 'Vuelve a los valores originales',
+        htmlBody: 'Se perderán el logo, textos, fondo y redes personalizados.', textoBtn: 'Restablecer', colorBtn: 'bg-rose-600 text-white',
         onConfirm: () => {
-          const tit = document.getElementById('cfgTitulo').value.trim();
-          const logo = document.getElementById('cfgLogoUrl').value.trim();
-          if (tit) brandConfig.titulo = tit;
-          if (logo) brandConfig.logoUrl = logo;
-          localStorage.setItem('avicola_brand', JSON.stringify(brandConfig));
-          aplicarConfiguracionMarca();
-          mostrarToast('Marca actualizada', 'exito');
+          localStorage.removeItem('avicola_brand'); localStorage.removeItem('avicola_redes');
+          brandConfig = Object.assign({}, BRAND_BASE);
+          Object.keys(REDES_SOCIALES).forEach(k => delete REDES_SOCIALES[k]);
+          Object.assign(REDES_SOCIALES, REDES_BASE);
+          aplicarConfiguracionMarca(); aplicarMarcaLogin(); aplicarRedesSociales();
+          cerrarAjustesMarca(); sincronizarConfigRemota(brandConfig, Object.assign({}, REDES_BASE));
         }
       });
     }
@@ -1794,6 +2055,122 @@
       reader.readAsText(file);
     }
 
+    // =================== MOVER PESADAS ENTRE COLUMNAS (ARRASTRAR) ===================
+    const COLS_DRAG = { 'colTablaTara': 'TARA', 'colTablaPollos': 'CON_POLLOS', 'colTablaSobrante': 'TARA_SOBRANTE' };
+    const NOMBRE_COL = { 'TARA': 'Tara Inicial', 'CON_POLLOS': 'Con Pollos', 'TARA_SOBRANTE': 'Sobrante' };
+    let dragEstado = null;
+
+    function listaPorTipo(diaData, tipo) {
+      if (tipo === 'CON_POLLOS') return diaData.pollos;
+      if (tipo === 'TARA_SOBRANTE') { if (!diaData.sobrante) diaData.sobrante = []; return diaData.sobrante; }
+      return diaData.tara;
+    }
+
+    function columnaBajoPuntero(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const col = el && el.closest ? el.closest('#colTablaTara, #colTablaPollos, #colTablaSobrante') : null;
+      return col ? { col, tipo: COLS_DRAG[col.id] } : null;
+    }
+
+    function limpiarMarcasDrag() {
+      Object.keys(COLS_DRAG).forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('col-drop-ok'); });
+    }
+
+    function iniciarArrastre(ev) {
+      const handle = ev.target.closest('.drag-handle');
+      if (!handle || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+      const fila = handle.closest('tr[data-tipo]');
+      if (!fila) return;
+      ev.preventDefault();
+      dragEstado = {
+        fila, tipo: fila.dataset.tipo, index: parseInt(fila.dataset.index, 10),
+        x0: ev.clientX, y0: ev.clientY, activo: false, ghost: null, pid: ev.pointerId
+      };
+      document.addEventListener('pointermove', moverArrastre);
+      document.addEventListener('pointerup', soltarArrastre);
+      document.addEventListener('pointercancel', cancelarArrastre);
+    }
+
+    function moverArrastre(ev) {
+      const d = dragEstado;
+      if (!d || ev.pointerId !== d.pid) return;
+      if (!d.activo) {
+        if (Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 6) return;
+        d.activo = true;
+        const c = database[campanaActiva][clienteActivo];
+        const val = listaPorTipo(c.dias[jornadaActiva], d.tipo)[d.index];
+        d.ghost = document.createElement('div');
+        d.ghost.className = 'drag-ghost';
+        d.ghost.textContent = (typeof val === 'number' ? val.toFixed(2) : val) + ' kg';
+        document.body.appendChild(d.ghost);
+        d.fila.classList.add('drag-origen');
+        document.body.classList.add('arrastrando');
+      }
+      d.ghost.style.left = ev.clientX + 'px';
+      d.ghost.style.top = ev.clientY + 'px';
+      limpiarMarcasDrag();
+      const dest = columnaBajoPuntero(ev.clientX, ev.clientY);
+      if (dest && dest.tipo !== d.tipo) dest.col.classList.add('col-drop-ok');
+      // auto-scroll de la ventana en pantallas táctiles
+      if (ev.clientY < 60) window.scrollBy(0, -12);
+      else if (ev.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
+    }
+
+    function terminarArrastre() {
+      document.removeEventListener('pointermove', moverArrastre);
+      document.removeEventListener('pointerup', soltarArrastre);
+      document.removeEventListener('pointercancel', cancelarArrastre);
+      if (dragEstado) {
+        if (dragEstado.ghost) dragEstado.ghost.remove();
+        dragEstado.fila.classList.remove('drag-origen');
+      }
+      document.body.classList.remove('arrastrando');
+      limpiarMarcasDrag();
+    }
+
+    function cancelarArrastre() { terminarArrastre(); dragEstado = null; }
+
+    function soltarArrastre(ev) {
+      const d = dragEstado;
+      if (!d || ev.pointerId !== d.pid) return;
+      const dest = d.activo ? columnaBajoPuntero(ev.clientX, ev.clientY) : null;
+      terminarArrastre();
+      dragEstado = null;
+      if (d.activo && dest && dest.tipo !== d.tipo) moverItem(d.tipo, d.index, dest.tipo);
+    }
+
+    // Mueve una pesada de una columna a otra (local + Google Sheets)
+    async function moverItem(tipoOrigen, index, tipoDestino) {
+      if (tipoOrigen === tipoDestino) return;
+      const c = database[campanaActiva][clienteActivo];
+      const diaData = c.dias[jornadaActiva];
+      const origen = listaPorTipo(diaData, tipoOrigen);
+      const destino = listaPorTipo(diaData, tipoDestino);
+      const peso = origen[index];
+      if (peso === undefined) return;
+
+      origen.splice(index, 1);
+      destino.push(peso);
+      guardarEnLocalStorage();
+      renderizarTablas();
+
+      try {
+        await enviarASheets({ action: 'ELIMINAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva, tipo: tipoOrigen, index: index });
+        await enviarASheets({
+          action: 'REGISTRAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva,
+          tipo: tipoDestino, peso: peso,
+          precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+          fecha: obtenerFechaSheets()
+        });
+        mostrarToast(`${peso.toFixed(2)} kg movido a ${NOMBRE_COL[tipoDestino]}`, 'exito');
+      } catch (e) {
+        mostrarToast(`${peso.toFixed(2)} kg movido solo en la app`, 'aviso');
+      }
+    }
+
+    document.addEventListener('pointerdown', iniciarArrastre);
+    // =================================================================================
+
     function editarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
       const diaData = c.dias[jornadaActiva];
@@ -1856,8 +2233,8 @@
       const tT = document.getElementById('tablaTaraBody');
       tT.innerHTML = '';
       diaData.tara.forEach((val, i) => {
-        tT.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tT.innerHTML += `<tr data-tipo="TARA" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-amber-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('TARA', ${i})" class="text-amber-400 font-bold hover:text-amber-300 p-0.5">✏️</button>
@@ -1870,8 +2247,8 @@
       const tP = document.getElementById('tablaPollosBody');
       tP.innerHTML = '';
       diaData.pollos.forEach((val, i) => {
-        tP.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tP.innerHTML += `<tr data-tipo="CON_POLLOS" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-sky-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('CON_POLLOS', ${i})" class="text-sky-400 font-bold hover:text-sky-300 p-0.5">✏️</button>
@@ -1884,8 +2261,8 @@
       const tS = document.getElementById('tablaSobranteBody');
       tS.innerHTML = '';
       diaData.sobrante.forEach((val, i) => {
-        tS.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tS.innerHTML += `<tr data-tipo="TARA_SOBRANTE" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-rose-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300 p-0.5">✏️</button>
@@ -2049,6 +2426,16 @@
 
     function cerrarTicket() {
       document.getElementById('modalTicket').classList.add('hidden');
+      document.body.classList.remove('print-ticket');
+    }
+
+    // Imprime solo el ticket (el resto de la pantalla se oculta en la hoja de impresión)
+    function imprimirTicket() {
+      document.body.classList.add('print-ticket');
+      const fin = () => { document.body.classList.remove('print-ticket'); window.removeEventListener('afterprint', fin); };
+      window.addEventListener('afterprint', fin);
+      setTimeout(fin, 60000);
+      setTimeout(() => window.print(), 80);
     }
 
     // REPORTE DETALLADO COMPLETO EN HOJA A4
@@ -2324,7 +2711,7 @@
             let fechaVenta = dData.fechaHora ? dData.fechaHora.replace('T', ' ') : '-';
 
             tbody.innerHTML += `
-              <tr>
+              <tr data-camp="${nombreCampana.replace(/"/g, '&quot;')}" data-neto="${sNeto}" data-total="${sTotal}">
                 <td class="p-2 sm:p-3 font-bold text-amber-400">${nombreCampana}</td>
                 <td class="p-2 sm:p-3 text-slate-200 font-semibold">${nombreCliente}</td>
                 <td class="p-2 sm:p-3 text-center text-emerald-400 font-mono">${fechaVenta}</td>
@@ -2341,6 +2728,9 @@
         });
       });
 
+      cargarFiltroCampanas(Object.keys(campanasTotales));
+      filtrarTablaVentas();
+
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
       document.getElementById('dashTotalCampanas').innerText = Object.keys(database).length;
@@ -2352,6 +2742,33 @@
       const campanaDinero = campanaLabels.map(c => parseFloat(campanasTotales[c].soles.toFixed(2)));
 
       actualizarGraficosCampanas(campanaLabels, campanaNetos, campanaTaras, campanaDinero);
+    }
+
+    // Filtro y buscador del cuadro comparativo (solo afecta a la tabla)
+    function cargarFiltroCampanas(nombres) {
+      const sel = document.getElementById('selFiltroCamp');
+      const actual = sel.value;
+      sel.innerHTML = '<option value="">Todas las campañas</option>' + nombres.map(n => `<option value="${n.replace(/"/g, '&quot;')}">${n}</option>`).join('');
+      sel.value = nombres.indexOf(actual) !== -1 ? actual : '';
+    }
+    function filtrarTablaVentas() {
+      const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const camp = document.getElementById('selFiltroCamp').value;
+      const q = norm(document.getElementById('buscarVentas').value.trim());
+      const tbody = document.getElementById('cuerpoTablaDashboard');
+      const vacia = document.getElementById('filaSinResultados');
+      if (vacia) vacia.remove();
+      let n = 0, neto = 0, total = 0;
+      const filas = tbody.querySelectorAll('tr[data-camp]');
+      filas.forEach(tr => {
+        const ok = (!camp || tr.dataset.camp === camp) && (!q || norm(tr.textContent).indexOf(q) !== -1);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) { n++; neto += parseFloat(tr.dataset.neto) || 0; total += parseFloat(tr.dataset.total) || 0; }
+      });
+      if (filas.length && !n) {
+        tbody.insertAdjacentHTML('beforeend', '<tr id="filaSinResultados"><td colspan="10" class="p-4 text-center text-slate-400">Sin resultados. Cambia la campaña o la búsqueda.</td></tr>');
+      }
+      document.getElementById('resumenVentas').innerText = filas.length ? `${n} de ${filas.length} registros · Neto ${neto.toFixed(2)} kg · Total S/. ${total.toFixed(2)}` : '';
     }
 
     function actualizarGraficosCampanas(labels, netos, taras, dinero) {
@@ -2631,7 +3048,7 @@
       });
     }
 
-    window.onload = () => {
+    function iniciarApp() {
       aplicarConfiguracionMarca();
       aplicarRedesSociales();
       cargarSelectorCampanas();
@@ -2639,6 +3056,237 @@
       cambiarModulo('lotes');
       sincronizarDesdeGoogleSheets();
     };
+
+    // ===== AUTENTICACIÓN + CRUD DE USUARIOS =====
+    const AUTH_USERS_KEY = 'avicola_users';
+    const AUTH_SESSION_KEY = 'avicola_session';
+    let authCallback = null;
+
+    function hashPass(txt) {
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+      for (let i = 0; i < txt.length; i++) {
+        const c = txt.charCodeAt(i);
+        h1 = Math.imul(h1 ^ c, 2654435761);
+        h2 = Math.imul(h2 ^ c, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return 'h' + (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+    }
+    const escU = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    function leerUsuarios() {
+      try { const u = JSON.parse(localStorage.getItem(AUTH_USERS_KEY)); if (Array.isArray(u) && u.length) return u; } catch (e) {}
+      const base = [{ id: 'u_' + Date.now(), nombre: 'Administrador', usuario: 'admin', pass: hashPass('admin123'), rol: 'admin' }];
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(base));
+      return base;
+    }
+    function guardarUsuarios(l) { localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(l)); }
+    function sesionActual() {
+      try {
+        const s = JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));
+        if (!s) return null;
+        if (s.mode === 'server') return s;
+        return leerUsuarios().find(u => u.id === s.id) || null;
+      } catch (e) { return null; }
+    }
+    function aplicarSesionUI(u) {
+      const b = document.getElementById('btnUsuarios');
+      b.classList.toggle('hidden', u.rol !== 'admin');
+      b.classList.toggle('flex', u.rol === 'admin');
+      const m = document.querySelector('[onclick="abrirAjustesMarca()"]');
+      if (m) m.style.display = u.rol === 'admin' ? '' : 'none';
+    }
+    function authInit(cb) {
+      authCallback = cb;
+      const lista = leerUsuarios();
+      const u = sesionActual();
+      if (u) { aplicarSesionUI(u); cb(); return; }
+      aplicarMarcaLogin();
+      const hint = document.getElementById('authHint');
+      if (lista.length === 1 && lista[0].usuario === 'admin' && lista[0].pass === hashPass('admin123')) {
+        hint.innerText = 'Acceso inicial: admin / admin123. Cámbialo al entrar.';
+        hint.classList.remove('hidden');
+      }
+      document.getElementById('authScreen').classList.remove('hidden');
+      setTimeout(() => document.getElementById('authUser').focus(), 100);
+    }
+    async function authLogin() {
+      const nom = document.getElementById('authUser').value.trim();
+      const pass = document.getElementById('authPass').value;
+      const err = document.getElementById('authError');
+      const btn = document.getElementById('authBtn');
+      const falla = t => { err.innerText = t; err.classList.remove('hidden'); };
+      if (!nom || !pass) return falla('Escribe tu usuario y contraseña.');
+      err.classList.add('hidden');
+      btn.disabled = true; btn.innerText = 'Verificando...';
+      let u = null, modoLocal = false;
+      try {
+        const r = await enviarASheets({ action: 'AUTH_LOGIN', usuario: nom, pass: pass });
+        u = r.user;
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ mode: 'server', token: r.token, id: u.id, nombre: u.nombre, usuario: u.usuario, rol: u.rol }));
+      } catch (e) {
+        const msg = String((e && e.message) || e);
+        if (/incorrect|intentos/i.test(msg)) { btn.disabled = false; btn.innerText = 'Iniciar sesión'; return falla(msg + '.'); }
+        const l = leerUsuarios().find(x => x.usuario.toLowerCase() === nom.toLowerCase() && x.pass === hashPass(pass));
+        if (!l) { btn.disabled = false; btn.innerText = 'Iniciar sesión'; return falla('Sin conexión con Google Sheets o credenciales incorrectas.'); }
+        u = l; modoLocal = true;
+        localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ mode: 'local', id: l.id }));
+      }
+      btn.disabled = false; btn.innerText = 'Iniciar sesión';
+      document.getElementById('authPass').value = '';
+      document.getElementById('authScreen').classList.add('hidden');
+      aplicarSesionUI(u);
+      mostrarToast(modoLocal ? 'Modo local: sin conexión con la hoja' : 'Bienvenido, ' + escU(u.nombre), modoLocal ? 'aviso' : 'exito');
+      if (authCallback) { const cb = authCallback; authCallback = null; cb(); }
+    }
+    function authLogout() {
+      abrirCustomModal({
+        titulo: 'Cerrar sesión', subtitulo: 'Tus datos quedan guardados',
+        htmlBody: '¿Deseas salir del sistema?', textoBtn: 'Salir', colorBtn: 'bg-rose-600 text-white',
+        onConfirm: () => {
+          const s = sesionActual();
+          const fin = () => { localStorage.removeItem(AUTH_SESSION_KEY); location.reload(); };
+          if (s && s.mode === 'server') Promise.race([enviarASheets({ action: 'AUTH_LOGOUT', token: s.token }).catch(() => {}), new Promise(r => setTimeout(r, 1500))]).then(fin);
+          else fin();
+        }
+      });
+    }
+    function abrirUsuarios() {
+      const u = sesionActual();
+      if (!u || u.rol !== 'admin') { mostrarToast('Solo el administrador gestiona usuarios', 'aviso'); return; }
+      limpiarFormUsuario(); renderUsuarios();
+      document.getElementById('usersModal').classList.remove('hidden');
+    }
+    function cerrarUsuarios() { document.getElementById('usersModal').classList.add('hidden'); }
+    let usuariosCache = [];
+    function esServidor() { const s = sesionActual(); return !!(s && s.mode === 'server'); }
+    async function usuariosServidor(accion, extra) {
+      const s = sesionActual();
+      return enviarASheets(Object.assign({ action: accion, token: s && s.token }, extra || {}));
+    }
+    function errorAuth(e, prefijo) {
+      const msg = String((e && e.message) || e);
+      if (/Sesión vencida/i.test(msg)) {
+        mostrarToast('Tu sesión venció. Inicia sesión de nuevo', 'aviso');
+        localStorage.removeItem(AUTH_SESSION_KEY);
+        setTimeout(() => location.reload(), 1400);
+        return;
+      }
+      mostrarToast((prefijo ? prefijo + ': ' : '') + msg, 'error');
+    }
+    function pintarUsuarios(lista) {
+      usuariosCache = lista;
+      const yo = sesionActual();
+      document.getElementById('usersList').innerHTML = lista.map(u => `
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-2xl p-2.5">
+          <div class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-sm shrink-0">${u.rol === 'admin' ? '🛡️' : '👤'}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-white truncate">${escU(u.nombre)}${yo && yo.id === u.id ? ' <span class="text-emerald-400">(tú)</span>' : ''}</p>
+            <p class="text-[11px] text-slate-400 truncate">${escU(u.usuario)} · ${u.rol === 'admin' ? 'Administrador' : 'Operador'}</p>
+          </div>
+          <button type="button" onclick="editarUsuario('${escU(u.id)}')" class="p-2 bg-slate-800 rounded-xl text-xs border border-slate-700 shrink-0" title="Editar">✏️</button>
+          <button type="button" onclick="eliminarUsuario('${escU(u.id)}')" class="p-2 bg-rose-950/80 rounded-xl text-xs border border-rose-700 shrink-0" title="Eliminar">🗑️</button>
+        </div>`).join('');
+    }
+    async function renderUsuarios() {
+      if (!esServidor()) return pintarUsuarios(leerUsuarios());
+      document.getElementById('usersList').innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Cargando usuarios...</p>';
+      try { pintarUsuarios((await usuariosServidor('USUARIOS_LISTAR')).usuarios); }
+      catch (e) { document.getElementById('usersList').innerHTML = ''; errorAuth(e, 'No se pudo cargar'); }
+    }
+    async function guardarUsuarioServidor(d) {
+      try {
+        const r = await usuariosServidor('USUARIOS_GUARDAR', { usuario: d });
+        pintarUsuarios(r.usuarios); limpiarFormUsuario();
+        mostrarToast(d.id ? 'Usuario actualizado' : 'Usuario creado', 'exito');
+      } catch (e) { errorAuth(e); }
+    }
+    function eliminarUsuarioServidor(id) {
+      const u = usuariosCache.find(x => x.id === id); if (!u) return;
+      const yo = sesionActual();
+      if (yo && yo.id === id) return mostrarToast('No puedes eliminar tu propia cuenta', 'error');
+      abrirCustomModal({
+        titulo: 'Eliminar usuario', subtitulo: 'Esta acción no se puede deshacer',
+        htmlBody: '¿Eliminar a <b>' + escU(u.nombre) + '</b>?', textoBtn: 'Eliminar', colorBtn: 'bg-rose-600 text-white',
+        onConfirm: async () => {
+          try { const r = await usuariosServidor('USUARIOS_ELIMINAR', { id }); pintarUsuarios(r.usuarios); mostrarToast('Usuario eliminado', 'exito'); }
+          catch (e) { errorAuth(e); }
+        }
+      });
+    }
+    async function sincronizarConfigRemota(marca, redes) {
+      if (!esServidor()) return mostrarToast('Guardado solo en este dispositivo (sin conexión con la hoja)', 'aviso');
+      try { await usuariosServidor('CONFIG_GUARDAR', { marca, redes }); mostrarToast('Guardado en Google Sheets', 'exito'); }
+      catch (e) { errorAuth(e, 'No se guardó en la hoja'); }
+    }
+    async function cargarConfigRemota() {
+      try {
+        const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 8000);
+        const resp = await fetch(APPS_SCRIPT_URL + '?config=1', { signal: ctl.signal });
+        clearTimeout(t);
+        const j = await resp.json();
+        if (!j || !j.success) return;
+        if (j.marca) { brandConfig = Object.assign({}, BRAND_BASE, j.marca); try { localStorage.setItem('avicola_brand', JSON.stringify(brandConfig)); } catch (e) {} }
+        if (j.redes) { Object.assign(REDES_SOCIALES, REDES_BASE, j.redes); try { localStorage.setItem('avicola_redes', JSON.stringify(j.redes)); } catch (e) {} }
+        aplicarConfiguracionMarca(); aplicarMarcaLogin(); aplicarRedesSociales();
+      } catch (e) { /* sin conexión: se usa la copia guardada en el dispositivo */ }
+    }
+    function limpiarFormUsuario() {
+      ['uEditId', 'uNombre', 'uUser', 'uPass'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('uRol').value = 'operador';
+      document.getElementById('userFormTitulo').innerText = 'Nuevo usuario';
+      document.getElementById('uPassLabel').innerText = 'Contraseña';
+    }
+    function editarUsuario(id) {
+      const u = usuariosCache.find(x => x.id === id); if (!u) return;
+      document.getElementById('uEditId').value = u.id;
+      document.getElementById('uNombre').value = u.nombre;
+      document.getElementById('uUser').value = u.usuario;
+      document.getElementById('uRol').value = u.rol;
+      document.getElementById('uPass').value = '';
+      document.getElementById('userFormTitulo').innerText = 'Editar usuario';
+      document.getElementById('uPassLabel').innerText = 'Nueva contraseña (vacío = no cambiar)';
+    }
+    function guardarUsuario() {
+      const id = document.getElementById('uEditId').value;
+      const nombre = document.getElementById('uNombre').value.trim();
+      const usuario = document.getElementById('uUser').value.trim();
+      const rol = document.getElementById('uRol').value;
+      const pass = document.getElementById('uPass').value;
+      const lista = leerUsuarios();
+      if (!nombre || !usuario) return mostrarToast('Completa nombre y usuario', 'aviso');
+      if (!id && pass.length < 4) return mostrarToast('La contraseña debe tener 4 caracteres o más', 'aviso');
+      if (id && pass && pass.length < 4) return mostrarToast('La contraseña debe tener 4 caracteres o más', 'aviso');
+      if (esServidor()) return guardarUsuarioServidor({ id, nombre, usuario, rol, pass });
+      if (lista.some(x => x.id !== id && x.usuario.toLowerCase() === usuario.toLowerCase())) return mostrarToast('Ese usuario ya existe', 'error');
+      if (id) {
+        const u = lista.find(x => x.id === id);
+        if (u.rol === 'admin' && rol !== 'admin' && lista.filter(x => x.rol === 'admin').length === 1) return mostrarToast('Debe quedar al menos un administrador', 'error');
+        u.nombre = nombre; u.usuario = usuario; u.rol = rol;
+        if (pass) u.pass = hashPass(pass);
+      } else {
+        lista.push({ id: 'u_' + Date.now(), nombre, usuario, rol, pass: hashPass(pass) });
+      }
+      guardarUsuarios(lista);
+      const yo = sesionActual();
+      if (yo) aplicarSesionUI(yo);
+      limpiarFormUsuario(); renderUsuarios();
+      mostrarToast(id ? 'Usuario actualizado' : 'Usuario creado', 'exito');
+    }
+    function eliminarUsuario(id) {
+      if (esServidor()) return eliminarUsuarioServidor(id);
+      const lista = leerUsuarios();
+      const u = lista.find(x => x.id === id); if (!u) return;
+      const yo = sesionActual();
+      if (yo && yo.id === id) return mostrarToast('No puedes eliminar tu propia cuenta', 'error');
+      if (u.rol === 'admin' && lista.filter(x => x.rol === 'admin').length === 1) return mostrarToast('Debe quedar al menos un administrador', 'error');
+      abrirCustomModal({
+        titulo: 'Eliminar usuario', subtitulo: 'Esta acción no se puede deshacer',
+        htmlBody: '¿Eliminar a <b>' + escU(u.nombre) + '</b>?', textoBtn: 'Eliminar', colorBtn: 'bg-rose-600 text-white',
+        onConfirm: () => { guardarUsuarios(lista.filter(x => x.id !== id)); renderUsuarios(); mostrarToast('Usuario eliminado', 'exito'); }
+      });
+    }
+    window.onload = () => { cargarConfigRemota(); authInit(iniciarApp); };
   </script>
 </body>
 </html>
