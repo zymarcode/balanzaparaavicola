@@ -59,16 +59,143 @@
       tr { page-break-inside: avoid !important; }
       .seccion-totales-reporte { page-break-inside: avoid !important; }
     }
+
+    /* ===== AJUSTES MÓVIL + LOGIN ===== */
+    main, section, .grid > *, .flex > * { min-width: 0; }
+    button { white-space: nowrap; line-height: 1.2; touch-action: manipulation; }
+    select { text-overflow: ellipsis; min-width: 0; }
+    img, canvas, svg { max-width: 100%; }
+    @media (max-width: 768px) {
+      html { font-size: 14px; }
+      input, select, textarea { font-size: 14px !important; }
+      .text-5xl { font-size: 2rem !important; line-height: 1.1 !important; }
+      .text-4xl { font-size: 1.75rem !important; line-height: 1.1 !important; }
+      .text-3xl { font-size: 1.5rem !important; line-height: 1.15 !important; }
+      .text-2xl { font-size: 1.25rem !important; line-height: 1.2 !important; }
+      main table { display: block; max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      main button { min-height: 34px; }
+      header h1 { max-width: 46vw; }
+    }
+    #authScreen { background: radial-gradient(ellipse at top, #1e293b 0%, #020617 70%); }
+    .auth-input { width: 100%; background: #020617; border: 1px solid #334155; border-radius: 12px; padding: 10px 12px; color: #fff; outline: none; font-size: 14px !important; }
+    .auth-input:focus { border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,.15); }
+    .auth-label { display: block; font-size: 11px; font-weight: 600; color: #94a3b8; margin-bottom: 4px; }
+    .auth-btn { width: 100%; padding: 11px; border-radius: 12px; font-weight: 800; font-size: 13px; background: #f59e0b; color: #020617; transition: .15s; }
+    .auth-btn:active { transform: scale(.97); }
+    .auth-btn.sec { background: #1e293b; color: #cbd5e1; font-weight: 700; }
   </style>
 </head>
 
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col pb-20 md:pb-6 antialiased selection:bg-amber-500 selection:text-slate-950">
 
+  
+  <!-- ===== LOGIN ===== -->
+  <div id="authScreen" class="fixed inset-0 z-[60] hidden overflow-y-auto no-imprimir">
+    <div class="min-h-full flex items-center justify-center p-4">
+      <div class="w-full max-w-sm bg-slate-900/90 border border-slate-800 rounded-3xl p-5 shadow-2xl space-y-4">
+        <div class="text-center space-y-1">
+          <div class="w-14 h-14 mx-auto rounded-2xl overflow-hidden bg-slate-800 border border-amber-500/40 flex items-center justify-center"><img id="authLogo" alt="Logo" class="w-full h-full object-cover"></div>
+          <h2 id="authTitulo" class="text-base font-black text-white">Control Galpón</h2>
+          <p id="authSub" class="text-[11px] text-slate-400">Inicia sesión para continuar</p>
+        </div>
+        <div><label class="auth-label" for="authUser">Usuario</label>
+          <input id="authUser" class="auth-input" autocomplete="username" autocapitalize="none" onkeydown="if(event.key==='Enter')document.getElementById('authPass').focus()"></div>
+        <div><label class="auth-label" for="authPass">Contraseña</label>
+          <div class="relative">
+            <input id="authPass" type="password" class="auth-input pr-11" autocomplete="current-password" onkeydown="if(event.key==='Enter')authLogin()">
+            <button type="button" onclick="const i=document.getElementById('authPass');i.type=i.type==='password'?'text':'password'" class="absolute right-1 top-1/2 -translate-y-1/2 px-2 py-1 text-sm" aria-label="Mostrar contraseña">👁</button>
+          </div></div>
+        <p id="authError" class="hidden text-[11px] font-semibold text-rose-300 bg-rose-950/60 border border-rose-700/50 rounded-xl px-3 py-2"></p>
+        <button type="button" class="auth-btn" onclick="authLogin()">Iniciar sesión</button>
+        <p id="authHint" class="hidden text-[10px] text-center text-slate-500"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CRUD USUARIOS ===== -->
+  <div id="usersModal" class="fixed inset-0 z-[55] hidden modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4 no-imprimir">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-down">
+      <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800">
+        <div class="min-w-0"><h3 class="text-sm font-bold text-white truncate">Usuarios</h3>
+          <p class="text-[11px] text-slate-400 truncate">Crear, editar y eliminar accesos</p></div>
+        <button type="button" onclick="cerrarUsuarios()" class="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-300 shrink-0">Cerrar</button>
+      </div>
+      <div class="overflow-y-auto p-4 space-y-4">
+        <div id="usersList" class="space-y-2"></div>
+        <div class="border-t border-slate-800 pt-3 space-y-3">
+          <h4 id="userFormTitulo" class="text-xs font-bold text-amber-400">Nuevo usuario</h4>
+          <input type="hidden" id="uEditId">
+          <div><label class="auth-label" for="uNombre">Nombre completo</label><input id="uNombre" class="auth-input"></div>
+          <div class="grid grid-cols-2 gap-2">
+            <div><label class="auth-label" for="uUser">Usuario</label><input id="uUser" class="auth-input" autocapitalize="none"></div>
+            <div><label class="auth-label" for="uRol">Rol</label>
+              <select id="uRol" class="auth-input"><option value="operador">Operador</option><option value="admin">Administrador</option></select></div>
+          </div>
+          <div><label class="auth-label" for="uPass" id="uPassLabel">Contraseña</label><input id="uPass" type="password" class="auth-input" autocomplete="new-password"></div>
+          <div class="flex gap-2">
+            <button type="button" class="auth-btn sec" onclick="limpiarFormUsuario()">Limpiar</button>
+            <button type="button" class="auth-btn" onclick="guardarUsuario()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- ===== AJUSTES DE MARCA (ADMIN) ===== -->
+  <div id="brandModal" class="fixed inset-0 z-[55] hidden modal-backdrop flex items-end sm:items-center justify-center p-0 sm:p-4 no-imprimir">
+    <div class="bg-slate-900 border border-slate-700 w-full sm:max-w-md max-h-[92vh] flex flex-col rounded-t-3xl sm:rounded-3xl shadow-2xl animate-slide-down">
+      <div class="flex items-center justify-between gap-2 px-4 py-3 border-b border-slate-800">
+        <div class="min-w-0"><h3 class="text-sm font-bold text-white truncate">Personalizar sistema</h3>
+          <p class="text-[11px] text-slate-400 truncate">Marca, login y redes sociales</p></div>
+        <button type="button" onclick="cerrarAjustesMarca()" class="px-3 py-1.5 bg-slate-800 rounded-xl text-xs font-bold text-slate-300 shrink-0">Cerrar</button>
+      </div>
+      <div class="overflow-y-auto p-4 space-y-5">
+        <div class="space-y-3">
+          <h4 class="text-xs font-bold text-amber-400">Marca</h4>
+          <div><label class="auth-label" for="cfgTitulo">Título del sistema</label><input id="cfgTitulo" class="auth-input" maxlength="40"></div>
+          <div><label class="auth-label" for="cfgSubtitulo">Subtítulo de la cabecera</label><input id="cfgSubtitulo" class="auth-input" maxlength="60"></div>
+          <div><label class="auth-label" for="cfgLoginSub">Subtítulo del login</label><input id="cfgLoginSub" class="auth-input" maxlength="60"></div>
+          <div>
+            <label class="auth-label" for="cfgLogoUrl">Logo (URL o archivo)</label>
+            <div class="flex items-center gap-2">
+              <div class="w-12 h-12 rounded-xl overflow-hidden bg-slate-800 border border-slate-700 shrink-0"><img id="cfgLogoPrev" alt="" class="w-full h-full object-cover"></div>
+              <input id="cfgLogoUrl" class="auth-input" placeholder="https://..." oninput="marcaSt.logoUrl=this.value.trim();prevMarca()">
+            </div>
+            <label class="auth-btn sec mt-2 block text-center cursor-pointer">Subir logo<input type="file" accept="image/*" class="hidden" onchange="elegirImagenMarca(this,'logoUrl',256)"></label>
+          </div>
+        </div>
+        <div class="space-y-3 border-t border-slate-800 pt-4">
+          <h4 class="text-xs font-bold text-amber-400">Fondo del login</h4>
+          <div id="cfgBgPrev" class="h-20 rounded-xl border border-slate-700 bg-slate-950 bg-cover bg-center"></div>
+          <input id="cfgBgUrl" class="auth-input" placeholder="https://... (imagen)" oninput="marcaSt.loginBg=this.value.trim();prevMarca()">
+          <div class="flex gap-2">
+            <label class="auth-btn sec text-center cursor-pointer">Subir imagen<input type="file" accept="image/*" class="hidden" onchange="elegirImagenMarca(this,'loginBg',1280)"></label>
+            <button type="button" class="auth-btn sec" onclick="marcaSt.loginBg='';document.getElementById('cfgBgUrl').value='';prevMarca()">Quitar fondo</button>
+          </div>
+        </div>
+        <div class="space-y-3 border-t border-slate-800 pt-4">
+          <h4 class="text-xs font-bold text-amber-400">Redes sociales</h4>
+          <p class="text-[11px] text-slate-500">Deja vacío para ocultar una red. En WhatsApp puedes escribir solo el número con código de país.</p>
+          <div><label class="auth-label" for="cfgRed_whatsapp">WhatsApp</label><input id="cfgRed_whatsapp" class="auth-input" placeholder="51999999999"></div>
+          <div><label class="auth-label" for="cfgRed_youtube">YouTube</label><input id="cfgRed_youtube" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_tiktok">TikTok</label><input id="cfgRed_tiktok" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_instagram">Instagram</label><input id="cfgRed_instagram" class="auth-input" placeholder="https://..."></div>
+          <div><label class="auth-label" for="cfgRed_telegram">Telegram</label><input id="cfgRed_telegram" class="auth-input" placeholder="https://..."></div>
+        </div>
+        <div class="flex gap-2 pb-1">
+          <button type="button" class="auth-btn sec" onclick="restablecerMarca()">Restablecer</button>
+          <button type="button" class="auth-btn" onclick="guardarAjustesMarca()">Guardar cambios</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- TOASTS DE NOTIFICACIÓN FLOTANTES -->
-  <div id="toastContainer" class="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
+  <div id="toastContainer" class="fixed bottom-20 right-3 left-3 sm:left-auto sm:right-6 sm:bottom-6 z-[70] flex flex-col gap-2 pointer-events-none max-w-sm"></div>
 
   <!-- MODAL DE DIÁLOGO / EDICIÓN CRUD -->
-  <div id="customModal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-3 sm:p-4 no-imprimir">
+  <div id="customModal" class="fixed inset-0 modal-backdrop z-[65] hidden flex items-center justify-center p-3 sm:p-4 no-imprimir">
     <div class="bg-slate-900 border border-slate-700 w-full max-w-sm rounded-3xl p-4 sm:p-6 shadow-2xl animate-slide-down space-y-4">
       <div class="flex items-center gap-3">
         <div id="modalIconCont" class="w-10 h-10 rounded-2xl flex items-center justify-center text-xl bg-amber-500/20 text-amber-400 shrink-0">
@@ -135,6 +262,8 @@
         <button type="button" onclick="abrirAjustesMarca()" title="Personalizar Marca (Título, Subtítulo y Logo URL)" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 transition flex items-center gap-1">
           <span>⚙️</span> <span class="hidden sm:inline">Marca</span>
         </button>
+        <button type="button" id="btnUsuarios" onclick="abrirUsuarios()" title="Usuarios" class="hidden p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-700 text-sky-300 border border-slate-700 transition items-center gap-1"><span>👥</span> <span class="hidden sm:inline">Usuarios</span></button>
+        <button type="button" onclick="authLogout()" title="Cerrar sesión" class="p-1.5 sm:px-2.5 sm:py-1.5 rounded-xl text-xs font-bold bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-700 transition flex items-center gap-1"><span>⎋</span> <span class="hidden sm:inline">Salir</span></button>
       </div>
 
     </div>
@@ -849,11 +978,13 @@
       instagram: "https://www.instagram.com/tuusuario",
       telegram: "https://t.me/tuusuario"
     };
+    const REDES_BASE = Object.assign({}, REDES_SOCIALES);
+    try { Object.assign(REDES_SOCIALES, JSON.parse(localStorage.getItem('avicola_redes') || '{}')); } catch (e) {}
 
     function aplicarRedesSociales() {
       document.querySelectorAll('[data-red]').forEach(a => {
         const url = REDES_SOCIALES[a.dataset.red];
-        if (url) a.href = url;
+        if (url) { a.href = url; a.classList.remove('hidden'); }
         else a.classList.add('hidden');
       });
       const fa = document.getElementById('footerAnio');
@@ -874,8 +1005,11 @@
     let brandConfig = JSON.parse(localStorage.getItem('avicola_brand')) || {
       titulo: 'Control Galpón IoT',
       subtitulo: 'Pesaje & Liquidación por Campaña',
-      logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80'
+      logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80',
+      loginSubtitulo: 'Inicia sesión para continuar',
+      loginBg: ''
     };
+    const BRAND_BASE = { titulo: 'Control Galpón IoT', subtitulo: 'Pesaje & Liquidación por Campaña', logoUrl: 'https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=100&q=80', loginSubtitulo: 'Inicia sesión para continuar', loginBg: '' };
 
     function obtenerFechaIsoLocalActual() {
       const now = new Date();
@@ -1153,32 +1287,109 @@
       if (footMarca) footMarca.innerText = brandConfig.titulo;
     }
 
+    let marcaSt = {};
+    function urlMarcaOk(u) { return !u || /^(https?:\/\/|data:image\/)/i.test(u); }
+    function urlRedOk(k, u) {
+      if (!u) return '';
+      if (k === 'whatsapp' && /^\+?\d{8,15}$/.test(u)) return 'https://wa.me/' + u.replace('+', '');
+      return /^https?:\/\//i.test(u) ? u : null;
+    }
+    function aplicarMarcaLogin() {
+      const bc = brandConfig;
+      document.getElementById('authTitulo').innerText = bc.titulo || 'Control Galpón';
+      document.getElementById('authSub').innerText = bc.loginSubtitulo || 'Inicia sesión para continuar';
+      document.getElementById('authLogo').src = bc.logoUrl || BRAND_BASE.logoUrl;
+      const sc = document.getElementById('authScreen');
+      sc.style.background = bc.loginBg ? `linear-gradient(rgba(2,6,23,.6),rgba(2,6,23,.85)), url("${bc.loginBg.replace(/"/g, '%22')}") center/cover no-repeat` : '';
+    }
+    function prevMarca() {
+      document.getElementById('cfgLogoPrev').src = marcaSt.logoUrl || BRAND_BASE.logoUrl;
+      const bg = document.getElementById('cfgBgPrev');
+      bg.style.backgroundImage = marcaSt.loginBg ? `url("${marcaSt.loginBg.replace(/"/g, '%22')}")` : 'none';
+    }
+    function archivoADataUrl(file, maxLado) {
+      return new Promise((ok, fail) => {
+        const r = new FileReader();
+        r.onerror = () => fail();
+        r.onload = () => {
+          const img = new Image();
+          img.onerror = () => fail();
+          img.onload = () => {
+            const k = Math.min(1, maxLado / Math.max(img.width, img.height));
+            const c = document.createElement('canvas');
+            c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+            c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+            ok(c.toDataURL(file.type === 'image/png' ? 'image/png' : 'image/jpeg', 0.75));
+          };
+          img.src = r.result;
+        };
+        r.readAsDataURL(file);
+      });
+    }
+    async function elegirImagenMarca(input, clave, maxLado) {
+      const f = input.files && input.files[0];
+      input.value = '';
+      if (!f) return;
+      if (!/^image\//.test(f.type)) return mostrarToast('Elige un archivo de imagen', 'aviso');
+      try {
+        marcaSt[clave] = await archivoADataUrl(f, maxLado);
+        document.getElementById(clave === 'logoUrl' ? 'cfgLogoUrl' : 'cfgBgUrl').value = '';
+        prevMarca();
+      } catch (e) { mostrarToast('No se pudo leer la imagen', 'error'); }
+    }
     function abrirAjustesMarca() {
+      const u = sesionActual();
+      if (!u || u.rol !== 'admin') return mostrarToast('Solo el administrador puede personalizar', 'aviso');
+      marcaSt = { logoUrl: brandConfig.logoUrl, loginBg: brandConfig.loginBg || '' };
+      const esUrl = v => v && !/^data:/i.test(v) ? v : '';
+      document.getElementById('cfgTitulo').value = brandConfig.titulo || '';
+      document.getElementById('cfgSubtitulo').value = brandConfig.subtitulo || '';
+      document.getElementById('cfgLoginSub').value = brandConfig.loginSubtitulo || '';
+      document.getElementById('cfgLogoUrl').value = esUrl(brandConfig.logoUrl);
+      document.getElementById('cfgBgUrl').value = esUrl(brandConfig.loginBg);
+      Object.keys(REDES_SOCIALES).forEach(k => { const e = document.getElementById('cfgRed_' + k); if (e) e.value = REDES_SOCIALES[k] || ''; });
+      prevMarca();
+      document.getElementById('brandModal').classList.remove('hidden');
+    }
+    function cerrarAjustesMarca() { document.getElementById('brandModal').classList.add('hidden'); }
+    function guardarAjustesMarca() {
+      const titulo = document.getElementById('cfgTitulo').value.trim();
+      if (!titulo) return mostrarToast('El título no puede estar vacío', 'aviso');
+      if (!urlMarcaOk(marcaSt.logoUrl) || !urlMarcaOk(marcaSt.loginBg)) return mostrarToast('Las imágenes deben empezar con https://', 'error');
+      const redes = {};
+      for (const k of Object.keys(REDES_BASE)) {
+        const v = urlRedOk(k, document.getElementById('cfgRed_' + k).value.trim());
+        if (v === null) return mostrarToast('Enlace de ' + k + ' no válido (usa https://)', 'error');
+        redes[k] = v;
+      }
+      const nuevo = {
+        titulo,
+        subtitulo: document.getElementById('cfgSubtitulo').value.trim(),
+        loginSubtitulo: document.getElementById('cfgLoginSub').value.trim() || BRAND_BASE.loginSubtitulo,
+        logoUrl: marcaSt.logoUrl || BRAND_BASE.logoUrl,
+        loginBg: marcaSt.loginBg || ''
+      };
+      try {
+        localStorage.setItem('avicola_brand', JSON.stringify(nuevo));
+        localStorage.setItem('avicola_redes', JSON.stringify(redes));
+      } catch (e) { return mostrarToast('Imagen demasiado pesada, usa una más pequeña', 'error'); }
+      brandConfig = nuevo;
+      Object.assign(REDES_SOCIALES, redes);
+      aplicarConfiguracionMarca(); aplicarMarcaLogin(); aplicarRedesSociales();
+      cerrarAjustesMarca();
+      mostrarToast('Cambios guardados', 'exito');
+    }
+    function restablecerMarca() {
       abrirCustomModal({
-        titulo: 'Personalizar Marca',
-        subtitulo: 'Ajustes Visuales',
-        htmlBody: `
-          <div class="space-y-3">
-            <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">Título del Sistema:</label>
-              <input id="cfgTitulo" type="text" value="${brandConfig.titulo}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-            </div>
-            <div>
-              <label class="block text-[11px] text-slate-400 font-semibold mb-1">URL del Logo (Web):</label>
-              <input id="cfgLogoUrl" type="url" value="${brandConfig.logoUrl}" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-white outline-none focus:border-amber-400">
-            </div>
-          </div>
-        `,
-        textoBtn: 'Guardar',
-        colorBtn: 'bg-amber-500 hover:bg-amber-400 text-slate-950',
+        titulo: 'Restablecer', subtitulo: 'Vuelve a los valores originales',
+        htmlBody: 'Se perderán el logo, textos, fondo y redes personalizados.', textoBtn: 'Restablecer', colorBtn: 'bg-rose-600 text-white',
         onConfirm: () => {
-          const tit = document.getElementById('cfgTitulo').value.trim();
-          const logo = document.getElementById('cfgLogoUrl').value.trim();
-          if (tit) brandConfig.titulo = tit;
-          if (logo) brandConfig.logoUrl = logo;
-          localStorage.setItem('avicola_brand', JSON.stringify(brandConfig));
-          aplicarConfiguracionMarca();
-          mostrarToast('Marca actualizada', 'exito');
+          localStorage.removeItem('avicola_brand'); localStorage.removeItem('avicola_redes');
+          brandConfig = Object.assign({}, BRAND_BASE);
+          Object.keys(REDES_SOCIALES).forEach(k => delete REDES_SOCIALES[k]);
+          Object.assign(REDES_SOCIALES, REDES_BASE);
+          aplicarConfiguracionMarca(); aplicarMarcaLogin(); aplicarRedesSociales();
+          cerrarAjustesMarca(); mostrarToast('Valores restablecidos', 'exito');
         }
       });
     }
@@ -2631,7 +2842,7 @@
       });
     }
 
-    window.onload = () => {
+    function iniciarApp() {
       aplicarConfiguracionMarca();
       aplicarRedesSociales();
       cargarSelectorCampanas();
@@ -2639,6 +2850,154 @@
       cambiarModulo('lotes');
       sincronizarDesdeGoogleSheets();
     };
+
+    // ===== AUTENTICACIÓN + CRUD DE USUARIOS =====
+    const AUTH_USERS_KEY = 'avicola_users';
+    const AUTH_SESSION_KEY = 'avicola_session';
+    let authCallback = null;
+
+    function hashPass(txt) {
+      let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+      for (let i = 0; i < txt.length; i++) {
+        const c = txt.charCodeAt(i);
+        h1 = Math.imul(h1 ^ c, 2654435761);
+        h2 = Math.imul(h2 ^ c, 1597334677);
+      }
+      h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+      h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+      return 'h' + (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+    }
+    const escU = s => String(s == null ? '' : s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    function leerUsuarios() {
+      try { const u = JSON.parse(localStorage.getItem(AUTH_USERS_KEY)); if (Array.isArray(u) && u.length) return u; } catch (e) {}
+      const base = [{ id: 'u_' + Date.now(), nombre: 'Administrador', usuario: 'admin', pass: hashPass('admin123'), rol: 'admin' }];
+      localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(base));
+      return base;
+    }
+    function guardarUsuarios(l) { localStorage.setItem(AUTH_USERS_KEY, JSON.stringify(l)); }
+    function sesionActual() {
+      try {
+        const s = JSON.parse(localStorage.getItem(AUTH_SESSION_KEY));
+        if (!s) return null;
+        return leerUsuarios().find(u => u.id === s.id) || null;
+      } catch (e) { return null; }
+    }
+    function aplicarSesionUI(u) {
+      const b = document.getElementById('btnUsuarios');
+      b.classList.toggle('hidden', u.rol !== 'admin');
+      b.classList.toggle('flex', u.rol === 'admin');
+      const m = document.querySelector('[onclick="abrirAjustesMarca()"]');
+      if (m) m.style.display = u.rol === 'admin' ? '' : 'none';
+    }
+    function authInit(cb) {
+      authCallback = cb;
+      const lista = leerUsuarios();
+      const u = sesionActual();
+      if (u) { aplicarSesionUI(u); cb(); return; }
+      aplicarMarcaLogin();
+      const hint = document.getElementById('authHint');
+      if (lista.length === 1 && lista[0].usuario === 'admin' && lista[0].pass === hashPass('admin123')) {
+        hint.innerText = 'Acceso inicial: admin / admin123. Cámbialo al entrar.';
+        hint.classList.remove('hidden');
+      }
+      document.getElementById('authScreen').classList.remove('hidden');
+      setTimeout(() => document.getElementById('authUser').focus(), 100);
+    }
+    function authLogin() {
+      const nom = document.getElementById('authUser').value.trim().toLowerCase();
+      const pass = document.getElementById('authPass').value;
+      const err = document.getElementById('authError');
+      const u = leerUsuarios().find(x => x.usuario.toLowerCase() === nom && x.pass === hashPass(pass));
+      if (!u) { err.innerText = 'Usuario o contraseña incorrectos.'; err.classList.remove('hidden'); return; }
+      err.classList.add('hidden');
+      localStorage.setItem(AUTH_SESSION_KEY, JSON.stringify({ id: u.id }));
+      document.getElementById('authPass').value = '';
+      document.getElementById('authScreen').classList.add('hidden');
+      aplicarSesionUI(u);
+      mostrarToast('Bienvenido, ' + escU(u.nombre), 'exito');
+      if (authCallback) { const cb = authCallback; authCallback = null; cb(); }
+    }
+    function authLogout() {
+      abrirCustomModal({
+        titulo: 'Cerrar sesión', subtitulo: 'Tus datos quedan guardados',
+        htmlBody: '¿Deseas salir del sistema?', textoBtn: 'Salir', colorBtn: 'bg-rose-600 text-white',
+        onConfirm: () => { localStorage.removeItem(AUTH_SESSION_KEY); location.reload(); }
+      });
+    }
+    function abrirUsuarios() {
+      const u = sesionActual();
+      if (!u || u.rol !== 'admin') { mostrarToast('Solo el administrador gestiona usuarios', 'aviso'); return; }
+      limpiarFormUsuario(); renderUsuarios();
+      document.getElementById('usersModal').classList.remove('hidden');
+    }
+    function cerrarUsuarios() { document.getElementById('usersModal').classList.add('hidden'); }
+    function renderUsuarios() {
+      const yo = sesionActual();
+      document.getElementById('usersList').innerHTML = leerUsuarios().map(u => `
+        <div class="flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-2xl p-2.5">
+          <div class="w-9 h-9 rounded-xl bg-slate-800 flex items-center justify-center text-sm shrink-0">${u.rol === 'admin' ? '🛡️' : '👤'}</div>
+          <div class="min-w-0 flex-1">
+            <p class="text-xs font-bold text-white truncate">${escU(u.nombre)}${yo && yo.id === u.id ? ' <span class="text-emerald-400">(tú)</span>' : ''}</p>
+            <p class="text-[11px] text-slate-400 truncate">${escU(u.usuario)} · ${u.rol === 'admin' ? 'Administrador' : 'Operador'}</p>
+          </div>
+          <button type="button" onclick="editarUsuario('${u.id}')" class="p-2 bg-slate-800 rounded-xl text-xs border border-slate-700 shrink-0" title="Editar">✏️</button>
+          <button type="button" onclick="eliminarUsuario('${u.id}')" class="p-2 bg-rose-950/80 rounded-xl text-xs border border-rose-700 shrink-0" title="Eliminar">🗑️</button>
+        </div>`).join('');
+    }
+    function limpiarFormUsuario() {
+      ['uEditId', 'uNombre', 'uUser', 'uPass'].forEach(id => document.getElementById(id).value = '');
+      document.getElementById('uRol').value = 'operador';
+      document.getElementById('userFormTitulo').innerText = 'Nuevo usuario';
+      document.getElementById('uPassLabel').innerText = 'Contraseña';
+    }
+    function editarUsuario(id) {
+      const u = leerUsuarios().find(x => x.id === id); if (!u) return;
+      document.getElementById('uEditId').value = u.id;
+      document.getElementById('uNombre').value = u.nombre;
+      document.getElementById('uUser').value = u.usuario;
+      document.getElementById('uRol').value = u.rol;
+      document.getElementById('uPass').value = '';
+      document.getElementById('userFormTitulo').innerText = 'Editar usuario';
+      document.getElementById('uPassLabel').innerText = 'Nueva contraseña (vacío = no cambiar)';
+    }
+    function guardarUsuario() {
+      const id = document.getElementById('uEditId').value;
+      const nombre = document.getElementById('uNombre').value.trim();
+      const usuario = document.getElementById('uUser').value.trim();
+      const rol = document.getElementById('uRol').value;
+      const pass = document.getElementById('uPass').value;
+      const lista = leerUsuarios();
+      if (!nombre || !usuario) return mostrarToast('Completa nombre y usuario', 'aviso');
+      if (!id && pass.length < 4) return mostrarToast('La contraseña debe tener 4 caracteres o más', 'aviso');
+      if (id && pass && pass.length < 4) return mostrarToast('La contraseña debe tener 4 caracteres o más', 'aviso');
+      if (lista.some(x => x.id !== id && x.usuario.toLowerCase() === usuario.toLowerCase())) return mostrarToast('Ese usuario ya existe', 'error');
+      if (id) {
+        const u = lista.find(x => x.id === id);
+        if (u.rol === 'admin' && rol !== 'admin' && lista.filter(x => x.rol === 'admin').length === 1) return mostrarToast('Debe quedar al menos un administrador', 'error');
+        u.nombre = nombre; u.usuario = usuario; u.rol = rol;
+        if (pass) u.pass = hashPass(pass);
+      } else {
+        lista.push({ id: 'u_' + Date.now(), nombre, usuario, rol, pass: hashPass(pass) });
+      }
+      guardarUsuarios(lista);
+      const yo = sesionActual();
+      if (yo) aplicarSesionUI(yo);
+      limpiarFormUsuario(); renderUsuarios();
+      mostrarToast(id ? 'Usuario actualizado' : 'Usuario creado', 'exito');
+    }
+    function eliminarUsuario(id) {
+      const lista = leerUsuarios();
+      const u = lista.find(x => x.id === id); if (!u) return;
+      const yo = sesionActual();
+      if (yo && yo.id === id) return mostrarToast('No puedes eliminar tu propia cuenta', 'error');
+      if (u.rol === 'admin' && lista.filter(x => x.rol === 'admin').length === 1) return mostrarToast('Debe quedar al menos un administrador', 'error');
+      abrirCustomModal({
+        titulo: 'Eliminar usuario', subtitulo: 'Esta acción no se puede deshacer',
+        htmlBody: '¿Eliminar a <b>' + escU(u.nombre) + '</b>?', textoBtn: 'Eliminar', colorBtn: 'bg-rose-600 text-white',
+        onConfirm: () => { guardarUsuarios(lista.filter(x => x.id !== id)); renderUsuarios(); mostrarToast('Usuario eliminado', 'exito'); }
+      });
+    }
+    window.onload = () => authInit(iniciarApp);
   </script>
 </body>
 </html>
