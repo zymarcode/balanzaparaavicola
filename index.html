@@ -112,6 +112,16 @@
       body.print-ticket #modalTicket button { display: none !important; }
       body.print-ticket #modalReporteDetallado, body.print-ticket #modalReporteDetallado * { display: none !important; visibility: hidden !important; }
     }
+  
+    /* ARRASTRAR PESADAS ENTRE COLUMNAS */
+    .drag-handle { cursor: grab; touch-action: none; user-select: none; -webkit-user-select: none; }
+    .drag-handle:hover { color: #fbbf24; }
+    .drag-ghost { position: fixed; z-index: 9999; pointer-events: none; padding: 4px 12px; border-radius: 10px;
+      font: 700 13px ui-monospace, monospace; color: #0f172a; background: #fbbf24; box-shadow: 0 8px 24px rgba(0,0,0,.5);
+      transform: translate(-50%, -120%); opacity: .95; }
+    .drag-origen { opacity: .35; }
+    .col-drop-ok { outline: 2px dashed #38bdf8; outline-offset: -2px; background-color: rgba(56,189,248,.08) !important; }
+    body.arrastrando, body.arrastrando * { cursor: grabbing !important; user-select: none !important; }
   </style>
 </head>
 
@@ -2045,6 +2055,122 @@
       reader.readAsText(file);
     }
 
+    // =================== MOVER PESADAS ENTRE COLUMNAS (ARRASTRAR) ===================
+    const COLS_DRAG = { 'colTablaTara': 'TARA', 'colTablaPollos': 'CON_POLLOS', 'colTablaSobrante': 'TARA_SOBRANTE' };
+    const NOMBRE_COL = { 'TARA': 'Tara Inicial', 'CON_POLLOS': 'Con Pollos', 'TARA_SOBRANTE': 'Sobrante' };
+    let dragEstado = null;
+
+    function listaPorTipo(diaData, tipo) {
+      if (tipo === 'CON_POLLOS') return diaData.pollos;
+      if (tipo === 'TARA_SOBRANTE') { if (!diaData.sobrante) diaData.sobrante = []; return diaData.sobrante; }
+      return diaData.tara;
+    }
+
+    function columnaBajoPuntero(x, y) {
+      const el = document.elementFromPoint(x, y);
+      const col = el && el.closest ? el.closest('#colTablaTara, #colTablaPollos, #colTablaSobrante') : null;
+      return col ? { col, tipo: COLS_DRAG[col.id] } : null;
+    }
+
+    function limpiarMarcasDrag() {
+      Object.keys(COLS_DRAG).forEach(id => { const e = document.getElementById(id); if (e) e.classList.remove('col-drop-ok'); });
+    }
+
+    function iniciarArrastre(ev) {
+      const handle = ev.target.closest('.drag-handle');
+      if (!handle || (ev.pointerType === 'mouse' && ev.button !== 0)) return;
+      const fila = handle.closest('tr[data-tipo]');
+      if (!fila) return;
+      ev.preventDefault();
+      dragEstado = {
+        fila, tipo: fila.dataset.tipo, index: parseInt(fila.dataset.index, 10),
+        x0: ev.clientX, y0: ev.clientY, activo: false, ghost: null, pid: ev.pointerId
+      };
+      document.addEventListener('pointermove', moverArrastre);
+      document.addEventListener('pointerup', soltarArrastre);
+      document.addEventListener('pointercancel', cancelarArrastre);
+    }
+
+    function moverArrastre(ev) {
+      const d = dragEstado;
+      if (!d || ev.pointerId !== d.pid) return;
+      if (!d.activo) {
+        if (Math.hypot(ev.clientX - d.x0, ev.clientY - d.y0) < 6) return;
+        d.activo = true;
+        const c = database[campanaActiva][clienteActivo];
+        const val = listaPorTipo(c.dias[jornadaActiva], d.tipo)[d.index];
+        d.ghost = document.createElement('div');
+        d.ghost.className = 'drag-ghost';
+        d.ghost.textContent = (typeof val === 'number' ? val.toFixed(2) : val) + ' kg';
+        document.body.appendChild(d.ghost);
+        d.fila.classList.add('drag-origen');
+        document.body.classList.add('arrastrando');
+      }
+      d.ghost.style.left = ev.clientX + 'px';
+      d.ghost.style.top = ev.clientY + 'px';
+      limpiarMarcasDrag();
+      const dest = columnaBajoPuntero(ev.clientX, ev.clientY);
+      if (dest && dest.tipo !== d.tipo) dest.col.classList.add('col-drop-ok');
+      // auto-scroll de la ventana en pantallas táctiles
+      if (ev.clientY < 60) window.scrollBy(0, -12);
+      else if (ev.clientY > window.innerHeight - 60) window.scrollBy(0, 12);
+    }
+
+    function terminarArrastre() {
+      document.removeEventListener('pointermove', moverArrastre);
+      document.removeEventListener('pointerup', soltarArrastre);
+      document.removeEventListener('pointercancel', cancelarArrastre);
+      if (dragEstado) {
+        if (dragEstado.ghost) dragEstado.ghost.remove();
+        dragEstado.fila.classList.remove('drag-origen');
+      }
+      document.body.classList.remove('arrastrando');
+      limpiarMarcasDrag();
+    }
+
+    function cancelarArrastre() { terminarArrastre(); dragEstado = null; }
+
+    function soltarArrastre(ev) {
+      const d = dragEstado;
+      if (!d || ev.pointerId !== d.pid) return;
+      const dest = d.activo ? columnaBajoPuntero(ev.clientX, ev.clientY) : null;
+      terminarArrastre();
+      dragEstado = null;
+      if (d.activo && dest && dest.tipo !== d.tipo) moverItem(d.tipo, d.index, dest.tipo);
+    }
+
+    // Mueve una pesada de una columna a otra (local + Google Sheets)
+    async function moverItem(tipoOrigen, index, tipoDestino) {
+      if (tipoOrigen === tipoDestino) return;
+      const c = database[campanaActiva][clienteActivo];
+      const diaData = c.dias[jornadaActiva];
+      const origen = listaPorTipo(diaData, tipoOrigen);
+      const destino = listaPorTipo(diaData, tipoDestino);
+      const peso = origen[index];
+      if (peso === undefined) return;
+
+      origen.splice(index, 1);
+      destino.push(peso);
+      guardarEnLocalStorage();
+      renderizarTablas();
+
+      try {
+        await enviarASheets({ action: 'ELIMINAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva, tipo: tipoOrigen, index: index });
+        await enviarASheets({
+          action: 'REGISTRAR_PESADA', campana: campanaActiva, cliente: c.nombre, jornada: jornadaActiva,
+          tipo: tipoDestino, peso: peso,
+          precioKg: document.getElementById('txtPrecio').value.replace(',', '.'),
+          fecha: obtenerFechaSheets()
+        });
+        mostrarToast(`${peso.toFixed(2)} kg movido a ${NOMBRE_COL[tipoDestino]}`, 'exito');
+      } catch (e) {
+        mostrarToast(`${peso.toFixed(2)} kg movido solo en la app`, 'aviso');
+      }
+    }
+
+    document.addEventListener('pointerdown', iniciarArrastre);
+    // =================================================================================
+
     function editarItem(tipo, index) {
       const c = database[campanaActiva][clienteActivo];
       const diaData = c.dias[jornadaActiva];
@@ -2107,8 +2233,8 @@
       const tT = document.getElementById('tablaTaraBody');
       tT.innerHTML = '';
       diaData.tara.forEach((val, i) => {
-        tT.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tT.innerHTML += `<tr data-tipo="TARA" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-amber-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('TARA', ${i})" class="text-amber-400 font-bold hover:text-amber-300 p-0.5">✏️</button>
@@ -2121,8 +2247,8 @@
       const tP = document.getElementById('tablaPollosBody');
       tP.innerHTML = '';
       diaData.pollos.forEach((val, i) => {
-        tP.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tP.innerHTML += `<tr data-tipo="CON_POLLOS" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-sky-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('CON_POLLOS', ${i})" class="text-sky-400 font-bold hover:text-sky-300 p-0.5">✏️</button>
@@ -2135,8 +2261,8 @@
       const tS = document.getElementById('tablaSobranteBody');
       tS.innerHTML = '';
       diaData.sobrante.forEach((val, i) => {
-        tS.innerHTML += `<tr>
-          <td class="p-1 text-slate-500">${i+1}</td>
+        tS.innerHTML += `<tr data-tipo="TARA_SOBRANTE" data-index="${i}">
+          <td class="p-1 text-slate-500 drag-handle" title="Arrastra a otra columna">${i+1}</td>
           <td class="p-1 text-rose-300 font-bold">${val.toFixed(2)}</td>
           <td class="p-1 flex items-center justify-center gap-1">
             <button type="button" onclick="editarItem('TARA_SOBRANTE', ${i})" class="text-rose-400 font-bold hover:text-rose-300 p-0.5">✏️</button>
