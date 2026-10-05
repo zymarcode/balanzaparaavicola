@@ -104,6 +104,14 @@
     #authScreen .auth-input { background: rgba(2,6,23,.55); border-color: rgba(255,255,255,.14); }
     #authScreen .auth-btn:not(.sec) { background: linear-gradient(135deg, #fbbf24, #f59e0b); box-shadow: 0 8px 20px rgba(245,158,11,.3); }
     #authScreen .auth-btn:disabled { opacity: .6; }
+    @media print {
+      body.print-ticket #modalTicket:not(.hidden), body.print-ticket #modalTicket:not(.hidden) * { visibility: visible !important; }
+      body.print-ticket #modalTicket:not(.hidden).no-imprimir { display: block !important; }
+      body.print-ticket #modalTicket:not(.hidden) { position: absolute !important; left: 0; top: 0; width: 100%; padding: 0 !important; background: none !important; backdrop-filter: none !important; }
+      body.print-ticket #modalTicket:not(.hidden) > div { max-width: 80mm !important; margin: 0 auto; box-shadow: none !important; background: #fff !important; border-radius: 0 !important; animation: none !important; }
+      body.print-ticket #modalTicket button { display: none !important; }
+      body.print-ticket #modalReporteDetallado, body.print-ticket #modalReporteDetallado * { display: none !important; visibility: hidden !important; }
+    }
   </style>
 </head>
 
@@ -661,19 +669,15 @@
           </div>
         </div>
 
-        <!-- BOTONES DE COMPROBANTES Y DRIVE -->
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-2">
+        <!-- BOTONES DE COMPROBANTES -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
           <button type="button" onclick="abrirTicketTermico()" class="py-3 bg-slate-800 hover:bg-slate-700 active:scale-95 border border-slate-700 rounded-xl text-xs sm:text-sm font-bold text-slate-200 transition text-center flex items-center justify-center gap-1.5 shadow">
             🧾 Ver Ticket de Caja
           </button>
           <button type="button" onclick="abrirReporteDetalladoPDF()" class="py-3 bg-purple-700 hover:bg-purple-600 active:scale-95 rounded-xl text-xs sm:text-sm font-bold text-white transition text-center flex items-center justify-center gap-1.5 shadow">
             📄 Reporte Detallado PDF
           </button>
-          <button type="button" onclick="guardarTicketEnGoogleDrive()" id="btnGuardarDriveTicket" class="py-3 bg-sky-600 hover:bg-sky-500 active:scale-95 rounded-xl text-xs sm:text-sm font-bold text-white transition text-center flex items-center justify-center gap-1.5 shadow">
-            ☁️ Guardar en Drive
-          </button>
         </div>
-        <div id="driveTicketFeedback" class="text-center text-xs font-bold text-sky-400 min-h-[1rem] truncate"></div>
 
       </div>
 
@@ -753,7 +757,12 @@
           </h2>
           <span class="text-[11px] text-slate-400 font-mono">Desglose exacto sin agrupaciones ficticias</span>
         </div>
-        
+        <div class="flex flex-col sm:flex-row gap-2">
+          <select id="selFiltroCamp" onchange="filtrarTablaVentas()" class="sm:w-56 bg-slate-950 border border-amber-500/60 text-amber-300 font-bold text-xs rounded-xl px-3 py-2 outline-none" aria-label="Filtrar por campaña"><option value="">Todas las campañas</option></select>
+          <input id="buscarVentas" type="search" oninput="filtrarTablaVentas()" placeholder="Buscar comprador, fecha, entrega..." autocomplete="off" class="flex-1 min-w-0 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-amber-400" aria-label="Buscar en ventas">
+        </div>
+        <p id="resumenVentas" class="text-[11px] text-slate-400 font-mono"></p>
+
         <div class="overflow-x-auto w-full">
           <table class="w-full text-xs sm:text-sm text-left font-mono whitespace-nowrap">
             <thead class="bg-slate-950 text-slate-300 border-b border-slate-800 text-[11px]">
@@ -845,8 +854,7 @@
         <span id="tktMontoPagar" class="text-2xl font-black text-slate-900">S/. 0.00</span>
       </div>
       <div class="pt-2 border-t border-dashed border-slate-400 flex flex-col gap-2">
-        <button type="button" onclick="window.print()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
-        <button type="button" onclick="guardarTicketEnGoogleDrive()" class="w-full py-2 bg-sky-600 text-white rounded-xl text-xs font-bold font-sans">☁ Guardar en Drive</button>
+        <button type="button" onclick="imprimirTicket()" class="w-full py-2 bg-slate-950 text-white rounded-xl text-xs font-bold font-sans">🖨️ Imprimir Ticket</button>
       </div>
     </div>
   </div>
@@ -2292,6 +2300,16 @@
 
     function cerrarTicket() {
       document.getElementById('modalTicket').classList.add('hidden');
+      document.body.classList.remove('print-ticket');
+    }
+
+    // Imprime solo el ticket (el resto de la pantalla se oculta en la hoja de impresión)
+    function imprimirTicket() {
+      document.body.classList.add('print-ticket');
+      const fin = () => { document.body.classList.remove('print-ticket'); window.removeEventListener('afterprint', fin); };
+      window.addEventListener('afterprint', fin);
+      setTimeout(fin, 60000);
+      setTimeout(() => window.print(), 80);
     }
 
     // REPORTE DETALLADO COMPLETO EN HOJA A4
@@ -2567,7 +2585,7 @@
             let fechaVenta = dData.fechaHora ? dData.fechaHora.replace('T', ' ') : '-';
 
             tbody.innerHTML += `
-              <tr>
+              <tr data-camp="${nombreCampana.replace(/"/g, '&quot;')}" data-neto="${sNeto}" data-total="${sTotal}">
                 <td class="p-2 sm:p-3 font-bold text-amber-400">${nombreCampana}</td>
                 <td class="p-2 sm:p-3 text-slate-200 font-semibold">${nombreCliente}</td>
                 <td class="p-2 sm:p-3 text-center text-emerald-400 font-mono">${fechaVenta}</td>
@@ -2584,6 +2602,9 @@
         });
       });
 
+      cargarFiltroCampanas(Object.keys(campanasTotales));
+      filtrarTablaVentas();
+
       document.getElementById('dashTotalFacturado').innerText = `S/. ${facturacionTotal.toFixed(2)}`;
       document.getElementById('dashTotalNetoKg').innerText = `${kilosNetosGlobal.toFixed(2)} kg`;
       document.getElementById('dashTotalCampanas').innerText = Object.keys(database).length;
@@ -2595,6 +2616,33 @@
       const campanaDinero = campanaLabels.map(c => parseFloat(campanasTotales[c].soles.toFixed(2)));
 
       actualizarGraficosCampanas(campanaLabels, campanaNetos, campanaTaras, campanaDinero);
+    }
+
+    // Filtro y buscador del cuadro comparativo (solo afecta a la tabla)
+    function cargarFiltroCampanas(nombres) {
+      const sel = document.getElementById('selFiltroCamp');
+      const actual = sel.value;
+      sel.innerHTML = '<option value="">Todas las campañas</option>' + nombres.map(n => `<option value="${n.replace(/"/g, '&quot;')}">${n}</option>`).join('');
+      sel.value = nombres.indexOf(actual) !== -1 ? actual : '';
+    }
+    function filtrarTablaVentas() {
+      const norm = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+      const camp = document.getElementById('selFiltroCamp').value;
+      const q = norm(document.getElementById('buscarVentas').value.trim());
+      const tbody = document.getElementById('cuerpoTablaDashboard');
+      const vacia = document.getElementById('filaSinResultados');
+      if (vacia) vacia.remove();
+      let n = 0, neto = 0, total = 0;
+      const filas = tbody.querySelectorAll('tr[data-camp]');
+      filas.forEach(tr => {
+        const ok = (!camp || tr.dataset.camp === camp) && (!q || norm(tr.textContent).indexOf(q) !== -1);
+        tr.style.display = ok ? '' : 'none';
+        if (ok) { n++; neto += parseFloat(tr.dataset.neto) || 0; total += parseFloat(tr.dataset.total) || 0; }
+      });
+      if (filas.length && !n) {
+        tbody.insertAdjacentHTML('beforeend', '<tr id="filaSinResultados"><td colspan="10" class="p-4 text-center text-slate-400">Sin resultados. Cambia la campaña o la búsqueda.</td></tr>');
+      }
+      document.getElementById('resumenVentas').innerText = filas.length ? `${n} de ${filas.length} registros · Neto ${neto.toFixed(2)} kg · Total S/. ${total.toFixed(2)}` : '';
     }
 
     function actualizarGraficosCampanas(labels, netos, taras, dinero) {
