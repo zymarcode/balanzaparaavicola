@@ -3341,11 +3341,6 @@
       const u = sesionActual();
       if (u) { aplicarSesionUI(u); cb(); return; }
       aplicarMarcaLogin();
-      const hint = document.getElementById('authHint');
-      if (lista.length === 1 && lista[0].usuario === 'admin' && lista[0].pass === hashPass('admin123')) {
-        hint.innerText = 'Acceso inicial: admin / admin123. Cámbialo al entrar.';
-        hint.classList.remove('hidden');
-      }
       document.getElementById('authScreen').classList.remove('hidden');
       setTimeout(() => document.getElementById('authUser').focus(), 100);
     }
