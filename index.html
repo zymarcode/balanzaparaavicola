@@ -990,10 +990,15 @@
 
       </div>
 
+      <div id="driveReporteFeedback" class="no-imprimir text-center text-xs font-bold text-purple-700"></div>
+
       <!-- BOTONES DE ACCIÓN PARA EL REPORTE -->
       <div class="no-imprimir pt-2 flex flex-col sm:flex-row gap-2 border-t border-slate-200">
         <button type="button" onclick="imprimirReporteCompletoVentana()" class="flex-1 py-3 bg-slate-900 hover:bg-slate-800 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5 shadow">
           🖨 Imprimir / Guardar como PDF (Lista Completa)
+        </button>
+        <button type="button" id="btnGuardarDriveReporte" onclick="guardarReporteEnGoogleDrive()" class="flex-1 py-3 bg-purple-700 hover:bg-purple-600 active:scale-95 text-white font-bold text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-1.5 shadow">
+          ☁️ Guardar en Drive
         </button>
         <button type="button" onclick="cerrarReporteDetallado()" class="py-3 px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs sm:text-sm rounded-xl transition">
           Cerrar
@@ -1261,7 +1266,7 @@
 
     // SINCRONIZACIÓN CON GOOGLE SHEETS
     async function sincronizarDesdeGoogleSheets() {
-      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://docs.google.com/spreadsheets/d/1TvNyLhVZyhqcaf3aLJFn3jgWfr9ZXz4MaXDTY5jFGaQ/edit?gid=561278225#gid=561278225")) {
+      if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.includes("https://docs.google.com/spreadsheets/d/1TvNyLhVZyhqcaf3aLJFn3jgWfr9ZXz4MaXDTY5jFGaQ/edit?gid=1238784953#gid=1238784953")) {
         mostrarToast("Pegue su URL de Apps Script en index.html", "aviso");
         return;
       }
@@ -2494,6 +2499,56 @@
       document.getElementById('repTotalSolesFinal').innerText = `S/. ${soles.toFixed(2)}`;
 
       document.getElementById('modalReporteDetallado').classList.remove('hidden');
+    }
+
+    async function guardarReporteEnGoogleDrive() {
+      if (!clienteActivo || !database[campanaActiva] || !database[campanaActiva][clienteActivo]) {
+        mostrarToast("Cree un comprador primero", "aviso");
+        return;
+      }
+      const c = database[campanaActiva][clienteActivo];
+      const diaData = c.dias[jornadaActiva];
+      const sobrante = diaData.sobrante || [];
+      const sumTaraIni = diaData.tara.reduce((a, b) => a + b, 0);
+      const sumTaraSob = sobrante.reduce((a, b) => a + b, 0);
+      const taraNetaUsada = Math.max(0, sumTaraIni - sumTaraSob);
+      const sumBruto = diaData.pollos.reduce((a, b) => a + b, 0);
+      const neto = Math.max(0, sumBruto - taraNetaUsada);
+      const precio = parseFloat(document.getElementById('txtPrecio').value.replace(',', '.')) || 0;
+
+      const btn = document.getElementById('btnGuardarDriveReporte');
+      btn.innerText = "⏳ Creando PDF...";
+      btn.disabled = true;
+
+      try {
+        const resp = await enviarASheets({
+          action: 'GUARDAR_REPORTE_DRIVE',
+          campana: campanaActiva,
+          cliente: c.nombre,
+          jornada: jornadaActiva,
+          fecha: obtenerFechaSheets(),
+          marca: brandConfig.titulo,
+          tara: diaData.tara,
+          pollos: diaData.pollos,
+          sobrante: sobrante,
+          taraInicial: sumTaraIni.toFixed(2),
+          taraSobrante: sumTaraSob.toFixed(2),
+          taraNeta: taraNetaUsada.toFixed(2),
+          brutoTotal: sumBruto.toFixed(2),
+          netoTotal: neto.toFixed(2),
+          precioKg: precio.toFixed(2),
+          totalPagar: (neto * precio).toFixed(2),
+          nota: diaData.nota || '-'
+        });
+        const fb = document.getElementById('driveReporteFeedback');
+        if (fb && resp && resp.url) fb.innerHTML = `<a href="${resp.url}" target="_blank" rel="noopener noreferrer" class="underline">📄 Abrir reporte PDF en Drive</a>`;
+        mostrarToast("✅ Reporte PDF guardado en Drive", "exito");
+      } catch (err) {
+        mostrarToast("No se pudo guardar el reporte en Drive", "error");
+      } finally {
+        btn.innerText = "☁️ Guardar en Drive";
+        btn.disabled = false;
+      }
     }
 
     function cerrarReporteDetallado() {
